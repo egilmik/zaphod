@@ -14,9 +14,7 @@ class Board {
         void printBoard();
         void setBit(BitBoard &board, bool highLow, int bitNr);
         bool checkBit(BitBoard board, int bitNr);
-
-    private:
-        void parseFenPosition(char value, int &bitCout);
+        int popLsb(BitBoard& board);
 
         BitBoard pieceses = 0;
         BitBoard white = 0;
@@ -33,6 +31,11 @@ class Board {
         BitBoard blackBishops = 0;
         BitBoard blackKnights= 0;
         BitBoard blackPawns= 0;
+
+    private:
+        void parseFenPosition(char value, int &bitCout);
+
+        
 
         int fenToBitMapping[64] = {56,57,58,59,60,61,62,63,
                                    48,49,50,51,52,53,54,55,

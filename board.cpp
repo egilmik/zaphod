@@ -124,6 +124,13 @@ bool Board::checkBit(BitBoard board, int bitNr)
     return (board >> bitNr) & 1U;
 }
 
+int Board::popLsb(BitBoard& board)
+{   
+    int lsb = __builtin_ctzll(board);
+    board &= board - 1;
+    return lsb;
+}
+
 void Board::printBoard(){
     uint64_t count = 0;
     char printBoard[64];

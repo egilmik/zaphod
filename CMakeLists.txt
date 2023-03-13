@@ -6,7 +6,7 @@ enable_testing()
 
 
 
-add_executable(Chess board.cpp board.h main.cpp)
+add_executable(Chess board.cpp board.h main.cpp movegenerator.cpp movegenerator.h)
 
 target_include_directories(Chess PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
