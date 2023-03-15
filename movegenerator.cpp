@@ -30,6 +30,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
             Move move;
             move.fromSq = fromSq;
             move.toSq = toSq;
+            move.piece = Board::BitBoardEnum::P;
 
             moveVector.push_back(move);
         }
@@ -43,6 +44,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
                 Move move;
                 move.fromSq = fromSq;
                 move.toSq = toSq;
+                move.piece = Board::BitBoardEnum::P;
                 moveVector.push_back(move);
             }
         }
@@ -59,6 +61,3 @@ void MoveGenerator::generateRookMove(Board board)
 {
 }
 
-void MoveGenerator::addMove(int fromSq, int toSq, int promotion, int capture, int doublePawnPush, int enpassant, int castling)
-{
-}

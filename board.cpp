@@ -135,6 +135,11 @@ int Board::popLsb(BitBoard& board)
     return lsb;
 }
 
+void Board::makeMove(int fromSq, int toSq, bool capture)
+{
+    
+}
+
 void Board::printBoard(){
     uint64_t count = 0;
     char printBoard[64];

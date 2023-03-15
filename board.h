@@ -15,11 +15,31 @@ class Board {
         void setBit(BitBoard &board, bool highLow, int bitNr);
         bool checkBit(BitBoard board, int bitNr);
         int popLsb(BitBoard& board);
+        void makeMove(int fromSq, int toSq, bool capture);
 
-        enum side {White,Black};
-        enum pieceEnum {R,r,N,n,B,b,Q,q,K,k,P,p};
-        side sideToMove = White;
+        //enum side {White,Black};
+        enum BitBoardEnum {All,White,Black,R,r,N,n,B,b,Q,q,K,k,P,p};
+        BitBoardEnum sideToMove = White;
 
+        std::map<BitBoardEnum,BitBoard> bitBoardMap = {
+            {All, 0},
+            {White, 0},
+            {Black,0},
+            {R,0},
+            {r,0},
+            {N,0},
+            {n,0},
+            {B,0},
+            {b,0},
+            {Q,0},
+            {q,0},
+            {K,0},
+            {k,0},
+            {P,0},
+            {p,0},
+        };
+
+        
         BitBoard pieceses = 0;
         BitBoard white = 0;
         BitBoard whiteKing = 0;
@@ -35,6 +55,7 @@ class Board {
         BitBoard blackBishops = 0;
         BitBoard blackKnights= 0;
         BitBoard blackPawns= 0;
+        
 
     private:
         void parseFenPosition(char value, int &bitCout);
