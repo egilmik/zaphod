@@ -16,5 +16,6 @@ int main(int, char**) {
     test1.printBoard();
 
     MoveGenerator generator;
-    generator.generateMoves(test1);
+    std::vector<Move> moveVector = generator.generateMoves(test1);
+    std::cout << "Number of moves " << moveVector.size() << std::endl;
 }

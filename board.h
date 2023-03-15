@@ -16,6 +16,10 @@ class Board {
         bool checkBit(BitBoard board, int bitNr);
         int popLsb(BitBoard& board);
 
+        enum side {White,Black};
+        enum pieceEnum {R,r,N,n,B,b,Q,q,K,k,P,p};
+        side sideToMove = White;
+
         BitBoard pieceses = 0;
         BitBoard white = 0;
         BitBoard whiteKing = 0;

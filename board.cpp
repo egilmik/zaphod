@@ -20,6 +20,10 @@ void Board::parseFen(std::string fen){
         case 0:
             parseFenPosition(fen[i], count);
             break;
+        case 1:
+            if(fen[i] == 'w'){
+                sideToMove = White;
+            }
         
         default:
             break;

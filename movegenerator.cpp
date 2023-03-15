@@ -1,11 +1,23 @@
 #include "movegenerator.h"
 #include <iostream>
 
-void MoveGenerator::generateMoves(Board board)
+std::vector<Move> MoveGenerator::generateMoves(Board board)
 {
-    BitBoard pawnMoves = NULL;
+    std::vector<Move> moveVector;
+    generatePawnPush(board,moveVector);
+    return moveVector;
+}
 
-    BitBoard pawns = board.whitePawns;
+void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
+{
+    BitBoard pawnMoves;
+    BitBoard pawns;
+
+    if(board.sideToMove == board.White){
+        pawns = board.whitePawns;
+    } else {
+        pawns = board.blackPawns;
+    }
 
     
     int fromSq = board.popLsb(pawns);;
@@ -15,6 +27,11 @@ void MoveGenerator::generateMoves(Board board)
 
         if(!board.checkBit(board.pieceses,toSq)){
             std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
+            Move move;
+            move.fromSq = fromSq;
+            move.toSq = toSq;
+
+            moveVector.push_back(move);
         }
         
         if(fromSq > 7 && fromSq < 16){
@@ -23,14 +40,25 @@ void MoveGenerator::generateMoves(Board board)
 
             if(!board.checkBit(board.pieceses,toSq)){
                 std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
+                Move move;
+                move.fromSq = fromSq;
+                move.toSq = toSq;
+                moveVector.push_back(move);
             }
         }
         fromSq = board.popLsb(pawns);
 
     }
-    
-    
-    
+}
 
+void MoveGenerator::generatePawnCaptures(Board board)
+{
+}
 
+void MoveGenerator::generateRookMove(Board board)
+{
+}
+
+void MoveGenerator::addMove(int fromSq, int toSq, int promotion, int capture, int doublePawnPush, int enpassant, int castling)
+{
 }
