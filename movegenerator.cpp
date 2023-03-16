@@ -13,19 +13,20 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
     BitBoard pawnMoves;
     BitBoard pawns;
 
-    if(board.sideToMove == board.White){
-        pawns = board.whitePawns;
-    } else {
-        pawns = board.blackPawns;
-    }
+    BitBoard allPieces = *board.getBitboard(Board::All);    
 
+    if(board.sideToMove == board.White){
+        pawns = *board.getBitboard(Board::P);
+    } else {
+        pawns = *board.getBitboard(Board::p);
+    }
     
     int fromSq = board.popLsb(pawns);;
     while (fromSq != 0)
     {
         int toSq = fromSq+8;
 
-        if(!board.checkBit(board.pieceses,toSq)){
+        if(!board.checkBit(allPieces,toSq)){
             std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
             Move move;
             move.fromSq = fromSq;
@@ -39,7 +40,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
             //Two squares forward from starting position
             toSq+=8;
 
-            if(!board.checkBit(board.pieceses,toSq)){
+            if(!board.checkBit(allPieces,toSq)){
                 std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
                 Move move;
                 move.fromSq = fromSq;

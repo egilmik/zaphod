@@ -33,7 +33,13 @@ void Board::parseFen(std::string fen){
 
 }
 
-void Board::parseFenPosition(char value, int &count){
+BitBoard *Board::getBitboard(BitBoardEnum piece)
+{
+    return bitBoardMap.at(piece);
+}
+
+void Board::parseFenPosition(char value, int &count)
+{
 
     int bitNr = fenToBitMapping[count];
 
@@ -115,7 +121,6 @@ void Board::parseFenPosition(char value, int &count){
             break;
         }
     }
-    
 }
 
 void Board::setBit(BitBoard &board, bool highLow, int bitNr)
