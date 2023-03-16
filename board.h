@@ -10,19 +10,25 @@ class Board {
 
     public:
         Board();
+
+        enum BitBoardEnum {All,White,Black,R,r,N,n,B,b,Q,q,K,k,P,p};
         void parseFen(std::string fen);
         void printBoard();
         void setBit(BitBoard &board, bool highLow, int bitNr);
+        void setBit(BitBoardEnum piece, bool highLow, int bitNr);
         bool checkBit(BitBoard board, int bitNr);
+        bool checkBit(BitBoardEnum piece, int bitNr);
         int popLsb(BitBoard& board);
         void makeMove(int fromSq, int toSq, bool capture);
 
         
 
+        
+
         //enum side {White,Black};
-        enum BitBoardEnum {All,White,Black,R,r,N,n,B,b,Q,q,K,k,P,p};
+        
         BitBoardEnum sideToMove = White;
-        BitBoard* getBitboard(BitBoardEnum piece);
+        BitBoard getBitboard(BitBoardEnum piece);
 
 
 
@@ -45,22 +51,22 @@ class Board {
         BitBoard blackKnights= 0;
         BitBoard blackPawns= 0;
 
-        std::map<BitBoardEnum,BitBoard*> bitBoardMap = {
-            {All, &pieceses},
-            {White, &white},
-            {Black,&black},
-            {R,&whiteRooks},
-            {r,&blackRooks},
-            {N,&whiteKnights},
-            {n,&blackKnights},
-            {B,&whiteBishops},
-            {b,&blackBishops},
-            {Q,&whiteQueens},
-            {q,&blackQueens},
-            {K,&whiteKing},
-            {k,&blackKing},
-            {P,&whitePawns},
-            {p,&blackPawns},
+        std::map<BitBoardEnum,BitBoard> bitBoardMap = {
+            {All, pieceses},
+            {White, white},
+            {Black,black},
+            {R,whiteRooks},
+            {r,blackRooks},
+            {N,whiteKnights},
+            {n,blackKnights},
+            {B,whiteBishops},
+            {b,blackBishops},
+            {Q,whiteQueens},
+            {q,blackQueens},
+            {K,whiteKing},
+            {k,blackKing},
+            {P,whitePawns},
+            {p,blackPawns},
         };
 
         int fenToBitMapping[64] = {56,57,58,59,60,61,62,63,
@@ -72,18 +78,18 @@ class Board {
                                     8, 9,10,11,12,13,14,15,
                                     0, 1, 2, 3, 4, 5, 6, 7 };
 
-        std::map<char,BitBoard*> fenToBitboardMap = {{'r', &blackRooks},
-                                                    {'R', &whiteRooks},
-                                                    {'n', &blackKnights},
-                                                    {'N', &whiteKnights},
-                                                    {'b', &blackBishops},
-                                                    {'B', &whiteBishops},
-                                                    {'p', &blackPawns},
-                                                    {'P', &whitePawns},
-                                                    {'q', &blackQueens},
-                                                    {'Q', &whiteQueens},
-                                                    {'k', &blackKing},
-                                                    {'K', &whiteKing}};
+        std::map<char,BitBoardEnum> fenToEnumBoardMap = {{'r', BitBoardEnum::r},
+                                                    {'R', BitBoardEnum::R},
+                                                    {'n', BitBoardEnum::n},
+                                                    {'N', BitBoardEnum::N},
+                                                    {'b', BitBoardEnum::b},
+                                                    {'B', BitBoardEnum::B},
+                                                    {'p', BitBoardEnum::p},
+                                                    {'P', BitBoardEnum::P},
+                                                    {'q', BitBoardEnum::q},
+                                                    {'Q', BitBoardEnum::Q},
+                                                    {'k', BitBoardEnum::k},
+                                                    {'K', BitBoardEnum::K}};
         
         /*
         BitBoard structure

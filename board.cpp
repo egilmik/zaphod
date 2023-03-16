@@ -33,7 +33,7 @@ void Board::parseFen(std::string fen){
 
 }
 
-BitBoard *Board::getBitboard(BitBoardEnum piece)
+BitBoard Board::getBitboard(BitBoardEnum piece)
 {
     return bitBoardMap.at(piece);
 }
@@ -49,76 +49,12 @@ void Board::parseFenPosition(char value, int &count)
         count+= increment;
     } else { 
 
-        switch (value)
-        {
-        case 'r':
-            setBit(pieceses, true, bitNr);
-            setBit(blackRooks,true, bitNr);
+        if (fenToEnumBoardMap.find(value) != fenToEnumBoardMap.end()){
+            setBit(fenToEnumBoardMap.at(value),true,bitNr);
+            setBit(BitBoardEnum::All, true, bitNr);
             count++;
-            break;
-        case 'R':
-            setBit(pieceses, true, bitNr);
-            setBit(whiteRooks,true, bitNr);
-            count++;
-            break;
-        case '/':
-            //Do nothing
-            break;
-        case 'n':
-            setBit(pieceses,true, bitNr);
-            setBit(blackKnights,true,bitNr);
-            count++;
-            break;
-        case 'N':
-            setBit(pieceses,true, bitNr);
-            setBit(whiteKnights,true,bitNr);
-            count++;
-            break;
-        case 'b':
-            setBit(pieceses,true, bitNr);
-            setBit(blackBishops,true,bitNr);
-            count++;
-            break;
-        case 'B':
-            setBit(pieceses,true, bitNr);
-            setBit(whiteBishops,true,bitNr);
-            count++;
-            break;
-        case 'q':
-            setBit(pieceses,true, bitNr);
-            setBit(blackQueens,true,bitNr);
-            count++;
-            break;
-        case 'Q':
-            setBit(pieceses,true, bitNr);
-            setBit(whiteQueens,true,bitNr);
-            count++;
-            break;
-        case 'k':
-            setBit(pieceses,true, bitNr);
-            setBit(blackKing,true,bitNr);
-            count++;
-            break;
-        case 'K':
-            setBit(pieceses,true, bitNr);
-            setBit(whiteKing,true,bitNr);
-            count++;
-            break;
-        case 'p':
-            setBit(pieceses,true, bitNr);
-            setBit(blackPawns,true,bitNr);
-            count++;
-            break;
-        case 'P':
-            setBit(pieceses,true, bitNr);
-            setBit(whitePawns,true,bitNr);
-            count++;
-            break;
+        } else if(value == '/'){
 
-    
-        default:
-            count++;
-            break;
         }
     }
 }
@@ -128,9 +64,25 @@ void Board::setBit(BitBoard &board, bool highLow, int bitNr)
     board |= 1ULL << bitNr;
 }
 
+void Board::setBit(BitBoardEnum piece, bool highLow, int bitNr)
+{
+    std::map<BitBoardEnum,BitBoard>::iterator itr;
+    itr = bitBoardMap.find(piece);
+    BitBoard board = itr->second;
+    board |= 1ULL << bitNr;
+    itr->second = board;
+
+}
+
 bool Board::checkBit(BitBoard board, int bitNr)
 {
     return (board >> bitNr) & 1U;
+}
+
+bool Board::checkBit(BitBoardEnum piece, int bitNr)
+{
+    BitBoard board = bitBoardMap.at(piece);
+    return (board >> bitNr) & 1U;    
 }
 
 int Board::popLsb(BitBoard& board)
@@ -151,7 +103,7 @@ void Board::printBoard(){
 
     for(int i = 0; i < 64; i++){
         printBoard[i] = '*';
-        if(checkBit(whiteRooks,i)){
+        if(checkBit(Board::R,i)){
             printBoard[i] = 'R';
         } else if(checkBit(blackRooks,i)){
             printBoard[i] = 'r';

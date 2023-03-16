@@ -13,12 +13,12 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
     BitBoard pawnMoves;
     BitBoard pawns;
 
-    BitBoard allPieces = *board.getBitboard(Board::All);    
+    BitBoard allPieces = board.getBitboard(Board::All);    
 
     if(board.sideToMove == board.White){
-        pawns = *board.getBitboard(Board::P);
+        pawns = board.getBitboard(Board::P);
     } else {
-        pawns = *board.getBitboard(Board::p);
+        pawns = board.getBitboard(Board::p);
     }
     
     int fromSq = board.popLsb(pawns);;
