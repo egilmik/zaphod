@@ -69,7 +69,12 @@ void Board::setBit(BitBoardEnum piece, bool highLow, int bitNr)
     std::map<BitBoardEnum,BitBoard>::iterator itr;
     itr = bitBoardMap.find(piece);
     BitBoard board = itr->second;
-    board |= 1ULL << bitNr;
+    if(highLow){
+        board |= 1ULL << bitNr;
+    } else {
+        board &= ~(1ULL <<bitNr);
+    }
+    
     itr->second = board;
 
 }
@@ -92,9 +97,44 @@ int Board::popLsb(BitBoard& board)
     return lsb;
 }
 
-void Board::makeMove(int fromSq, int toSq, bool capture)
+void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
 {
-    
+    std::map<BitBoardEnum,BitBoard> copy(bitBoardMap);
+    PreviousbitBoardMap = copy;
+
+    if(!checkBit(BitBoardEnum::All,fromSq) || !checkBit(piece, fromSq)){
+        //std::cout << "Piece does not exist in makeMove " << piece << " from square " << fromSq << std::endl;
+        return;
+    }
+
+    setBit(BitBoardEnum::All,false,fromSq);
+    setBit(BitBoardEnum::All,true,toSq);
+    setBit(piece, false, fromSq);
+    setBit(piece,true, toSq);
+    if(sideToMove == BitBoardEnum::White){
+        setBit(BitBoardEnum::White,false,fromSq);
+        setBit(BitBoardEnum::White,true,toSq);
+    } else {
+        setBit(BitBoardEnum::Black,false,fromSq);
+        setBit(BitBoardEnum::Black,true,toSq);
+    }
+
+    std::map<BitBoardEnum,BitBoard>::iterator itr;
+    for(itr = bitBoardMap.begin(); itr != bitBoardMap.end(); ++itr){
+        if(itr->first != BitBoardEnum::Black &&
+            itr->first != BitBoardEnum::White &&
+            itr->first != BitBoardEnum::All &&
+            itr->first != piece){
+                setBit(itr->first,false,toSq);
+            }
+
+    }
+}
+
+void Board::revertLastMove()
+{
+    bitBoardMap = PreviousbitBoardMap;
+
 }
 
 void Board::printBoard(){
@@ -103,29 +143,30 @@ void Board::printBoard(){
 
     for(int i = 0; i < 64; i++){
         printBoard[i] = '*';
+
         if(checkBit(Board::R,i)){
             printBoard[i] = 'R';
-        } else if(checkBit(blackRooks,i)){
+        } else if(checkBit(Board::r,i)){
             printBoard[i] = 'r';
-        } else if(checkBit(whiteKnights,i)){
+        } else if(checkBit(Board::N,i)){
             printBoard[i] = 'N';
-        } else if(checkBit(blackKnights,i)){
+        } else if(checkBit(Board::n,i)){
             printBoard[i] = 'n';
-        } else if(checkBit(whiteBishops,i)){
+        } else if(checkBit(Board::B,i)){
             printBoard[i] = 'B';
-        } else if(checkBit(blackBishops,i)){
+        } else if(checkBit(Board::b,i)){
             printBoard[i] = 'b';
-        } else if(checkBit(whiteQueens,i)){
+        } else if(checkBit(Board::Q,i)){
             printBoard[i] = 'Q';
-        } else if(checkBit(blackQueens,i)){
+        } else if(checkBit(Board::q,i)){
             printBoard[i] = 'q';
-        } else if(checkBit(whiteKing,i)){
+        } else if(checkBit(Board::K,i)){
             printBoard[i] = 'K';
-        } else if(checkBit(blackKing,i)){
+        } else if(checkBit(Board::k,i)){
             printBoard[i] = 'k';
-        } else if(checkBit(whitePawns,i)){
+        } else if(checkBit(Board::P,i)){
             printBoard[i] = 'P';
-        } else if(checkBit(blackPawns,i)){
+        } else if(checkBit(Board::p,i)){
             printBoard[i] = 'p';
         }
     }

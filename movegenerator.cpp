@@ -4,6 +4,7 @@
 std::vector<Move> MoveGenerator::generateMoves(Board board)
 {
     std::vector<Move> moveVector;
+    //board.printBoard();
     generatePawnPush(board,moveVector);
     return moveVector;
 }
@@ -21,13 +22,13 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
         pawns = board.getBitboard(Board::p);
     }
     
-    int fromSq = board.popLsb(pawns);;
+    int fromSq = board.popLsb(pawns);
     while (fromSq != 0)
     {
         int toSq = fromSq+8;
 
         if(!board.checkBit(allPieces,toSq)){
-            std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
+            //std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
             Move move;
             move.fromSq = fromSq;
             move.toSq = toSq;
@@ -41,7 +42,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
             toSq+=8;
 
             if(!board.checkBit(allPieces,toSq)){
-                std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
+                //std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
                 Move move;
                 move.fromSq = fromSq;
                 move.toSq = toSq;

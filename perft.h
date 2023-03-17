@@ -8,21 +8,23 @@
 
 class Perft {
     public:
-        static void perft(Board &board, int depth){
+        static int perft(Board &board, int depth){
             MoveGenerator generator;
             int nrOfNodes = 0;
             if(depth == 0){
-                return;
+                return 0;
             }
             std::vector<Move> moveVector = generator.generateMoves(board);
             nrOfNodes += moveVector.size();
             for(Move move: moveVector){
-                //Board Make move
-                perft(board, depth-1);
-                //Undo move
+                board.makeMove(move.fromSq,move.toSq,move.piece,false);
+                //board.printBoard();
+                nrOfNodes += perft(board, depth-1);
+                board.revertLastMove();
             }
             
-            std::cout << "Number of nodes " << moveVector.size() << std::endl;
+            std::cout << "Depth " << depth << " nr of nodes " << nrOfNodes<< std::endl;
+            return nrOfNodes;
         }
 };
 
