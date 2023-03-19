@@ -8,7 +8,7 @@
 
 class Perft {
     public:
-        static int perft(Board &board, int depth){
+        static int perft(Board board, int depth){
             MoveGenerator generator;
             int nrOfNodes = 0;
             if(depth == 0){
@@ -18,11 +18,12 @@ class Perft {
             nrOfNodes += moveVector.size();
             for(Move move: moveVector){
                 board.makeMove(move.fromSq,move.toSq,move.piece,false);
-                board.printBoard();
+                //board.printBoard();
                 nrOfNodes += perft(board, depth-1);
                 board.revertLastMove();
             }
             
+
             return nrOfNodes;
         }
 };

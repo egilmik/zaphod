@@ -40,7 +40,11 @@ BitBoard Board::getBitboard(BitBoardEnum piece)
 
 void Board::changeSideToMove()
 {
-
+    if(sideToMove == BitBoardEnum::White){
+       sideToMove = BitBoardEnum::Black;     
+    } else {
+        sideToMove = BitBoardEnum::White;
+    }
 }
 
 Board::BitBoardEnum Board::getSideToMove()
@@ -111,6 +115,7 @@ void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
 {
     std::map<BitBoardEnum,BitBoard> copy(bitBoardMap);
     PreviousbitBoardMap = copy;
+    sideToMoveCopy = sideToMove;
 
     if(!checkBit(BitBoardEnum::All,fromSq) || !checkBit(piece, fromSq)){
         //std::cout << "Piece does not exist in makeMove " << piece << " from square " << fromSq << std::endl;
@@ -139,13 +144,14 @@ void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
             }
 
     }
+
+    changeSideToMove();
 }
 
 void Board::revertLastMove()
 {
     bitBoardMap = PreviousbitBoardMap;
-    changeSideToMove();
-
+    sideToMove = sideToMoveCopy;
 }
 
 void Board::printBoard(){

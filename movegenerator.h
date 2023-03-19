@@ -13,13 +13,12 @@ struct Move {
 class MoveGenerator {
 
     public:
-        std::vector<Move> generateMoves(Board board);      
+        std::vector<Move> generateMoves(Board &board);      
 
     private:
         void generatePawnPush(Board board,std::vector<Move> &moveVector);
         void generatePawnCaptures(Board board);
         void generateRookMove(Board board);
-        void addMove(int fromSq, int toSq, Board::BitBoardEnum piece);
 };
 
 #endif

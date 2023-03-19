@@ -21,7 +21,7 @@ int main(int, char**) {
 
 
     auto start = std::chrono::high_resolution_clock::now();
-    int depth = 2;
+    int depth = 3;
     int nrOfNodes = Perft::perft(startingBoard,depth);
     std::cout << "Depth: " << depth << " - nr of nodes: " << nrOfNodes << std::endl;
     

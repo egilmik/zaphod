@@ -1,12 +1,11 @@
 #include "movegenerator.h"
 #include <iostream>
 
-std::vector<Move> MoveGenerator::generateMoves(Board board)
+std::vector<Move> MoveGenerator::generateMoves(Board &board)
 {
     std::vector<Move> moveVector;
     //board.printBoard();
     generatePawnPush(board,moveVector);
-    board.changeSideToMove();
     return moveVector;
 }
 
@@ -22,7 +21,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
         movedPiece = Board::P;
     } else {
         pawns = board.getBitboard(Board::p);
-        movedPiece == Board::p;
+        movedPiece = Board::p;
     }
 
     int pawnIncrement = 8;
@@ -39,16 +38,17 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
     {
 
         
-        int toSq = fromSq+8;
+        int toSq = fromSq+pawnIncrement;
 
         if(!board.checkBit(allPieces,toSq)){
             Move move = {fromSq,toSq, movedPiece};
             moveVector.push_back(move);
         }
         
-        if(fromSq > 7 && fromSq < 16){
+        if((fromSq > 7 && fromSq < 16) || 
+            (fromSq > 47 && fromSq< 56)){
             //Two squares forward from starting position
-            toSq+=8;
+            toSq =fromSq+pawnDoubleIncrement;
 
             if(!board.checkBit(allPieces,toSq)){
                 Move move = {fromSq,toSq, movedPiece};
