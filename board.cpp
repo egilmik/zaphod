@@ -38,6 +38,16 @@ BitBoard Board::getBitboard(BitBoardEnum piece)
     return bitBoardMap.at(piece);
 }
 
+void Board::changeSideToMove()
+{
+
+}
+
+Board::BitBoardEnum Board::getSideToMove()
+{
+    return sideToMove;
+}
+
 void Board::parseFenPosition(char value, int &count)
 {
 
@@ -134,6 +144,7 @@ void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
 void Board::revertLastMove()
 {
     bitBoardMap = PreviousbitBoardMap;
+    changeSideToMove();
 
 }
 

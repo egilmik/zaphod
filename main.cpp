@@ -2,6 +2,7 @@
 #include "board.h"
 #include "movegenerator.h"
 #include "perft.h"
+#include <chrono>
 
 int main(int, char**) {
 
@@ -18,7 +19,17 @@ int main(int, char**) {
     test1.parseFen(test1Fen);
     //test1.printBoard();
 
-    Perft::perft(startingBoard,3);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    int depth = 2;
+    int nrOfNodes = Perft::perft(startingBoard,depth);
+    std::cout << "Depth: " << depth << " - nr of nodes: " << nrOfNodes << std::endl;
+    
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout << duration.count() << " ms" << std::endl;
+
+
     
     
 

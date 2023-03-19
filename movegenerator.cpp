@@ -6,6 +6,7 @@ std::vector<Move> MoveGenerator::generateMoves(Board board)
     std::vector<Move> moveVector;
     //board.printBoard();
     generatePawnPush(board,moveVector);
+    board.changeSideToMove();
     return moveVector;
 }
 
@@ -16,15 +17,26 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
 
     BitBoard allPieces = board.getBitboard(Board::All);    
 
-    if(board.sideToMove == board.White){
+    if(board.getSideToMove() == board.White){
         pawns = board.getBitboard(Board::P);
     } else {
         pawns = board.getBitboard(Board::p);
     }
+
+    int pawnIncrement = 8;
+    int pawnDoubleIncrement = 16;
+
+    if(board.getSideToMove() == board.Black){
+        pawnDoubleIncrement = -16;
+        pawnIncrement = -8;
+    }
+    
     
     int fromSq = board.popLsb(pawns);
     while (fromSq != 0)
     {
+
+        
         int toSq = fromSq+8;
 
         if(!board.checkBit(allPieces,toSq)){

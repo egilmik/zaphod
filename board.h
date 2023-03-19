@@ -29,33 +29,20 @@ class Board {
 
         //enum side {White,Black};
         
-        BitBoardEnum sideToMove = White;
+        
         BitBoard getBitboard(BitBoardEnum piece);
+        void changeSideToMove();
+        BitBoardEnum getSideToMove();
+
 
 
 
     private:
         void parseFenPosition(char value, int &bitCout);
 
-        /*
-        BitBoard pieceses = 0;
-        BitBoard white = 0;
-        BitBoard whiteKing = 0;
-        BitBoard whiteQueens = 0;
-        BitBoard whiteRooks = 0;
-        BitBoard whiteBishops = 0;
-        BitBoard whiteKnights = 0;
-        BitBoard whitePawns = 0;
-        BitBoard black = 0;
-        BitBoard blackKing = 0;
-        BitBoard blackQueens= 0;
-        BitBoard blackRooks = 0;
-        BitBoard blackBishops = 0;
-        BitBoard blackKnights= 0;
-        BitBoard blackPawns= 0;
-        */
-
         std::map<BitBoardEnum,BitBoard> PreviousbitBoardMap = {};
+
+        BitBoardEnum sideToMove = White;
         std::map<BitBoardEnum,BitBoard> bitBoardMap = {
             {All, 0},
             {White, 0},

@@ -18,12 +18,11 @@ class Perft {
             nrOfNodes += moveVector.size();
             for(Move move: moveVector){
                 board.makeMove(move.fromSq,move.toSq,move.piece,false);
-                //board.printBoard();
+                board.printBoard();
                 nrOfNodes += perft(board, depth-1);
                 board.revertLastMove();
             }
             
-            std::cout << "Depth " << depth << " nr of nodes " << nrOfNodes<< std::endl;
             return nrOfNodes;
         }
 };
