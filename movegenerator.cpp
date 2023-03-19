@@ -12,15 +12,17 @@ std::vector<Move> MoveGenerator::generateMoves(Board board)
 
 void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
 {
-    BitBoard pawnMoves;
     BitBoard pawns;
 
-    BitBoard allPieces = board.getBitboard(Board::All);    
+    BitBoard allPieces = board.getBitboard(Board::All);
+    Board::BitBoardEnum movedPiece;    
 
     if(board.getSideToMove() == board.White){
         pawns = board.getBitboard(Board::P);
+        movedPiece = Board::P;
     } else {
         pawns = board.getBitboard(Board::p);
+        movedPiece == Board::p;
     }
 
     int pawnIncrement = 8;
@@ -40,12 +42,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
         int toSq = fromSq+8;
 
         if(!board.checkBit(allPieces,toSq)){
-            //std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
-            Move move;
-            move.fromSq = fromSq;
-            move.toSq = toSq;
-            move.piece = Board::BitBoardEnum::P;
-
+            Move move = {fromSq,toSq, movedPiece};
             moveVector.push_back(move);
         }
         
@@ -54,11 +51,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
             toSq+=8;
 
             if(!board.checkBit(allPieces,toSq)){
-                //std::cout << "pseudo legal move from " << fromSq << " to " << toSq << std::endl;
-                Move move;
-                move.fromSq = fromSq;
-                move.toSq = toSq;
-                move.piece = Board::BitBoardEnum::P;
+                Move move = {fromSq,toSq, movedPiece};
                 moveVector.push_back(move);
             }
         }
