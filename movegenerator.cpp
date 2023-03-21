@@ -14,9 +14,10 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
     BitBoard pawns;
 
     BitBoard allPieces = board.getBitboard(Board::All);
-    Board::BitBoardEnum movedPiece;    
+    Board::BitBoardEnum movedPiece;
+    Board::BitBoardEnum sideToMove = board.getSideToMove();
 
-    if(board.getSideToMove() == board.White){
+    if(sideToMove == board.White){
         pawns = board.getBitboard(Board::P);
         movedPiece = Board::P;
     } else {
@@ -27,7 +28,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
     int pawnIncrement = 8;
     int pawnDoubleIncrement = 16;
 
-    if(board.getSideToMove() == board.Black){
+    if(sideToMove == board.Black){
         pawnDoubleIncrement = -16;
         pawnIncrement = -8;
     }
@@ -55,6 +56,28 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
                 moveVector.push_back(move);
             }
         }
+        if(sideToMove == Board::White){
+            if(board.checkBit(Board::BitBoardEnum::Black,fromSq+7)){
+                Move move = {fromSq,fromSq+7, movedPiece};
+                moveVector.push_back(move);
+            }
+            if(board.checkBit(Board::BitBoardEnum::Black, fromSq+9)){
+                Move move = {fromSq,fromSq+0, movedPiece};
+                moveVector.push_back(move);
+            }
+        }
+
+        if(sideToMove == Board::Black){
+            if(board.checkBit(Board::BitBoardEnum::White,fromSq+7)){
+                Move move = {fromSq,fromSq+7, movedPiece};
+                moveVector.push_back(move);
+            }
+            if(board.checkBit(Board::BitBoardEnum::White, fromSq+9)){
+                Move move = {fromSq,fromSq+0, movedPiece};
+                moveVector.push_back(move);
+            }
+        }
+        
         fromSq = board.popLsb(pawns);
 
     }

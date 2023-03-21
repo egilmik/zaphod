@@ -27,7 +27,7 @@ int main(int, char**) {
     
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    int nps = nrOfNodes/(duration.count()/1000);
+    int nps = (double)nrOfNodes/((double)duration.count()/(double)1000);
     std::cout << duration.count() << " ms" << " NPS " << nps << std::endl;
     
     /*
