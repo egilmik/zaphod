@@ -3,6 +3,40 @@
 #include <string>
 
 Board::Board(){
+    initKnightMask();
+}
+
+void Board::initKnightMask()
+{  
+    for(int i =0; i< 64;i++){
+        BitBoard piece = 0;
+        BitBoard moves = 0;
+
+        
+        setBit(piece,true,i);
+
+        if(!(piece & FileAMask)){
+            moves |= piece >> 15;
+            moves |= piece << 17;
+        }
+        if(!(piece & FileABMask)){
+            moves |= piece >> 6;
+            moves |= piece << 10;
+        }
+
+        if(!(piece & FileHMask)){
+            moves |= piece >> 17;
+            moves |= piece << 15;
+        }
+
+        if(!(piece & FileGHMask)){
+            moves |= piece >> 10;
+            moves |= piece << 6;
+        }
+
+        knightmask[i] = moves;
+        
+    }
 
 }
 
@@ -118,7 +152,7 @@ void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
     sideToMoveCopy = sideToMove;
 
     if(!checkBit(BitBoardEnum::All,fromSq) || !checkBit(piece, fromSq)){
-        //std::cout << "Piece does not exist in makeMove " << piece << " from square " << fromSq << std::endl;
+        std::cout << "Piece does not exist in makeMove " << piece << " from square " << fromSq << std::endl;
         return;
     }
 
@@ -200,3 +234,26 @@ void Board::printBoard(){
     
 }
 
+void Board::printBoard(BitBoard board, int origin)
+{
+    char printBoard[64];
+
+    for(int i = 0; i < 64; i++){
+        printBoard[i] = '*';
+        if(checkBit(board,i)){
+            printBoard[i] = 'X';
+        }
+        if(origin == i){
+            printBoard[i] = 'O';
+        }
+    }
+
+    for(int i = 0;i < 64; i++){
+        if(i%8== 0){
+            std::cout << std::endl;
+        }
+        std::cout << printBoard[i] << " ";
+    }
+
+    std::cout << std::endl;
+}

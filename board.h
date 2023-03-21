@@ -13,8 +13,49 @@ class Board {
         Board();
 
         enum BitBoardEnum {All,White,Black,R,r,N,n,B,b,Q,q,K,k,P,p};
+
+        
+        /*static constexpr BitBoard LightSquares  = 0xAA55AA55AA55AA55ULL;
+        static constexpr BitBoard DarkSquares   = ~(0xAA55AA55AA55AA55ULL);*/
+
+        static constexpr BitBoard FileHMask = 0b0000000100000001000000010000000100000001000000010000000100000001;
+        static constexpr BitBoard FileGHMask = 0b0000001100000011000000110000001100000011000000110000001100000011;
+        static constexpr BitBoard FileABMask = 0b1100000011000000110000001100000011000000110000001100000011000000;
+        static constexpr BitBoard FileAMask = 0b1000000010000000100000001000000010000000100000001000000010000000;
+        /*
+        static constexpr BitBoard FileBMask = FileAMask << 1;
+        static constexpr BitBoard FileCMask = FileAMask << 2;
+        static constexpr BitBoard FileDMask = FileAMask << 3;
+        static constexpr BitBoard FileEMask = FileAMask << 4;
+        static constexpr BitBoard FileFMask = FileAMask << 5;
+        static constexpr BitBoard FileGMask = FileAMask << 6;
+        static constexpr BitBoard FileHMask = FileAMask << 7;
+        */
+
+        static constexpr BitBoard Rank8Mask = 0xFF;
+        static constexpr BitBoard Rank7Mask = Rank8Mask << (8 * 1);
+        static constexpr BitBoard Rank6Mask = Rank8Mask << (8 * 2);
+        static constexpr BitBoard Rank5Mask = Rank8Mask << (8 * 3);
+        static constexpr BitBoard Rank4Mask = Rank8Mask << (8 * 4);
+        static constexpr BitBoard Rank3Mask = Rank8Mask << (8 * 5);
+        static constexpr BitBoard Rank2Mask = Rank8Mask << (8 * 6);
+        static constexpr BitBoard Rank1Mask = Rank8Mask << (8 * 7);
+
+        BitBoard knightmask[64];
+
+        void initKnightMask();
+
+
+        /*
+        static constexpr Bitboard NotFileAMask  = 18374403900871474942ULL;
+        static constexpr Bitboard NotFileHMask  = 9187201950435737471ULL;
+        static constexpr Bitboard NotFileHG_Mask = 4557430888798830399ULL;
+        static constexpr Bitboard NotFileAB_Mask = 18229723555195321596ULL;
+        */
+
         void parseFen(std::string fen);
         void printBoard();
+        void printBoard(BitBoard board, int origin);
         void setBit(BitBoard &board, bool highLow, int bitNr);
         void setBit(BitBoardEnum piece, bool highLow, int bitNr);
         bool checkBit(BitBoard board, int bitNr);
@@ -83,6 +124,10 @@ class Board {
                                                     {'Q', BitBoardEnum::Q},
                                                     {'k', BitBoardEnum::k},
                                                     {'K', BitBoardEnum::K}};
+
+        
+
+
         
         /*
         BitBoard structure
