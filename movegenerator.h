@@ -18,6 +18,9 @@ class MoveGenerator {
     private:
         void generatePawnPush(Board board,std::vector<Move> &moveVector);
         void generatePawnCaptures(Board board);
+
+        void generateKnightMoves(Board board, std::vector<Move> &moveVector);
+
         void generateRookMove(Board board);
 };
 

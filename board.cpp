@@ -40,6 +40,11 @@ void Board::initKnightMask()
 
 }
 
+BitBoard Board::getKnightMask(int square)
+{
+    return knightmask[square];
+}
+
 void Board::parseFen(std::string fen){
     int count = 0;
     int state = 0;

@@ -44,6 +44,7 @@ class Board {
         BitBoard knightmask[64];
 
         void initKnightMask();
+        BitBoard getKnightMask(int square);
 
 
         /*

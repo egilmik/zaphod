@@ -4,8 +4,8 @@
 std::vector<Move> MoveGenerator::generateMoves(Board &board)
 {
     std::vector<Move> moveVector;
-    //board.printBoard();
     generatePawnPush(board,moveVector);
+    generateKnightMoves(board, moveVector);
     return moveVector;
 }
 
@@ -62,6 +62,40 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
 
 void MoveGenerator::generatePawnCaptures(Board board)
 {
+}
+
+void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVector)
+{
+    BitBoard knights;
+
+    BitBoard allPieces = board.getBitboard(Board::All);
+    Board::BitBoardEnum movedPiece;    
+
+    if(board.getSideToMove() == board.White){
+        knights = board.getBitboard(Board::N);
+        movedPiece = Board::N;
+    } else {
+        knights = board.getBitboard(Board::n);
+        movedPiece = Board::n;
+    }
+
+    int fromSq = board.popLsb(knights);
+    while (fromSq != 0)
+    {
+        BitBoard knightMoves = board.getKnightMask(fromSq);
+
+        
+        int toSq = board.popLsb(knightMoves);
+        while(toSq != 0){
+            if(!board.checkBit(allPieces,toSq)){
+                Move move = {fromSq,toSq, movedPiece};
+                moveVector.push_back(move);
+            }
+            toSq = board.popLsb(knightMoves);
+        }
+        fromSq = board.popLsb(knights);
+    }
+
 }
 
 void MoveGenerator::generateRookMove(Board board)

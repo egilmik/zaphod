@@ -21,24 +21,19 @@ int main(int, char**) {
 
 
     auto start = std::chrono::high_resolution_clock::now();
-    int depth = 1;
+    int depth = 4;
     int nrOfNodes = Perft::perft(startingBoard,depth);
     std::cout << "Depth: " << depth << " - nr of nodes: " << nrOfNodes << std::endl;
     
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    std::cout << duration.count() << " ms" << std::endl;
+    int nps = nrOfNodes/(duration.count()/1000);
+    std::cout << duration.count() << " ms" << " NPS " << nps << std::endl;
     
+    /*
     for(int i = 0; i< 64; i++){
         BitBoard mask = startingBoard.knightmask[i];
         startingBoard.printBoard(mask,i);
     }
-    
-
-
-    
-    
-
-    
-    
+    */    
 }
