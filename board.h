@@ -73,6 +73,7 @@ class Board {
         
         
         BitBoard getBitboard(BitBoardEnum piece);
+        BitBoard getEnemyBoard();
         void changeSideToMove();
         BitBoardEnum getSideToMove();
 

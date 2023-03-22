@@ -7,6 +7,7 @@
 struct Move {
     int fromSq;
     int toSq;
+    bool capture;
     Board::BitBoardEnum piece;
 };
 
@@ -16,12 +17,12 @@ class MoveGenerator {
         std::vector<Move> generateMoves(Board &board);      
 
     private:
-        void generatePawnPush(Board board,std::vector<Move> &moveVector);
-        void generatePawnCaptures(Board board);
-
+        void generatePawnMoves(Board board,std::vector<Move> &moveVector);
         void generateKnightMoves(Board board, std::vector<Move> &moveVector);
-
-        void generateRookMove(Board board);
+        void generateRookMoves(Board board, std::vector<Move> &moveVector);
+        void generateBishopMoves(Board board, std::vector<Move> &moveVector);
+        void generateQueenMoves(Board board, std::vector<Move> &moveVector);
+        void generateKingMoves(Board board, std::vector<Move> &moveVector);
 };
 
 #endif

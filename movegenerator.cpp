@@ -4,12 +4,12 @@
 std::vector<Move> MoveGenerator::generateMoves(Board &board)
 {
     std::vector<Move> moveVector;
-    generatePawnPush(board,moveVector);
+    generatePawnMoves(board,moveVector);
     generateKnightMoves(board, moveVector);
     return moveVector;
 }
 
-void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
+void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector)
 {
     BitBoard pawns;
 
@@ -42,7 +42,7 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
         int toSq = fromSq+pawnIncrement;
 
         if(!board.checkBit(allPieces,toSq)){
-            Move move = {fromSq,toSq, movedPiece};
+            Move move = {fromSq,toSq, false, movedPiece};
             moveVector.push_back(move);
         }
         
@@ -52,28 +52,28 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
             toSq =fromSq+pawnDoubleIncrement;
 
             if(!board.checkBit(allPieces,toSq)){
-                Move move = {fromSq,toSq, movedPiece};
+                Move move = {fromSq,toSq, false, movedPiece};
                 moveVector.push_back(move);
             }
         }
         if(sideToMove == Board::White){
             if(board.checkBit(Board::BitBoardEnum::Black,fromSq+7)){
-                Move move = {fromSq,fromSq+7, movedPiece};
+                Move move = {fromSq,fromSq+7, true, movedPiece};
                 moveVector.push_back(move);
             }
             if(board.checkBit(Board::BitBoardEnum::Black, fromSq+9)){
-                Move move = {fromSq,fromSq+0, movedPiece};
+                Move move = {fromSq,fromSq+9, true, movedPiece};
                 moveVector.push_back(move);
             }
         }
 
         if(sideToMove == Board::Black){
             if(board.checkBit(Board::BitBoardEnum::White,fromSq+7)){
-                Move move = {fromSq,fromSq+7, movedPiece};
+                Move move = {fromSq,fromSq+7, true, movedPiece};
                 moveVector.push_back(move);
             }
             if(board.checkBit(Board::BitBoardEnum::White, fromSq+9)){
-                Move move = {fromSq,fromSq+0, movedPiece};
+                Move move = {fromSq,fromSq+9,true, movedPiece};
                 moveVector.push_back(move);
             }
         }
@@ -83,9 +83,6 @@ void MoveGenerator::generatePawnPush(Board board, std::vector<Move> &moveVector)
     }
 }
 
-void MoveGenerator::generatePawnCaptures(Board board)
-{
-}
 
 void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVector)
 {
@@ -93,8 +90,11 @@ void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVect
 
     BitBoard allPieces = board.getBitboard(Board::All);
     Board::BitBoardEnum movedPiece;    
+    Board::BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard enemyBoard = board.getEnemyBoard();
 
-    if(board.getSideToMove() == board.White){
+
+    if(sideToMove == board.White){
         knights = board.getBitboard(Board::N);
         movedPiece = Board::N;
     } else {
@@ -111,9 +111,17 @@ void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVect
         int toSq = board.popLsb(knightMoves);
         while(toSq != 0){
             if(!board.checkBit(allPieces,toSq)){
-                Move move = {fromSq,toSq, movedPiece};
+                Move move = {fromSq,toSq, false, movedPiece};
                 moveVector.push_back(move);
             }
+
+            
+            if(board.checkBit(enemyBoard,toSq)){
+                Move move = {fromSq,toSq, true, movedPiece};
+                moveVector.push_back(move);
+            }
+        
+
             toSq = board.popLsb(knightMoves);
         }
         fromSq = board.popLsb(knights);
@@ -121,7 +129,20 @@ void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVect
 
 }
 
-void MoveGenerator::generateRookMove(Board board)
+void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector)
 {
 }
+
+void MoveGenerator::generateBishopMoves(Board board, std::vector<Move> &moveVector)
+{
+}
+
+void MoveGenerator::generateQueenMoves(Board board, std::vector<Move> &moveVector)
+{
+}
+
+void MoveGenerator::generateKingMoves(Board board, std::vector<Move> &moveVector)
+{
+}
+
 

@@ -77,6 +77,14 @@ BitBoard Board::getBitboard(BitBoardEnum piece)
     return bitBoardMap.at(piece);
 }
 
+BitBoard Board::getEnemyBoard()
+{
+    if(sideToMove == White){
+        return bitBoardMap.at(Black);
+    }
+    return bitBoardMap.at(White);
+}
+
 void Board::changeSideToMove()
 {
     if(sideToMove == BitBoardEnum::White){
