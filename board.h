@@ -14,23 +14,10 @@ class Board {
 
         enum BitBoardEnum {All,White,Black,R,r,N,n,B,b,Q,q,K,k,P,p};
 
-        
-        /*static constexpr BitBoard LightSquares  = 0xAA55AA55AA55AA55ULL;
-        static constexpr BitBoard DarkSquares   = ~(0xAA55AA55AA55AA55ULL);*/
-
         static constexpr BitBoard FileHMask = 0b0000000100000001000000010000000100000001000000010000000100000001;
         static constexpr BitBoard FileGHMask = 0b0000001100000011000000110000001100000011000000110000001100000011;
         static constexpr BitBoard FileABMask = 0b1100000011000000110000001100000011000000110000001100000011000000;
         static constexpr BitBoard FileAMask = 0b1000000010000000100000001000000010000000100000001000000010000000;
-        /*
-        static constexpr BitBoard FileBMask = FileAMask << 1;
-        static constexpr BitBoard FileCMask = FileAMask << 2;
-        static constexpr BitBoard FileDMask = FileAMask << 3;
-        static constexpr BitBoard FileEMask = FileAMask << 4;
-        static constexpr BitBoard FileFMask = FileAMask << 5;
-        static constexpr BitBoard FileGMask = FileAMask << 6;
-        static constexpr BitBoard FileHMask = FileAMask << 7;
-        */
 
         static constexpr BitBoard Rank1Mask = 0xFF;
         static constexpr BitBoard Rank2Mask = Rank1Mask << (8 * 1);
@@ -46,14 +33,6 @@ class Board {
         void initKnightMask();
         BitBoard getKnightMask(int square);
 
-
-        /*
-        static constexpr Bitboard NotFileAMask  = 18374403900871474942ULL;
-        static constexpr Bitboard NotFileHMask  = 9187201950435737471ULL;
-        static constexpr Bitboard NotFileHG_Mask = 4557430888798830399ULL;
-        static constexpr Bitboard NotFileAB_Mask = 18229723555195321596ULL;
-        */
-
         void parseFen(std::string fen);
         void printBoard();
         void printBoard(BitBoard board, int origin);
@@ -65,20 +44,10 @@ class Board {
         void makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture);
         void revertLastMove();
 
-        
-
-        
-
-        //enum side {White,Black};
-        
-        
         BitBoard getBitboard(BitBoardEnum piece);
         BitBoard getEnemyBoard();
         void changeSideToMove();
         BitBoardEnum getSideToMove();
-
-
-
 
     private:
         void parseFenPosition(char value, int &bitCout);
@@ -142,18 +111,7 @@ class Board {
          8  9 10 11 12 13 14 15
          0  1  2  3  4  5  6  7
         */
-       /*
-        a-file             0x0101010101010101
-        h-file             0x8080808080808080
-        1st rank           0x00000000000000FF
-        8th rank           0xFF00000000000000
-        a1-h8 diagonal     0x8040201008040201
-        h1-a8 antidiagonal 0x0102040810204080
-        light squares      0x55AA55AA55AA55AA
-        dark squares       0xAA55AA55AA55AA55
-       */
-
-
+    
 };
 
 
