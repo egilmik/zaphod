@@ -16,6 +16,7 @@ void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector
     BitBoard allPieces = board.getBitboard(Board::All);
     Board::BitBoardEnum movedPiece;
     Board::BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard enemyBoard = board.getEnemyBoard();
 
     if(sideToMove == board.White){
         pawns = board.getBitboard(Board::P);
@@ -27,10 +28,16 @@ void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector
 
     int pawnIncrement = 8;
     int pawnDoubleIncrement = 16;
+    int pawnCaptureLeftIncrement = 7;
+    int pawnCaptureRightIncrement = 9;
+    BitBoard rank2or7 = board.Rank2Mask;
 
     if(sideToMove == board.Black){
         pawnDoubleIncrement = -16;
         pawnIncrement = -8;
+        pawnCaptureLeftIncrement = -7;
+        pawnCaptureRightIncrement = -9;
+        rank2or7 = board.Rank7Mask;
     }
     
     
@@ -46,8 +53,7 @@ void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector
             moveVector.push_back(move);
         }
         
-        if((fromSq > 7 && fromSq < 16) || 
-            (fromSq > 47 && fromSq< 56)){
+        if(board.checkBit(rank2or7,fromSq)){
             //Two squares forward from starting position
             toSq =fromSq+pawnDoubleIncrement;
 
@@ -56,28 +62,19 @@ void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector
                 moveVector.push_back(move);
             }
         }
-        if(sideToMove == Board::White){
-            if(board.checkBit(Board::BitBoardEnum::Black,fromSq+7)){
-                Move move = {fromSq,fromSq+7, true, movedPiece};
-                moveVector.push_back(move);
-            }
-            if(board.checkBit(Board::BitBoardEnum::Black, fromSq+9)){
-                Move move = {fromSq,fromSq+9, true, movedPiece};
-                moveVector.push_back(move);
-            }
+
+        //Capture
+        if(board.checkBit(enemyBoard,fromSq+pawnCaptureLeftIncrement)){
+            Move move = {fromSq,fromSq+pawnCaptureLeftIncrement, true, movedPiece};
+            moveVector.push_back(move);
+        }
+        if(board.checkBit(enemyBoard,fromSq+pawnCaptureRightIncrement)){
+            Move move = {fromSq,fromSq+pawnCaptureRightIncrement, true, movedPiece};
+            moveVector.push_back(move);
         }
 
-        if(sideToMove == Board::Black){
-            if(board.checkBit(Board::BitBoardEnum::White,fromSq+7)){
-                Move move = {fromSq,fromSq+7, true, movedPiece};
-                moveVector.push_back(move);
-            }
-            if(board.checkBit(Board::BitBoardEnum::White, fromSq+9)){
-                Move move = {fromSq,fromSq+9,true, movedPiece};
-                moveVector.push_back(move);
-            }
-        }
-        
+        // En passant
+
         fromSq = board.popLsb(pawns);
 
     }

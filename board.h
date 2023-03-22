@@ -32,14 +32,14 @@ class Board {
         static constexpr BitBoard FileHMask = FileAMask << 7;
         */
 
-        static constexpr BitBoard Rank8Mask = 0xFF;
-        static constexpr BitBoard Rank7Mask = Rank8Mask << (8 * 1);
-        static constexpr BitBoard Rank6Mask = Rank8Mask << (8 * 2);
-        static constexpr BitBoard Rank5Mask = Rank8Mask << (8 * 3);
-        static constexpr BitBoard Rank4Mask = Rank8Mask << (8 * 4);
-        static constexpr BitBoard Rank3Mask = Rank8Mask << (8 * 5);
-        static constexpr BitBoard Rank2Mask = Rank8Mask << (8 * 6);
-        static constexpr BitBoard Rank1Mask = Rank8Mask << (8 * 7);
+        static constexpr BitBoard Rank1Mask = 0xFF;
+        static constexpr BitBoard Rank2Mask = Rank1Mask << (8 * 1);
+        static constexpr BitBoard Rank3Mask = Rank1Mask << (8 * 2);
+        static constexpr BitBoard Rank4Mask = Rank1Mask << (8 * 3);
+        static constexpr BitBoard Rank5Mask = Rank1Mask << (8 * 4);
+        static constexpr BitBoard Rank6Mask = Rank1Mask << (8 * 5);
+        static constexpr BitBoard Rank7Mask = Rank1Mask << (8 * 6);
+        static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
 
         BitBoard knightmask[64];
 
