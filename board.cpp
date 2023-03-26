@@ -146,6 +146,11 @@ void Board::parseFenPosition(char value, int &count)
         if (fenToEnumBoardMap.find(value) != fenToEnumBoardMap.end()){
             setBit(fenToEnumBoardMap.at(value),true,bitNr);
             setBit(BitBoardEnum::All, true, bitNr);
+            if(islower(value)){
+                setBit(BitBoardEnum::Black, true, bitNr);
+            } else {
+                setBit(BitBoardEnum::White,true, bitNr);
+            }
             count++;
         } else if(value == '/'){
 
@@ -168,6 +173,7 @@ void Board::setBit(BitBoard &board, bool highLow, int bitNr)
     board |= 1ULL << bitNr;
 }
 
+// TODO Possible performance hog!
 void Board::setBit(BitBoardEnum piece, bool highLow, int bitNr)
 {
     std::map<BitBoardEnum,BitBoard>::iterator itr;
@@ -217,6 +223,7 @@ void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
     setBit(piece, false, fromSq);
     setBit(piece,true, toSq);
     if(sideToMove == BitBoardEnum::White){
+        // TODO Possible bug in using setbit for popbit
         setBit(BitBoardEnum::White,false,fromSq);
         setBit(BitBoardEnum::White,true,toSq);
     } else {
