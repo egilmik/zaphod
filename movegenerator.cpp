@@ -144,6 +144,7 @@ void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector
         movedPiece = Board::r;
     }
 
+    // TODO Attack for rooks
     int fromSq = 0;
     while(rooks != 0){
         fromSq = board.popLsb(rooks);
@@ -203,6 +204,46 @@ BitBoard MoveGenerator::westOccludedMoves(BitBoard pieces, BitBoard empty)
     empty &= ~Board::FileHMask;
     while(pieces){
         flood |= pieces = (pieces >> 1) & empty;
+    }
+    return flood;
+}
+
+BitBoard MoveGenerator::northEastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces = (pieces >> 9) & empty;
+    }
+    return flood;
+}
+
+BitBoard MoveGenerator::northWestccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileHMask;
+    while(pieces){
+        flood |= pieces = (pieces >> 7) & empty;
+    }
+    return flood;
+}
+
+BitBoard MoveGenerator::southEastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces = (pieces << 9) & empty;
+    }
+    return flood;
+}
+
+BitBoard MoveGenerator::southWestOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces = (pieces << 9) & empty;
     }
     return flood;
 }

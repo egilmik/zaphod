@@ -2,9 +2,13 @@
 #include "board.h"
 #include "movegenerator.h"
 #include "perft.h"
+#include "test.h"
 #include <chrono>
 
 int main(int, char**) {
+
+    Test test;
+    test.runAllTest();
 
     //Perft results and FEN, https://www.chessprogramming.org/Perft_Results
     Board startingBoard;
@@ -21,14 +25,12 @@ int main(int, char**) {
     //Expected at depth 1 - 16 nodes, no capture, castling is the 16th node
     std::string singleWhiteRookFen = "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1";
     Board singleWhiteRook;
-
-
     singleWhiteRook.parseFen(singleWhiteRookFen);
-    singleWhiteRook.printBoard();
 
+/*
     auto start = std::chrono::high_resolution_clock::now();
-    int depth = 1;
-    int nrOfNodes = Perft::perft(singleWhiteRook,depth);
+    int depth = 4;
+    int nrOfNodes = Perft::perft(startingBoard,depth);
     std::cout << "Depth: " << depth << " - nr of nodes: " << nrOfNodes << std::endl;
     
     auto stop = std::chrono::high_resolution_clock::now();
@@ -36,7 +38,8 @@ int main(int, char**) {
     int nps = (double)nrOfNodes/((double)duration.count()/(double)1000);
     std::cout << duration.count() << " ms" << " NPS " << nps << std::endl;
     
-
+*/
+    
 /*    
     //Array test
 

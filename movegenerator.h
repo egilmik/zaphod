@@ -28,6 +28,11 @@ class MoveGenerator {
         BitBoard northOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard eastOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard westOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard northEastOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard northWestccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard southEastOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard southWestOccludedMoves(BitBoard pieces, BitBoard empty);
+
 };
 
 #endif
