@@ -29,13 +29,27 @@ class Board {
         static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
 
         BitBoard knightmask[64];
+        BitBoard rayAttackNorth[64];
+        BitBoard rayAttackSouth[64];
+        BitBoard rayAttackNW[64];
+        BitBoard rayAttackNE[64];
+        BitBoard rayAttackWest[64];
+        BitBoard rayAttackEast[64];
+        BitBoard rayAttackSE[64];
+        BitBoard rayAttackSW[64];
 
+        void initRayAttacks();
         void initKnightMask();
         BitBoard getKnightMask(int square);
+        BitBoard getRankMask(int square);
+        BitBoard getLineMask(int square);
 
         void parseFen(std::string fen);
         void printBoard();
+        void printBoard(BitBoard board);
         void printBoard(BitBoard board, int origin);
+        void popBit(BitBoard &board, int bitNr);
+        void setBit(BitBoard &board, int bitNr);
         void setBit(BitBoard &board, bool highLow, int bitNr);
         void setBit(BitBoardEnum piece, bool highLow, int bitNr);
         bool checkBit(BitBoard board, int bitNr);

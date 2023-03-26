@@ -4,6 +4,27 @@
 
 Board::Board(){
     initKnightMask();
+    initRayAttacks();
+}
+
+void Board::initRayAttacks()
+{
+    BitBoard north = FileHMask;
+    BitBoard south = FileHMask;
+    
+
+    for(int i = 0; i < 64; i++){
+        rayAttackNorth[i] = north <<=1;
+    }
+
+    for(int i = 63; i >= 0; i--){
+        rayAttackSouth[i] = south >>=1;
+    }
+
+    for(int i = 0; i< 64; i++){
+        BitBoard one = 1;
+        rayAttackEast[i] = ((one << (i|7)));//- (one << i))); 
+    }
 }
 
 void Board::initKnightMask()
@@ -43,6 +64,18 @@ void Board::initKnightMask()
 BitBoard Board::getKnightMask(int square)
 {
     return knightmask[square];
+}
+
+BitBoard Board::getRankMask(int square)
+{
+    BitBoard mask = 0xff;
+    return mask << (square & 56);
+}
+
+BitBoard Board::getLineMask(int square)
+{
+    BitBoard mask = 0x0101010101010101;
+    return mask << (square & 7);
 }
 
 void Board::parseFen(std::string fen){
@@ -118,6 +151,16 @@ void Board::parseFenPosition(char value, int &count)
 
         }
     }
+}
+
+void Board::popBit(BitBoard &board, int bitNr)
+{
+    board &= ~(1ULL << bitNr);
+}
+
+void Board::setBit(BitBoard &board, int bitNr)
+{
+    board |= 1ULL << bitNr;
 }
 
 void Board::setBit(BitBoard &board, bool highLow, int bitNr)
@@ -236,15 +279,34 @@ void Board::printBoard(){
     }
 
     for(int i = 0;i < 64; i++){
-        if(i%8== 0){
+        if((i)%8== 0){
             std::cout << std::endl;
         }
         std::cout << printBoard[i] << " ";
     }
 
     std::cout << std::endl;
+    std::cout << std::endl;
 
     
+}
+
+void Board::printBoard(BitBoard board)
+{
+    for(int i = 0; i< 64; i++){
+        if(i%8== 0){
+            std::cout << std::endl;
+        }
+        if(checkBit(board,i)){
+            std::cout << "X ";
+        } else {
+            std::cout << "* ";
+        }
+        
+    }
+    std::cout << std::endl;
+    std::cout << std::endl;
+
 }
 
 void Board::printBoard(BitBoard board, int origin)
@@ -261,12 +323,13 @@ void Board::printBoard(BitBoard board, int origin)
         }
     }
 
-    for(int i = 0;i < 64; i++){
-        if(i%8== 0){
+    for(int i = 63;i >= 0; i--){
+        if((i+1)%8== 0){
             std::cout << std::endl;
         }
         std::cout << printBoard[i] << " ";
     }
 
+    std::cout << std::endl;
     std::cout << std::endl;
 }

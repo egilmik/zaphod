@@ -6,6 +6,7 @@ std::vector<Move> MoveGenerator::generateMoves(Board &board)
     std::vector<Move> moveVector;
     generatePawnMoves(board,moveVector);
     generateKnightMoves(board, moveVector);
+    generateRookMoves(board,moveVector);
     return moveVector;
 }
 
@@ -99,6 +100,7 @@ void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVect
         movedPiece = Board::n;
     }
 
+    // TODO, this might cause a bug when the knight is at position 0
     int fromSq = board.popLsb(knights);
     while (fromSq != 0)
     {
@@ -128,6 +130,81 @@ void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVect
 
 void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector)
 {
+    BitBoard allPieces = board.getBitboard(Board::All);
+    Board::BitBoardEnum movedPiece;
+    Board::BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard enemyBoard = board.getEnemyBoard();
+    BitBoard rooks;
+
+    if(sideToMove == board.White){
+        rooks = board.getBitboard(Board::R);
+        movedPiece = Board::R;
+    } else {
+        rooks = board.getBitboard(Board::r);
+        movedPiece = Board::r;
+    }
+
+    int fromSq = 0;
+    while(rooks != 0){
+        fromSq = board.popLsb(rooks);
+        BitBoard rookBoard = 0;
+        board.setBit(rookBoard,fromSq);
+
+        BitBoard moves = southOccludedMoves(rookBoard, ~allPieces);
+        moves |= northOccludedMoves(rookBoard, ~allPieces);
+        board.popBit(moves,fromSq);
+
+        int toSq = 0;
+        
+        while(moves != 0){
+            toSq = board.popLsb(moves);
+            Move move = {fromSq,toSq, true, movedPiece};
+            moveVector.push_back(move);            
+        }
+        
+    }
+}
+
+BitBoard MoveGenerator::southAttacks(BitBoard rooks, BitBoard empty) {
+   BitBoard flood = rooks;
+   flood |= rooks = (rooks >> 8) & empty;
+   flood |= rooks = (rooks >> 8) & empty;
+   flood |= rooks = (rooks >> 8) & empty;
+   flood |= rooks = (rooks >> 8) & empty;
+   flood |= rooks = (rooks >> 8) & empty;
+   flood |= (rooks >> 8) & empty;
+   return flood >> 8;
+}
+
+BitBoard MoveGenerator::northAttacks(BitBoard rooks, BitBoard empty) {
+   BitBoard flood = rooks;
+   flood |= rooks = (rooks << 8) & empty;
+   flood |= rooks = (rooks << 8) & empty;
+   flood |= rooks = (rooks << 8) & empty;
+   flood |= rooks = (rooks << 8) & empty;
+   flood |= rooks = (rooks << 8) & empty;
+   flood |= (rooks << 8) & empty;
+   return flood << 8;
+}
+
+BitBoard MoveGenerator::southOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+   while (pieces) {
+      flood |= pieces;
+      pieces = (pieces >> 8) & empty;
+   }
+   return flood;
+}
+
+BitBoard MoveGenerator::northOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+   while (pieces) {
+      flood |= pieces;
+      pieces = (pieces << 8) & empty;
+   }
+   return flood;
 }
 
 void MoveGenerator::generateBishopMoves(Board board, std::vector<Move> &moveVector)
