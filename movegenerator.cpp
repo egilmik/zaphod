@@ -152,6 +152,8 @@ void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector
 
         BitBoard moves = southOccludedMoves(rookBoard, ~allPieces);
         moves |= northOccludedMoves(rookBoard, ~allPieces);
+        moves |= westOccludedMoves(rookBoard, ~allPieces);
+        moves |= eastOccludedMoves(rookBoard, ~allPieces);
         board.popBit(moves,fromSq);
 
         int toSq = 0;
@@ -163,28 +165,6 @@ void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector
         }
         
     }
-}
-
-BitBoard MoveGenerator::southAttacks(BitBoard rooks, BitBoard empty) {
-   BitBoard flood = rooks;
-   flood |= rooks = (rooks >> 8) & empty;
-   flood |= rooks = (rooks >> 8) & empty;
-   flood |= rooks = (rooks >> 8) & empty;
-   flood |= rooks = (rooks >> 8) & empty;
-   flood |= rooks = (rooks >> 8) & empty;
-   flood |= (rooks >> 8) & empty;
-   return flood >> 8;
-}
-
-BitBoard MoveGenerator::northAttacks(BitBoard rooks, BitBoard empty) {
-   BitBoard flood = rooks;
-   flood |= rooks = (rooks << 8) & empty;
-   flood |= rooks = (rooks << 8) & empty;
-   flood |= rooks = (rooks << 8) & empty;
-   flood |= rooks = (rooks << 8) & empty;
-   flood |= rooks = (rooks << 8) & empty;
-   flood |= (rooks << 8) & empty;
-   return flood << 8;
 }
 
 BitBoard MoveGenerator::southOccludedMoves(BitBoard pieces, BitBoard empty)
@@ -205,6 +185,26 @@ BitBoard MoveGenerator::northOccludedMoves(BitBoard pieces, BitBoard empty)
       pieces = (pieces << 8) & empty;
    }
    return flood;
+}
+
+BitBoard MoveGenerator::eastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces = (pieces << 1) & empty;
+    }
+    return flood;
+}
+
+BitBoard MoveGenerator::westOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+    empty &= ~Board::FileHMask;
+    while(pieces){
+        flood |= pieces = (pieces >> 1) & empty;
+    }
+    return flood;
 }
 
 void MoveGenerator::generateBishopMoves(Board board, std::vector<Move> &moveVector)

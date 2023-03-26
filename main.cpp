@@ -18,13 +18,16 @@ int main(int, char**) {
     std::string test1Fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
     test1.parseFen(test1Fen);
     
+    //Expected at depth 1 - 16 nodes, no capture, castling is the 16th node
     std::string singleWhiteRookFen = "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1";
     Board singleWhiteRook;
+
+
     singleWhiteRook.parseFen(singleWhiteRookFen);
     singleWhiteRook.printBoard();
 
     auto start = std::chrono::high_resolution_clock::now();
-    int depth = 2;
+    int depth = 1;
     int nrOfNodes = Perft::perft(singleWhiteRook,depth);
     std::cout << "Depth: " << depth << " - nr of nodes: " << nrOfNodes << std::endl;
     

@@ -24,10 +24,10 @@ class MoveGenerator {
         void generateQueenMoves(Board board, std::vector<Move> &moveVector);
         void generateKingMoves(Board board, std::vector<Move> &moveVector);
 
-        BitBoard southAttacks(BitBoard rooks, BitBoard empty);
-        BitBoard northAttacks(BitBoard rooks, BitBoard empty);
         BitBoard southOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard northOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard eastOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard westOccludedMoves(BitBoard pieces, BitBoard empty);
 };
 
 #endif
