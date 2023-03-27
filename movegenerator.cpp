@@ -8,6 +8,8 @@ std::vector<Move> MoveGenerator::generateMoves(Board &board)
     generateKnightMoves(board, moveVector);
     generateRookMoves(board,moveVector);
     generateKingMoves(board,moveVector);
+    generateBishopMoves(board,moveVector);
+    generateQueenMoves(board, moveVector);
     return moveVector;
 }
 
@@ -124,7 +126,6 @@ void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVect
         }
         fromSq = board.popLsb(knights);
     }
-
 }
 
 void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector)
@@ -176,10 +177,95 @@ void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector
 
 void MoveGenerator::generateBishopMoves(Board board, std::vector<Move> &moveVector)
 {
+    BitBoard allPieces = board.getBitboard(Board::All);
+    Board::BitBoardEnum movedPiece;
+    Board::BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard enemyBoard = board.getEnemyBoard();
+    BitBoard ownBoard = board.getOwnBoard();
+    BitBoard bishops;
+
+    if(sideToMove == board.White){
+        bishops = board.getBitboard(Board::B);
+        movedPiece = Board::b;
+    } else {
+        bishops = board.getBitboard(Board::b);
+        movedPiece = Board::b;
+    }
+
+    int fromSq = 0;
+    while(bishops != 0){
+        fromSq = board.popLsb(bishops);
+        BitBoard bishopsBoard = 0;
+        board.setBit(bishopsBoard,fromSq);
+
+        BitBoard moves = northEastOccludedMoves(bishopsBoard, ~allPieces);
+        moves |= northWestccludedMoves(bishopsBoard, ~allPieces);
+        moves |= southEastOccludedMoves(bishopsBoard, ~allPieces);
+        moves |= southWestOccludedMoves(bishopsBoard, ~allPieces);
+
+        int toSq = 0;
+        
+        while(moves != 0){
+            toSq = board.popLsb(moves);
+            if(board.checkBit(~allPieces,toSq)){
+                Move move = {fromSq,toSq, false, movedPiece};
+                moveVector.push_back(move);            
+            } else if(board.checkBit(enemyBoard,toSq)){
+                Move move = {fromSq,toSq, true, movedPiece};
+                moveVector.push_back(move);            
+            }
+        }
+        
+    }
 }
 
 void MoveGenerator::generateQueenMoves(Board board, std::vector<Move> &moveVector)
 {
+    BitBoard allPieces = board.getBitboard(Board::All);
+    Board::BitBoardEnum movedPiece;
+    Board::BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard enemyBoard = board.getEnemyBoard();
+    BitBoard ownBoard = board.getOwnBoard();
+    BitBoard queens;
+
+    if(sideToMove == board.White){
+        queens = board.getBitboard(Board::Q);
+        movedPiece = Board::Q;
+    } else {
+        queens = board.getBitboard(Board::q);
+        movedPiece = Board::q;
+    }
+
+    // TODO Attack for rooks
+    int fromSq = 0;
+    while(queens != 0){
+        fromSq = board.popLsb(queens);
+        BitBoard queenBoard = 0;
+        board.setBit(queenBoard,fromSq);
+
+        BitBoard moves = southOccludedMoves(queenBoard, ~allPieces);
+        moves |= northOccludedMoves(queenBoard, ~allPieces);
+        moves |= westOccludedMoves(queenBoard, ~allPieces);
+        moves |= eastOccludedMoves(queenBoard, ~allPieces);
+        moves |= northEastOccludedMoves(queenBoard, ~allPieces);
+        moves |= northWestccludedMoves(queenBoard, ~allPieces);
+        moves |= southEastOccludedMoves(queenBoard, ~allPieces);
+        moves |= southWestOccludedMoves(queenBoard, ~allPieces);
+
+        int toSq = 0;
+        
+        while(moves != 0){
+            toSq = board.popLsb(moves);
+            if(board.checkBit(~allPieces,toSq)){
+                Move move = {fromSq,toSq, false, movedPiece};
+                moveVector.push_back(move);            
+            } else if(board.checkBit(enemyBoard,toSq)){
+                Move move = {fromSq,toSq, true, movedPiece};
+                moveVector.push_back(move);            
+            }
+        }
+        
+    }
 }
 
 void MoveGenerator::generateKingMoves(Board board, std::vector<Move> &moveVector)
