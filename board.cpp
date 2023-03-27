@@ -251,8 +251,11 @@ void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
     PreviousbitBoardMap = copy;
     sideToMoveCopy = sideToMove;
 
-    if(!checkBit(BitBoardEnum::All,fromSq) || !checkBit(piece, fromSq)){
-        std::cout << "Piece does not exist in makeMove " << piece << " from square " << fromSq << std::endl;
+    bool inAllBoard = checkBit(BitBoardEnum::All,fromSq);
+    bool inPieceSpecificBoard = checkBit(piece,fromSq);
+
+    if(!inAllBoard || !inPieceSpecificBoard){
+        std::cout << "Error in makeMove() " << piece << " from " << fromSq << " to " << toSq << " in all board:" << inAllBoard << " in piece specific:" << inPieceSpecificBoard  <<  std::endl;
         return;
     }
 
@@ -338,17 +341,25 @@ void Board::printBoard(){
 
 void Board::printBoard(BitBoard board)
 {
+
+    char printBoard[64];
+
     for(int i = 0; i< 64; i++){
-        if(i%8== 0){
-            std::cout << std::endl;
-        }
         if(checkBit(board,i)){
-            std::cout << "X ";
+            printBoard[i] = 'X';
         } else {
-            std::cout << "* ";
+            printBoard[i] = '*';
         }
         
     }
+    
+    for(int i = 63;i >= 0; i--){
+        if((i+1)%8== 0){
+            std::cout << std::endl;
+        }
+        std::cout << printBoard[i] << " ";
+    }
+
     std::cout << std::endl;
     std::cout << std::endl;
 

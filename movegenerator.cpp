@@ -145,7 +145,6 @@ void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector
         movedPiece = Board::r;
     }
 
-    // TODO Attack for rooks
     int fromSq = 0;
     while(rooks != 0){
         fromSq = board.popLsb(rooks);
@@ -186,7 +185,7 @@ void MoveGenerator::generateBishopMoves(Board board, std::vector<Move> &moveVect
 
     if(sideToMove == board.White){
         bishops = board.getBitboard(Board::B);
-        movedPiece = Board::b;
+        movedPiece = Board::B;
     } else {
         bishops = board.getBitboard(Board::b);
         movedPiece = Board::b;
@@ -358,7 +357,8 @@ BitBoard MoveGenerator::northEastOccludedMoves(BitBoard pieces, BitBoard empty)
     BitBoard flood = 0;
     empty &= ~Board::FileAMask;
     while(pieces){
-        flood |= pieces = (pieces >> 9) & empty;
+        flood |= pieces;
+        pieces = (pieces >> 9) & empty;
     }
     return (flood >> 9) & ~Board::FileAMask;
 }
@@ -369,7 +369,8 @@ BitBoard MoveGenerator::northWestccludedMoves(BitBoard pieces, BitBoard empty)
     BitBoard flood = 0;
     empty &= ~Board::FileHMask;
     while(pieces){
-        flood |= pieces = (pieces >> 7) & empty;
+        flood |= pieces;
+        pieces = (pieces >> 7) & empty;
     }
     return (flood >> 7) & ~Board::FileHMask;
 }
@@ -380,9 +381,10 @@ BitBoard MoveGenerator::southEastOccludedMoves(BitBoard pieces, BitBoard empty)
     BitBoard flood = 0;
     empty &= ~Board::FileAMask;
     while(pieces){
-        flood |= pieces = (pieces << 9) & empty;
+        flood |= pieces;
+        pieces = (pieces << 7) & empty;
     }
-    return (flood << 9) & ~Board::FileAMask;
+    return (flood << 7) & ~Board::FileAMask;
 }
 // TODO wrong bit shift?
 BitBoard MoveGenerator::southWestOccludedMoves(BitBoard pieces, BitBoard empty)
@@ -390,7 +392,8 @@ BitBoard MoveGenerator::southWestOccludedMoves(BitBoard pieces, BitBoard empty)
     BitBoard flood = 0;
     empty &= ~Board::FileAMask;
     while(pieces){
-        flood |= pieces = (pieces << 9) & empty;
+        flood |= pieces;
+        pieces = (pieces << 9) & empty;
     }
     return (flood << 9) & ~Board::FileAMask;
 }
