@@ -9,6 +9,7 @@ void Test::runAllTest()
     std::vector<TestDefinition> testVector;
     testVector.push_back({1,13,"Basic pawn moves","4k3/8/8/8/8/5r2/PPPPP3/2K5 w - - 0 1"});
     testVector.push_back({4,197281,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"});
+    testVector.push_back({2,239,"Basic rook moves", "4k3/8/8/2R2r2/8/8/8/2K5 w - - 0 1"});
 
     for(TestDefinition def: testVector){
         TestResult result = standardTest(def);

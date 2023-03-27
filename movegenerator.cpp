@@ -7,6 +7,7 @@ std::vector<Move> MoveGenerator::generateMoves(Board &board)
     generatePawnMoves(board,moveVector);
     generateKnightMoves(board, moveVector);
     generateRookMoves(board,moveVector);
+    generateKingMoves(board,moveVector);
     return moveVector;
 }
 
@@ -44,9 +45,7 @@ void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector
     
     int fromSq = board.popLsb(pawns);
     while (fromSq != 0)
-    {
-
-        
+    {        
         int toSq = fromSq+pawnIncrement;
 
         if(!board.checkBit(allPieces,toSq)){
@@ -134,6 +133,7 @@ void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector
     Board::BitBoardEnum movedPiece;
     Board::BitBoardEnum sideToMove = board.getSideToMove();
     BitBoard enemyBoard = board.getEnemyBoard();
+    BitBoard ownBoard = board.getOwnBoard();
     BitBoard rooks;
 
     if(sideToMove == board.White){
@@ -155,97 +155,23 @@ void MoveGenerator::generateRookMoves(Board board, std::vector<Move> &moveVector
         moves |= northOccludedMoves(rookBoard, ~allPieces);
         moves |= westOccludedMoves(rookBoard, ~allPieces);
         moves |= eastOccludedMoves(rookBoard, ~allPieces);
-        board.popBit(moves,fromSq);
 
         int toSq = 0;
         
         while(moves != 0){
             toSq = board.popLsb(moves);
-            Move move = {fromSq,toSq, true, movedPiece};
-            moveVector.push_back(move);            
+            if(board.checkBit(~allPieces,toSq)){
+                Move move = {fromSq,toSq, false, movedPiece};
+                moveVector.push_back(move);            
+            } else if(board.checkBit(enemyBoard,toSq)){
+                Move move = {fromSq,toSq, true, movedPiece};
+                moveVector.push_back(move);            
+            }
+
+            
         }
         
     }
-}
-
-BitBoard MoveGenerator::southOccludedMoves(BitBoard pieces, BitBoard empty)
-{
-   BitBoard flood = 0;
-   while (pieces) {
-      flood |= pieces;
-      pieces = (pieces >> 8) & empty;
-   }
-   return flood;
-}
-
-BitBoard MoveGenerator::northOccludedMoves(BitBoard pieces, BitBoard empty)
-{
-   BitBoard flood = 0;
-   while (pieces) {
-      flood |= pieces;
-      pieces = (pieces << 8) & empty;
-   }
-   return flood;
-}
-
-BitBoard MoveGenerator::eastOccludedMoves(BitBoard pieces, BitBoard empty)
-{
-    BitBoard flood = 0;
-    empty &= ~Board::FileAMask;
-    while(pieces){
-        flood |= pieces = (pieces << 1) & empty;
-    }
-    return flood;
-}
-
-BitBoard MoveGenerator::westOccludedMoves(BitBoard pieces, BitBoard empty)
-{
-   BitBoard flood = 0;
-    empty &= ~Board::FileHMask;
-    while(pieces){
-        flood |= pieces = (pieces >> 1) & empty;
-    }
-    return flood;
-}
-
-BitBoard MoveGenerator::northEastOccludedMoves(BitBoard pieces, BitBoard empty)
-{
-    BitBoard flood = 0;
-    empty &= ~Board::FileAMask;
-    while(pieces){
-        flood |= pieces = (pieces >> 9) & empty;
-    }
-    return flood;
-}
-
-BitBoard MoveGenerator::northWestccludedMoves(BitBoard pieces, BitBoard empty)
-{
-    BitBoard flood = 0;
-    empty &= ~Board::FileHMask;
-    while(pieces){
-        flood |= pieces = (pieces >> 7) & empty;
-    }
-    return flood;
-}
-
-BitBoard MoveGenerator::southEastOccludedMoves(BitBoard pieces, BitBoard empty)
-{
-    BitBoard flood = 0;
-    empty &= ~Board::FileAMask;
-    while(pieces){
-        flood |= pieces = (pieces << 9) & empty;
-    }
-    return flood;
-}
-
-BitBoard MoveGenerator::southWestOccludedMoves(BitBoard pieces, BitBoard empty)
-{
-    BitBoard flood = 0;
-    empty &= ~Board::FileAMask;
-    while(pieces){
-        flood |= pieces = (pieces << 9) & empty;
-    }
-    return flood;
 }
 
 void MoveGenerator::generateBishopMoves(Board board, std::vector<Move> &moveVector)
@@ -258,6 +184,127 @@ void MoveGenerator::generateQueenMoves(Board board, std::vector<Move> &moveVecto
 
 void MoveGenerator::generateKingMoves(Board board, std::vector<Move> &moveVector)
 {
+    BitBoard king;
+
+    BitBoard allPieces = board.getBitboard(Board::All);
+    Board::BitBoardEnum movedPiece;    
+    Board::BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard enemyBoard = board.getEnemyBoard();
+
+
+    if(sideToMove == board.White){
+        king = board.getBitboard(Board::K);
+        movedPiece = Board::K;
+    } else {
+        king = board.getBitboard(Board::k);
+        movedPiece = Board::k;
+    }
+
+    int fromSq = board.popLsb(king);
+    BitBoard kingMove = board.getKingMask(fromSq);
+
+    
+    //TODO Might cause bug when king or tosq is 0?
+    int toSq = board.popLsb(kingMove);
+    while(toSq != 0){
+        if(!board.checkBit(allPieces,toSq)){
+            Move move = {fromSq,toSq, false, movedPiece};
+            moveVector.push_back(move);
+        }
+            
+        if(board.checkBit(enemyBoard,toSq)){
+            Move move = {fromSq,toSq, true, movedPiece};
+            moveVector.push_back(move);
+        }
+        
+
+        toSq = board.popLsb(kingMove);
+    }
+    
+
 }
 
+BitBoard MoveGenerator::southOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+   while (pieces) {
+      flood |= pieces;
+      pieces = (pieces >> 8) & empty;
+   }
+   return (flood >> 8);
+}
 
+BitBoard MoveGenerator::northOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+   while (pieces) {
+      flood |= pieces;
+      pieces = (pieces << 8) & empty;
+   }
+   return (flood << 8);
+}
+
+BitBoard MoveGenerator::eastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces;
+        pieces = (pieces >> 1) & empty;
+    }
+    return (flood >> 1) & ~Board::FileAMask;
+}
+
+BitBoard MoveGenerator::westOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+    empty &= ~Board::FileHMask;
+    while(pieces){
+        flood |= pieces;
+        pieces = (pieces << 1) & empty;
+    }
+    return (flood << 1) & ~Board::FileHMask;
+}
+
+// TODO wrong bit shift?
+BitBoard MoveGenerator::northEastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces = (pieces >> 9) & empty;
+    }
+    return (flood >> 9) & ~Board::FileAMask;
+}
+
+// TODO wrong bit shift?
+BitBoard MoveGenerator::northWestccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileHMask;
+    while(pieces){
+        flood |= pieces = (pieces >> 7) & empty;
+    }
+    return (flood >> 7) & ~Board::FileHMask;
+}
+
+// TODO wrong bit shift?
+BitBoard MoveGenerator::southEastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces = (pieces << 9) & empty;
+    }
+    return (flood << 9) & ~Board::FileAMask;
+}
+// TODO wrong bit shift?
+BitBoard MoveGenerator::southWestOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces = (pieces << 9) & empty;
+    }
+    return (flood << 9) & ~Board::FileAMask;
+}

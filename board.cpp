@@ -4,6 +4,7 @@
 
 Board::Board(){
     initKnightMask();
+    initKingMask();
     initRayAttacks();
 }
 
@@ -24,6 +25,33 @@ void Board::initRayAttacks()
     for(int i = 0; i< 64; i++){
         BitBoard one = 1;
         rayAttackEast[i] = ((one << (i|7)));//- (one << i))); 
+    }
+}
+
+void Board::initKingMask(){
+    for(int i =0; i< 64;i++){
+        BitBoard piece = 0;
+        BitBoard moves = 0;
+        
+        setBit(piece,true,i);
+
+        if(!(piece & FileAMask)){
+            moves |= piece >> 7 ;
+            moves |= piece << 1 ;
+            moves |= piece << 9 ;
+        }
+        
+
+        if(!(piece & FileHMask)){
+            moves |= piece >> 9;
+            moves |= piece >> 1;
+            moves |= piece << 7 ;
+        }
+        moves |= piece >> 8;
+        moves |= piece << 8;
+
+        kingMask[i] = moves;
+        
     }
 }
 
@@ -64,6 +92,11 @@ void Board::initKnightMask()
 BitBoard Board::getKnightMask(int square)
 {
     return knightmask[square];
+}
+
+BitBoard Board::getKingMask(int square)
+{
+    return kingMask[square];
 }
 
 BitBoard Board::getRankMask(int square)
@@ -116,6 +149,11 @@ BitBoard Board::getEnemyBoard()
         return bitBoardMap.at(Black);
     }
     return bitBoardMap.at(White);
+}
+
+BitBoard Board::getOwnBoard()
+{
+    return bitBoardMap.at(sideToMove);
 }
 
 void Board::changeSideToMove()

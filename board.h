@@ -29,6 +29,7 @@ class Board {
         static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
 
         BitBoard knightmask[64];
+        BitBoard kingMask[64];
         BitBoard rayAttackNorth[64];
         BitBoard rayAttackSouth[64];
         BitBoard rayAttackNW[64];
@@ -38,9 +39,21 @@ class Board {
         BitBoard rayAttackSE[64];
         BitBoard rayAttackSW[64];
 
+        std::string sqToNotation[64] = {    "a1","b1","c1","d1","e1","f1","g1","h1",
+                                            "a2","b2","c2","d2","e2","f2","g2","h2",
+                                            "a3","b3","c3","d3","e3","f3","g3","h3",
+                                            "a4","b4","c4","d4","e4","f4","g4","h4",
+                                            "a5","b5","c5","d5","e5","f5","g5","h5",
+                                            "a6","b6","c6","d6","e6","f6","g6","h6",
+                                            "a7","b7","c7","d7","e7","f7","g7","h7",
+                                            "a8","b8","c8","d8","e8","f8","g8","h8"
+                                        };
+
         void initRayAttacks();
         void initKnightMask();
+        void initKingMask();
         BitBoard getKnightMask(int square);
+        BitBoard getKingMask(int square);
         BitBoard getRankMask(int square);
         BitBoard getLineMask(int square);
 
@@ -60,6 +73,7 @@ class Board {
 
         BitBoard getBitboard(BitBoardEnum piece);
         BitBoard getEnemyBoard();
+        BitBoard getOwnBoard();
         void changeSideToMove();
         BitBoardEnum getSideToMove();
 
@@ -96,6 +110,7 @@ class Board {
                                    16,17,18,19,20,21,22,23,
                                     8, 9,10,11,12,13,14,15,
                                     0, 1, 2, 3, 4, 5, 6, 7 };
+        
 
         std::map<char,BitBoardEnum> fenToEnumBoardMap = {{'r', BitBoardEnum::r},
                                                     {'R', BitBoardEnum::R},
