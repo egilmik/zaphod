@@ -214,16 +214,13 @@ void Board::setBit(BitBoard &board, bool highLow, int bitNr)
 // TODO Possible performance hog!
 void Board::setBit(BitBoardEnum piece, bool highLow, int bitNr)
 {
-    std::map<BitBoardEnum,BitBoard>::iterator itr;
-    itr = bitBoardMap.find(piece);
-    BitBoard board = itr->second;
+    BitBoard board = bitBoardMap[piece];
     if(highLow){
         board |= 1ULL << bitNr;
     } else {
         board &= ~(1ULL <<bitNr);
-    }
-    
-    itr->second = board;
+    }    
+    bitBoardMap[piece] = board;
 
 }
 
