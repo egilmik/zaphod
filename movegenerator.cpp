@@ -390,10 +390,10 @@ BitBoard MoveGenerator::southEastOccludedMoves(BitBoard pieces, BitBoard empty)
 BitBoard MoveGenerator::southWestOccludedMoves(BitBoard pieces, BitBoard empty)
 {
     BitBoard flood = 0;
-    empty &= ~Board::FileAMask;
+    empty &= ~Board::FileHMask;
     while(pieces){
         flood |= pieces;
         pieces = (pieces << 9) & empty;
     }
-    return (flood << 9) & ~Board::FileAMask;
+    return (flood << 9) & ~Board::FileHMask;
 }
