@@ -135,7 +135,116 @@ void Board::parseFen(std::string fen){
         }
     }
 
+}
 
+
+BitBoard Board::southOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+   while (pieces) {
+      flood |= pieces;
+      pieces = (pieces >> 8) & empty;
+   }
+   return (flood >> 8);
+}
+
+BitBoard Board::northOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+   while (pieces) {
+      flood |= pieces;
+      pieces = (pieces << 8) & empty;
+   }
+   return (flood << 8);
+}
+
+BitBoard Board::eastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces;
+        pieces = (pieces >> 1) & empty;
+    }
+    return (flood >> 1) & ~Board::FileAMask;
+}
+
+BitBoard Board::westOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+   BitBoard flood = 0;
+    empty &= ~Board::FileHMask;
+    while(pieces){
+        flood |= pieces;
+        pieces = (pieces << 1) & empty;
+    }
+    return (flood << 1) & ~Board::FileHMask;
+}
+
+// TODO wrong bit shift?
+BitBoard Board::northEastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces;
+        pieces = (pieces >> 9) & empty;
+    }
+    return (flood >> 9) & ~Board::FileAMask;
+}
+
+// TODO wrong bit shift?
+BitBoard Board::northWestccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileHMask;
+    while(pieces){
+        flood |= pieces;
+        pieces = (pieces >> 7) & empty;
+    }
+    return (flood >> 7) & ~Board::FileHMask;
+}
+
+// TODO wrong bit shift?
+BitBoard Board::southEastOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileAMask;
+    while(pieces){
+        flood |= pieces;
+        pieces = (pieces << 7) & empty;
+    }
+    return (flood << 7) & ~Board::FileAMask;
+}
+// TODO wrong bit shift?
+BitBoard Board::southWestOccludedMoves(BitBoard pieces, BitBoard empty)
+{
+    BitBoard flood = 0;
+    empty &= ~Board::FileHMask;
+    while(pieces){
+        flood |= pieces;
+        pieces = (pieces << 9) & empty;
+    }
+    return (flood << 9) & ~Board::FileHMask;
+}
+
+BitBoard Board::northEastOne(BitBoard pieces)
+{
+    return (pieces >> 9) & ~Board::FileAMask;
+}
+
+BitBoard Board::northWestOne(BitBoard pieces)
+{
+    return (pieces >> 7) & ~Board::FileHMask;
+}
+
+BitBoard Board::southEastOne(BitBoard pieces)
+{
+    return (pieces << 7) & ~Board::FileAMask;
+}
+
+BitBoard Board::southWestOne(BitBoard pieces)
+{
+    return (pieces << 9) & ~Board::FileHMask;
 }
 
 BitBoard Board::getBitboard(BitBoardEnum piece)
@@ -287,6 +396,59 @@ void Board::revertLastMove()
 {
     bitBoardMap = PreviousbitBoardMap;
     sideToMove = sideToMoveCopy;
+}
+
+bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
+{
+
+    BitBoard allPieces = bitBoardMap.at(All);
+    BitBoard queenRooks = 0;
+    BitBoard queenBishops = 0;
+    BitBoard knights = 0;
+    BitBoard king = 0;
+
+    if(sideAttacked == BitBoardEnum::White){
+        BitBoard blackPawns = bitBoardMap.at(p);
+        if((southWestOne(blackPawns) & targetSquares) != 0) return true; 
+        if((southEastOne(blackPawns) & targetSquares) != 0) return true;
+
+        king = bitBoardMap.at(k);
+        knights = bitBoardMap.at(n);
+        queenRooks = (bitBoardMap.at(q) & bitBoardMap.at(r));
+        queenBishops = (bitBoardMap.at(q) & bitBoardMap.at(b));
+        
+
+    } else {
+        BitBoard whitePawns = bitBoardMap.at(P);
+        if((northWestOne(whitePawns) & targetSquares) != 0) return true; 
+        if((northEastOne(whitePawns) & targetSquares) != 0) return true;
+        
+        king = bitBoardMap.at(K);
+        knights = bitBoardMap.at(N);
+        queenRooks = (bitBoardMap.at(Q) & bitBoardMap.at(R));
+        queenBishops = (bitBoardMap.at(Q) & bitBoardMap.at(B));
+    }
+
+        
+        int knightSquare = 0;
+        while(knights != 0){
+            knightSquare = popLsb(knights);
+            if((knightmask[knightSquare] & targetSquares) != 0) return true;
+        }
+
+        if(southOccludedMoves(queenRooks, ~allPieces) != 0) return true;
+        if(westOccludedMoves(queenRooks, ~allPieces) != 0) return true;
+        if(eastOccludedMoves(queenRooks, ~allPieces) != 0) return true;
+        if(northOccludedMoves(queenRooks, ~allPieces) != 0) return true;
+        if(northEastOccludedMoves(queenBishops, ~allPieces) != 0) return true;
+        if(northWestccludedMoves(queenBishops, ~allPieces) != 0) return true;
+        if(southEastOccludedMoves(queenBishops, ~allPieces) != 0) return true;
+        if(southWestOccludedMoves(queenBishops, ~allPieces) != 0) return true;
+
+        int fromSq = popLsb(king);
+        BitBoard kingMove = getKingMask(fromSq);
+
+    return false;
 }
 
 void Board::printBoard(){

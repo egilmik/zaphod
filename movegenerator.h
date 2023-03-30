@@ -24,14 +24,6 @@ class MoveGenerator {
         void generateQueenMoves(Board board, std::vector<Move> &moveVector);
         void generateKingMoves(Board board, std::vector<Move> &moveVector);
 
-        BitBoard southOccludedMoves(BitBoard pieces, BitBoard empty);
-        BitBoard northOccludedMoves(BitBoard pieces, BitBoard empty);
-        BitBoard eastOccludedMoves(BitBoard pieces, BitBoard empty);
-        BitBoard westOccludedMoves(BitBoard pieces, BitBoard empty);
-        BitBoard northEastOccludedMoves(BitBoard pieces, BitBoard empty);
-        BitBoard northWestccludedMoves(BitBoard pieces, BitBoard empty);
-        BitBoard southEastOccludedMoves(BitBoard pieces, BitBoard empty);
-        BitBoard southWestOccludedMoves(BitBoard pieces, BitBoard empty);
 
 };
 

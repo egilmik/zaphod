@@ -70,6 +70,22 @@ class Board {
         int popLsb(BitBoard& board);
         void makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture);
         void revertLastMove();
+        bool isSquareAttacked(BitBoard targetSquares, BitBoardEnum attackingSide);
+
+
+        
+        BitBoard southOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard northOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard eastOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard westOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard northEastOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard northWestccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard southEastOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard southWestOccludedMoves(BitBoard pieces, BitBoard empty);
+        BitBoard northEastOne(BitBoard pieces);
+        BitBoard northWestOne(BitBoard pieces);
+        BitBoard southEastOne(BitBoard pieces);
+        BitBoard southWestOne(BitBoard pieces);
 
         BitBoard getBitboard(BitBoardEnum piece);
         BitBoard getEnemyBoard();
