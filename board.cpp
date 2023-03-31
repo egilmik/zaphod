@@ -351,7 +351,7 @@ int Board::popLsb(BitBoard& board)
     return lsb;
 }
 
-void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
+bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
 {
     std::map<BitBoardEnum,BitBoard> copy(bitBoardMap);
     PreviousbitBoardMap = copy;
@@ -362,7 +362,7 @@ void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
 
     if(!inAllBoard || !inPieceSpecificBoard){
         std::cout << "Error in makeMove() " << piece << " from " << fromSq << " to " << toSq << " in all board:" << inAllBoard << " in piece specific:" << inPieceSpecificBoard  <<  std::endl;
-        return;
+        return false;
     }
 
     setBit(BitBoardEnum::All,false,fromSq);
@@ -389,7 +389,19 @@ void Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
 
     }
 
+    if(sideToMove == White){
+        if(isSquareAttacked(bitBoardMap.at(K), White)){
+            return false;
+        }
+        
+    } else {
+        if(isSquareAttacked(bitBoardMap.at(k), Black)){
+            return false;
+        }
+    }
+
     changeSideToMove();
+    return true;
 }
 
 void Board::revertLastMove()
@@ -400,7 +412,6 @@ void Board::revertLastMove()
 
 bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
 {
-
     BitBoard allPieces = bitBoardMap.at(All);
     BitBoard queenRooks = 0;
     BitBoard queenBishops = 0;
@@ -409,8 +420,9 @@ bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
 
     if(sideAttacked == BitBoardEnum::White){
         BitBoard blackPawns = bitBoardMap.at(p);
-        if((southWestOne(blackPawns) & targetSquares) != 0) return true; 
-        if((southEastOne(blackPawns) & targetSquares) != 0) return true;
+        
+        if((northWestOne(blackPawns) & targetSquares) != 0) return true; 
+        if((northEastOne(blackPawns) & targetSquares) != 0) return true;
 
         king = bitBoardMap.at(k);
         knights = bitBoardMap.at(n);
@@ -420,8 +432,8 @@ bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
 
     } else {
         BitBoard whitePawns = bitBoardMap.at(P);
-        if((northWestOne(whitePawns) & targetSquares) != 0) return true; 
-        if((northEastOne(whitePawns) & targetSquares) != 0) return true;
+        if((southEastOne(whitePawns) & targetSquares) != 0) return true; 
+        if((southWestOne(whitePawns) & targetSquares) != 0) return true;
         
         king = bitBoardMap.at(K);
         knights = bitBoardMap.at(N);

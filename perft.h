@@ -17,11 +17,16 @@ class Perft {
             std::vector<Move> moveVector = generator.generateMoves(board);
             nrOfNodes += moveVector.size();
             for(Move move: moveVector){
-                board.makeMove(move.fromSq,move.toSq,move.piece,false);
+                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,false);
+                if(valid){
+                    nrOfNodes += perft(board, depth-1);
+                    //std::cout << board.sqToNotation[move.fromSq] << "" << board.sqToNotation[move.toSq] << std::endl;
+                } else {
+                    nrOfNodes--;
+                }
 
+                board.revertLastMove();               
                 
-                nrOfNodes += perft(board, depth-1);
-                board.revertLastMove();
             }
             
 
