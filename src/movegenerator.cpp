@@ -66,20 +66,28 @@ void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector
         }
 
         //Capture
-        // TODO Potential bug, where pawns capture from A to H and vice versa 
-        if(board.checkBit(enemyBoard,fromSq+pawnCaptureLeftIncrement)){
-            Move move = {fromSq,fromSq+pawnCaptureLeftIncrement, true, movedPiece};
-            moveVector.push_back(move);
-        }
-        if(board.checkBit(enemyBoard,fromSq+pawnCaptureRightIncrement)){
-            Move move = {fromSq,fromSq+pawnCaptureRightIncrement, true, movedPiece};
-            moveVector.push_back(move);
+        
+        BitBoard pawn = 0;
+        BitBoard attack = 0;
+        board.setBit(pawn,fromSq);
+
+        if(sideToMove == board.White){
+            attack = enemyBoard & board.southEastOne(pawn);
+            attack |= enemyBoard & board.southWestOne(pawn);
+        } else {            
+            attack = enemyBoard & board.northEastOne(pawn);
+            attack |= enemyBoard & board.northWestOne(pawn);
         }
 
+        while(attack != 0){
+            toSq = board.popLsb(attack);
+            Move move = {fromSq,toSq, true, movedPiece};
+            moveVector.push_back(move);
+        }
+        
         // En passant
 
         fromSq = board.popLsb(pawns);
-
     }
 }
 
