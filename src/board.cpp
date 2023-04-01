@@ -128,6 +128,8 @@ void Board::parseFen(std::string fen){
         case 1:
             if(fen[i] == 'w'){
                 sideToMove = White;
+            } else {
+                sideToMove = Black;
             }
         
         default:
@@ -426,8 +428,8 @@ bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
 
         king = bitBoardMap.at(k);
         knights = bitBoardMap.at(n);
-        queenRooks = (bitBoardMap.at(q) & bitBoardMap.at(r));
-        queenBishops = (bitBoardMap.at(q) & bitBoardMap.at(b));
+        queenRooks = (bitBoardMap.at(q) | bitBoardMap.at(r));
+        queenBishops = (bitBoardMap.at(q) | bitBoardMap.at(b));
         
 
     } else {
@@ -437,8 +439,8 @@ bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
         
         king = bitBoardMap.at(K);
         knights = bitBoardMap.at(N);
-        queenRooks = (bitBoardMap.at(Q) & bitBoardMap.at(R));
-        queenBishops = (bitBoardMap.at(Q) & bitBoardMap.at(B));
+        queenRooks = (bitBoardMap.at(Q) | bitBoardMap.at(R));
+        queenBishops = (bitBoardMap.at(Q) | bitBoardMap.at(B));
     }
 
         
@@ -448,14 +450,14 @@ bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
             if((knightmask[knightSquare] & targetSquares) != 0) return true;
         }
 
-        if(southOccludedMoves(queenRooks, ~allPieces) != 0) return true;
-        if(westOccludedMoves(queenRooks, ~allPieces) != 0) return true;
-        if(eastOccludedMoves(queenRooks, ~allPieces) != 0) return true;
-        if(northOccludedMoves(queenRooks, ~allPieces) != 0) return true;
-        if(northEastOccludedMoves(queenBishops, ~allPieces) != 0) return true;
-        if(northWestccludedMoves(queenBishops, ~allPieces) != 0) return true;
-        if(southEastOccludedMoves(queenBishops, ~allPieces) != 0) return true;
-        if(southWestOccludedMoves(queenBishops, ~allPieces) != 0) return true;
+        if((southOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
+        if((westOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
+        if((eastOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
+        if((northOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
+        if((northEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
+        if((northWestccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
+        if((southEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
+        if((southWestOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
 
         int fromSq = popLsb(king);
         BitBoard kingMove = getKingMask(fromSq);
