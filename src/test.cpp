@@ -13,7 +13,9 @@ void Test::runAllTest()
     testVector.push_back({2,255,"Basic rook moves", "4k3/8/8/2R2r2/8/8/8/2K5 w - - 0 1"});
     testVector.push_back({2,20,"Simple check test with kings and pawn","4k3/4P3/8/8/8/8/8/2K5 w - - 0 1"});
     testVector.push_back({3,8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"});
-    testVector.push_back({4,197281,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"});
+    testVector.push_back({4,197281+8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"});
+    //testVector.push_back({5,4865609+197281+8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"});
+
 
     for(TestDefinition def: testVector){
         TestResult result = standardTest(def);
