@@ -59,7 +59,8 @@ void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector
             //Two squares forward from starting position
             toSq =fromSq+pawnDoubleIncrement;
 
-            if(!board.checkBit(allPieces,toSq)){
+
+            if(!board.checkBit(allPieces,toSq) && !board.checkBit(allPieces,fromSq+pawnIncrement)){
                 Move move = {fromSq,toSq, false, movedPiece};
                 moveVector.push_back(move);
             }

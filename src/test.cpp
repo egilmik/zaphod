@@ -7,7 +7,7 @@
 void Test::runAllTest()
 {
     std::vector<TestDefinition> testVector;
-    testVector.push_back({1,13,"Basic pawn moves","4k3/8/8/8/8/5r2/PPPPP3/2K5 w - - 0 1"});
+    testVector.push_back({3,2473+223+13,"Basic pawn moves","4k3/8/8/8/8/5r2/PPPPP3/2K5 w - - 0 1"});
     testVector.push_back({1,16,"Basic bishop moves", "4k3/8/8/2B5/8/8/8/2K5 w - - 0 1"});
     testVector.push_back({1,26,"Basic queen moves","4k3/8/8/8/8/8/3Q4/2K5 w - - 0 1"});
     testVector.push_back({2,255,"Basic rook moves", "4k3/8/8/2R2r2/8/8/8/2K5 w - - 0 1"});
