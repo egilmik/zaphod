@@ -64,7 +64,7 @@ class Board {
         void popBit(BitBoard &board, int bitNr);
         void setBit(BitBoard &board, int bitNr);
         void setBit(BitBoard &board, bool highLow, int bitNr);
-        void setBit(BitBoardEnum piece, bool highLow, int bitNr);
+        void setBit(BitBoardEnum piece, int bitNr);
         void popBit(BitBoardEnum piece, int bitNr);
         bool checkBit(BitBoard board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);

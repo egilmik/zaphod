@@ -296,12 +296,12 @@ void Board::parseFenPosition(char value, int &count)
     } else { 
 
         if (fenToEnumBoardMap.find(value) != fenToEnumBoardMap.end()){
-            setBit(fenToEnumBoardMap.at(value),true,bitNr);
-            setBit(BitBoardEnum::All, true, bitNr);
+            setBit(fenToEnumBoardMap.at(value),bitNr);
+            setBit(BitBoardEnum::All, bitNr);
             if(islower(value)){
-                setBit(BitBoardEnum::Black, true, bitNr);
+                setBit(BitBoardEnum::Black, bitNr);
             } else {
-                setBit(BitBoardEnum::White,true, bitNr);
+                setBit(BitBoardEnum::White, bitNr);
             }
             count++;
         } else if(value == '/'){
@@ -326,14 +326,10 @@ void Board::setBit(BitBoard &board, bool highLow, int bitNr)
 }
 
 // TODO Possible performance hog!
-void Board::setBit(BitBoardEnum piece, bool highLow, int bitNr)
+void Board::setBit(BitBoardEnum piece, int bitNr)
 {
-    BitBoard board = bitBoardArray[piece];
-    if(highLow){
-        board |= 1ULL << bitNr;
-    } else {
-        board &= ~(1ULL <<bitNr);
-    }    
+    BitBoard board = bitBoardArray[piece];    
+    board |= 1ULL << bitNr;    
     bitBoardArray[piece] = board;
 
 }
@@ -378,17 +374,16 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
         return false;
     }
 
-    setBit(BitBoardEnum::All,false,fromSq);
-    setBit(BitBoardEnum::All,true,toSq);
-    setBit(piece, false, fromSq);
-    setBit(piece,true, toSq);
+    popBit(BitBoardEnum::All,fromSq);
+    setBit(BitBoardEnum::All,toSq);
+    popBit(piece,  fromSq);
+    setBit(piece, toSq);
     if(sideToMove == BitBoardEnum::White){
-        // TODO Possible bug in using setbit for popbit
-        setBit(BitBoardEnum::White,false,fromSq);
-        setBit(BitBoardEnum::White,true,toSq);
+        popBit(BitBoardEnum::White,fromSq);
+        setBit(BitBoardEnum::White,toSq);
     } else {
-        setBit(BitBoardEnum::Black,false,fromSq);
-        setBit(BitBoardEnum::Black,true,toSq);
+        popBit(BitBoardEnum::Black,fromSq);
+        setBit(BitBoardEnum::Black,toSq);
     }
 
 
@@ -403,7 +398,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
             (i != all) &&
             (i != currentPiece)){
                 BitBoardEnum val = static_cast<BitBoardEnum>(i);
-                setBit(val,false,toSq);
+                popBit(val,toSq);
             }
     }
 
