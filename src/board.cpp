@@ -338,6 +338,13 @@ void Board::setBit(BitBoardEnum piece, bool highLow, int bitNr)
 
 }
 
+void Board::popBit(BitBoardEnum piece, int bitNr)
+{
+    BitBoard board = bitBoardArray[piece];    
+    board &= ~(1ULL <<bitNr);    
+    bitBoardArray[piece] = board;
+}
+
 bool Board::checkBit(BitBoard board, int bitNr)
 {
     return (board >> bitNr) & 1U;

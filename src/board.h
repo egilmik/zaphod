@@ -39,7 +39,7 @@ class Board {
         BitBoard rayAttackSE[64];
         BitBoard rayAttackSW[64];
 
-        std::string sqToNotation[64] = {    "a1","b1","c1","d1","e1","f1","g1","h1",
+        inline static const std::string sqToNotation[64] = {"a1","b1","c1","d1","e1","f1","g1","h1",
                                             "a2","b2","c2","d2","e2","f2","g2","h2",
                                             "a3","b3","c3","d3","e3","f3","g3","h3",
                                             "a4","b4","c4","d4","e4","f4","g4","h4",
@@ -65,6 +65,7 @@ class Board {
         void setBit(BitBoard &board, int bitNr);
         void setBit(BitBoard &board, bool highLow, int bitNr);
         void setBit(BitBoardEnum piece, bool highLow, int bitNr);
+        void popBit(BitBoardEnum piece, int bitNr);
         bool checkBit(BitBoard board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
         int popLsb(BitBoard& board);
@@ -120,7 +121,7 @@ class Board {
             {p,0},
         };*/
 
-        int fenToBitMapping[64] = {56,57,58,59,60,61,62,63,
+        inline static const int fenToBitMapping[64] = {56,57,58,59,60,61,62,63,
                                    48,49,50,51,52,53,54,55,
                                    40,41,42,43,44,45,46,47,
                                    32,33,34,35,36,37,38,39,
@@ -130,7 +131,7 @@ class Board {
                                     0, 1, 2, 3, 4, 5, 6, 7 };
         
 
-        std::map<char,BitBoardEnum> fenToEnumBoardMap = {{'r', BitBoardEnum::r},
+        inline static const std::map<char,BitBoardEnum> fenToEnumBoardMap = {{'r', BitBoardEnum::r},
                                                     {'R', BitBoardEnum::R},
                                                     {'n', BitBoardEnum::n},
                                                     {'N', BitBoardEnum::N},
