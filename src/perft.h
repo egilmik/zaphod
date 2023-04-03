@@ -14,7 +14,8 @@ class Perft {
             if(depth == 0){
                 return 0;
             }
-            std::vector<Move> moveVector = generator.generateMoves(board);
+            std::vector<Move> moveVector;
+            generator.generateMoves(board,moveVector);
             nrOfNodes += moveVector.size();
             for(Move move: moveVector){
                 bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,false);
@@ -38,7 +39,8 @@ class Perft {
             if(depth == 0){
                 return 0;
             }
-            std::vector<Move> moveVector = generator.generateMoves(board);
+            std::vector<Move> moveVector;
+            generator.generateMoves(board,moveVector);
             //nrOfNodes += moveVector.size();
             for(Move move: moveVector){
                 bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,false);

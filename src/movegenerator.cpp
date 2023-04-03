@@ -1,16 +1,14 @@
 #include "movegenerator.h"
 #include <iostream>
 
-std::vector<Move> MoveGenerator::generateMoves(Board &board)
+void MoveGenerator::generateMoves(Board &board,std::vector<Move> &moveVector)
 {
-    std::vector<Move> moveVector;
     generatePawnMoves(board,moveVector);
     generateKnightMoves(board, moveVector);
     generateRookMoves(board,moveVector);
     generateKingMoves(board,moveVector);
     generateBishopMoves(board,moveVector);
     generateQueenMoves(board, moveVector);
-    return moveVector;
 }
 
 void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector)

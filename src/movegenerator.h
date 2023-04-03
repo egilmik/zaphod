@@ -14,7 +14,7 @@ struct Move {
 class MoveGenerator {
 
     public:
-        std::vector<Move> generateMoves(Board &board);      
+        void generateMoves(Board &board,std::vector<Move> &moveVector);      
 
     private:
         void generatePawnMoves(Board board,std::vector<Move> &moveVector);
