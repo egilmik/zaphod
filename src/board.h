@@ -96,11 +96,13 @@ class Board {
     private:
         void parseFenPosition(char value, int &bitCout);
 
-        std::map<BitBoardEnum,BitBoard> PreviousbitBoardMap = {};
+        
         BitBoardEnum sideToMoveCopy;
 
+        BitBoard bitBoardArrayCopy[15];
         BitBoardEnum sideToMove = White;
-        std::map<BitBoardEnum,BitBoard> bitBoardMap = {
+        BitBoard bitBoardArray[15];
+        /*std::map<BitBoardEnum,BitBoard> bitBoardMap = {
             {All, 0},
             {White, 0},
             {Black,0},
@@ -116,7 +118,7 @@ class Board {
             {k,0},
             {P,0},
             {p,0},
-        };
+        };*/
 
         int fenToBitMapping[64] = {56,57,58,59,60,61,62,63,
                                    48,49,50,51,52,53,54,55,

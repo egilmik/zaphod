@@ -3,6 +3,9 @@
 #include <string>
 
 Board::Board(){
+    for(int i = 0; i< 15; i++){
+        bitBoardArray[i] = 0;
+    }
     initKnightMask();
     initKingMask();
     initRayAttacks();
@@ -251,20 +254,20 @@ BitBoard Board::southWestOne(BitBoard pieces)
 
 BitBoard Board::getBitboard(BitBoardEnum piece)
 {
-    return bitBoardMap.at(piece);
+    return bitBoardArray[piece];
 }
 
 BitBoard Board::getEnemyBoard()
 {
     if(sideToMove == White){
-        return bitBoardMap.at(Black);
+        return bitBoardArray[Black];
     }
-    return bitBoardMap.at(White);
+    return bitBoardArray[White];
 }
 
 BitBoard Board::getOwnBoard()
 {
-    return bitBoardMap.at(sideToMove);
+    return bitBoardArray[sideToMove];
 }
 
 void Board::changeSideToMove()
@@ -325,13 +328,13 @@ void Board::setBit(BitBoard &board, bool highLow, int bitNr)
 // TODO Possible performance hog!
 void Board::setBit(BitBoardEnum piece, bool highLow, int bitNr)
 {
-    BitBoard board = bitBoardMap[piece];
+    BitBoard board = bitBoardArray[piece];
     if(highLow){
         board |= 1ULL << bitNr;
     } else {
         board &= ~(1ULL <<bitNr);
     }    
-    bitBoardMap[piece] = board;
+    bitBoardArray[piece] = board;
 
 }
 
@@ -342,7 +345,7 @@ bool Board::checkBit(BitBoard board, int bitNr)
 
 bool Board::checkBit(BitBoardEnum piece, int bitNr)
 {
-    BitBoard board = bitBoardMap.at(piece);
+    BitBoard board = bitBoardArray[piece];
     return (board >> bitNr) & 1U;    
 }
 
@@ -355,8 +358,9 @@ int Board::popLsb(BitBoard& board)
 
 bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
 {
-    std::map<BitBoardEnum,BitBoard> copy(bitBoardMap);
-    PreviousbitBoardMap = copy;
+    for(int i = 0; i< 15; i++){
+        bitBoardArrayCopy[i] = bitBoardArray[i];
+    }
     sideToMoveCopy = sideToMove;
 
     bool inAllBoard = checkBit(BitBoardEnum::All,fromSq);
@@ -380,24 +384,29 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
         setBit(BitBoardEnum::Black,true,toSq);
     }
 
-    std::map<BitBoardEnum,BitBoard>::iterator itr;
-    for(itr = bitBoardMap.begin(); itr != bitBoardMap.end(); ++itr){
-        if(itr->first != BitBoardEnum::Black &&
-            itr->first != BitBoardEnum::White &&
-            itr->first != BitBoardEnum::All &&
-            itr->first != piece){
-                setBit(itr->first,false,toSq);
-            }
 
+    int black = BitBoardEnum::Black;
+    int white = BitBoardEnum::White;
+    int all = BitBoardEnum::All;
+    int currentPiece = piece;
+
+    for(int i = 0; i < 15; i++){
+        if((i != black) &&
+            (i != white) &&
+            (i != all) &&
+            (i != currentPiece)){
+                BitBoardEnum val = static_cast<BitBoardEnum>(i);
+                setBit(val,false,toSq);
+            }
     }
 
     if(sideToMove == White){
-        if(isSquareAttacked(bitBoardMap.at(K), White)){
+        if(isSquareAttacked(bitBoardArray[K], White)){
             return false;
         }
         
     } else {
-        if(isSquareAttacked(bitBoardMap.at(k), Black)){
+        if(isSquareAttacked(bitBoardArray[k], Black)){
             return false;
         }
     }
@@ -408,39 +417,41 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
 
 void Board::revertLastMove()
 {
-    bitBoardMap = PreviousbitBoardMap;
+    for(int i = 0; i< 15; i++){
+        bitBoardArray[i] = bitBoardArrayCopy[i];
+    }
     sideToMove = sideToMoveCopy;
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
 {
-    BitBoard allPieces = bitBoardMap.at(All);
+    BitBoard allPieces = bitBoardArray[All];
     BitBoard queenRooks = 0;
     BitBoard queenBishops = 0;
     BitBoard knights = 0;
     BitBoard king = 0;
 
     if(sideAttacked == BitBoardEnum::White){
-        BitBoard blackPawns = bitBoardMap.at(p);
+        BitBoard blackPawns = bitBoardArray[p];
         
         if((northWestOne(blackPawns) & targetSquares) != 0) return true; 
         if((northEastOne(blackPawns) & targetSquares) != 0) return true;
 
-        king = bitBoardMap.at(k);
-        knights = bitBoardMap.at(n);
-        queenRooks = (bitBoardMap.at(q) | bitBoardMap.at(r));
-        queenBishops = (bitBoardMap.at(q) | bitBoardMap.at(b));
+        king = bitBoardArray[k];
+        knights = bitBoardArray[n];
+        queenRooks = bitBoardArray[q] | bitBoardArray[r];
+        queenBishops = bitBoardArray[q] | bitBoardArray[b];
         
 
     } else {
-        BitBoard whitePawns = bitBoardMap.at(P);
+        BitBoard whitePawns = bitBoardArray[P];
         if((southEastOne(whitePawns) & targetSquares) != 0) return true; 
         if((southWestOne(whitePawns) & targetSquares) != 0) return true;
         
-        king = bitBoardMap.at(K);
-        knights = bitBoardMap.at(N);
-        queenRooks = (bitBoardMap.at(Q) | bitBoardMap.at(R));
-        queenBishops = (bitBoardMap.at(Q) | bitBoardMap.at(B));
+        king = bitBoardArray[K];
+        knights = bitBoardArray[N];
+        queenRooks = bitBoardArray[Q] | bitBoardArray[R];
+        queenBishops = bitBoardArray[Q] | bitBoardArray[B];
     }
 
         
