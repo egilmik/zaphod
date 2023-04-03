@@ -15,6 +15,7 @@ void Test::runAllTest()
     testVector.push_back({2,51+13,"Simple check test with kings and a knight","4k3/8/4N3/8/8/8/8/2K5 w - - 0 1"});
     testVector.push_back({3,8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"});
     testVector.push_back({4,197281+8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"});
+    testVector.push_back({2,264+6,"Position 4 - chessprogramming.org","r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"});
     
     //testVector.push_back({5,4865609+197281+8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"});
 

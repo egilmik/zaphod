@@ -185,7 +185,6 @@ BitBoard Board::westOccludedMoves(BitBoard pieces, BitBoard empty)
     return (flood << 1) & ~Board::FileHMask;
 }
 
-// TODO wrong bit shift?
 BitBoard Board::northEastOccludedMoves(BitBoard pieces, BitBoard empty)
 {
     BitBoard flood = 0;
@@ -197,7 +196,6 @@ BitBoard Board::northEastOccludedMoves(BitBoard pieces, BitBoard empty)
     return (flood >> 9) & ~Board::FileAMask;
 }
 
-// TODO wrong bit shift?
 BitBoard Board::northWestccludedMoves(BitBoard pieces, BitBoard empty)
 {
     BitBoard flood = 0;
@@ -209,7 +207,6 @@ BitBoard Board::northWestccludedMoves(BitBoard pieces, BitBoard empty)
     return (flood >> 7) & ~Board::FileHMask;
 }
 
-// TODO wrong bit shift?
 BitBoard Board::southEastOccludedMoves(BitBoard pieces, BitBoard empty)
 {
     BitBoard flood = 0;
@@ -220,7 +217,7 @@ BitBoard Board::southEastOccludedMoves(BitBoard pieces, BitBoard empty)
     }
     return (flood << 7) & ~Board::FileAMask;
 }
-// TODO wrong bit shift?
+
 BitBoard Board::southWestOccludedMoves(BitBoard pieces, BitBoard empty)
 {
     BitBoard flood = 0;
@@ -325,7 +322,6 @@ void Board::setBit(BitBoard &board, bool highLow, int bitNr)
     board |= 1ULL << bitNr;
 }
 
-// TODO Possible performance hog!
 void Board::setBit(BitBoardEnum piece, int bitNr)
 {
     BitBoard board = bitBoardArray[piece];    
@@ -341,7 +337,7 @@ void Board::popBit(BitBoardEnum piece, int bitNr)
     bitBoardArray[piece] = board;
 }
 
-bool Board::checkBit(BitBoard board, int bitNr)
+bool Board::checkBit(BitBoard &board, int bitNr)
 {
     return (board >> bitNr) & 1U;
 }
