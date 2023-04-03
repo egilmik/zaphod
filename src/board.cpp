@@ -472,9 +472,6 @@ bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
         if((southEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
         if((southWestOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
 
-        int fromSq = popLsb(king);
-        BitBoard kingMove = getKingMask(fromSq);
-
     return false;
 }
 
