@@ -28,6 +28,7 @@ class Board {
         static constexpr BitBoard Rank7Mask = Rank1Mask << (8 * 6);
         static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
 
+
         BitBoard knightmask[64];
         BitBoard kingMask[64];
         BitBoard rayAttackNorth[64];
@@ -69,7 +70,7 @@ class Board {
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
         int popLsb(BitBoard& board);
-        bool makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture);
+        bool makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitBoardEnum promotion);
         void revertLastMove();
         bool isSquareAttacked(BitBoard targetSquares, BitBoardEnum attackingSide);
 

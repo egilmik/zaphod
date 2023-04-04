@@ -8,6 +8,7 @@ struct Move {
     int fromSq;
     int toSq;
     bool capture;
+    Board::BitBoardEnum promotion;
     Board::BitBoardEnum piece;
 };
 

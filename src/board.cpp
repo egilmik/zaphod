@@ -355,7 +355,7 @@ int Board::popLsb(BitBoard& board)
     return lsb;
 }
 
-bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
+bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitBoardEnum promotion)
 {
     for(int i = 0; i< 15; i++){
         bitBoardArrayCopy[i] = bitBoardArray[i];
@@ -396,6 +396,11 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture)
                 BitBoardEnum val = static_cast<BitBoardEnum>(i);
                 popBit(val,toSq);
             }
+    }
+
+    if(promotion != Board::All){        
+        popBit(piece,toSq);
+        setBit(promotion,toSq);
     }
 
     if(sideToMove == White){
