@@ -3,12 +3,14 @@
 
 void MoveGenerator::generateMoves(Board &board,std::vector<Move> &moveVector)
 {
-    generatePawnMoves(board,moveVector);
+    
     generateKnightMoves(board, moveVector);
     generateRookMoves(board,moveVector);
     generateKingMoves(board,moveVector);
     generateBishopMoves(board,moveVector);
     generateQueenMoves(board, moveVector);
+    //Pawns last, to prevent promotions to move twice
+    generatePawnMoves(board,moveVector);
 }
 
 void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector)
@@ -63,6 +65,7 @@ void MoveGenerator::generatePawnMoves(Board board, std::vector<Move> &moveVector
             BitBoard sqBoard = 0;
             board.setBit(sqBoard,toSq);
 
+            
             if((sqBoard & promotionRank) != 0){
                 moveVector.push_back({fromSq,toSq,false,queenPromo,movedPiece});
                 moveVector.push_back({fromSq,toSq,false,rookPromo,movedPiece});
@@ -141,15 +144,17 @@ void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVect
         movedPiece = Board::n;
     }
 
-    // TODO, this might cause a bug when the knight is at position 0
-    int fromSq = board.popLsb(knights);
-    while (fromSq != 0)
+    
+    int fromSq = 0;
+    while (knights!= 0)
     {
+        fromSq = board.popLsb(knights);
         BitBoard knightMoves = board.getKnightMask(fromSq);
 
-        
-        int toSq = board.popLsb(knightMoves);
-        while(toSq != 0){
+        int toSq = 0;
+
+        while(knightMoves != 0){
+            toSq = board.popLsb(knightMoves);
             if(!board.checkBit(allPieces,toSq)){
                 Move move = {fromSq,toSq, false,Board::All, movedPiece};
                 moveVector.push_back(move);
@@ -160,11 +165,8 @@ void MoveGenerator::generateKnightMoves(Board board, std::vector<Move> &moveVect
                 Move move = {fromSq,toSq, true,Board::All, movedPiece};
                 moveVector.push_back(move);
             }
-        
-
-            toSq = board.popLsb(knightMoves);
+           
         }
-        fromSq = board.popLsb(knights);
     }
 }
 
@@ -328,12 +330,12 @@ void MoveGenerator::generateKingMoves(Board board, std::vector<Move> &moveVector
     }
 
     int fromSq = board.popLsb(king);
-    BitBoard kingMove = board.getKingMask(fromSq);
-
+    BitBoard kingMove = board.getKingMask(fromSq);  
     
-    //TODO Might cause bug when king or tosq is 0?
-    int toSq = board.popLsb(kingMove);
-    while(toSq != 0){
+    int toSq = 0;
+    while(kingMove != 0){
+        toSq = board.popLsb(kingMove);;
+
         if(!board.checkBit(allPieces,toSq)){
             Move move = {fromSq,toSq, false,Board::All, movedPiece};
             moveVector.push_back(move);
@@ -344,10 +346,7 @@ void MoveGenerator::generateKingMoves(Board board, std::vector<Move> &moveVector
             moveVector.push_back(move);
         }
         
-
-        toSq = board.popLsb(kingMove);
     }
     
-
 }
 

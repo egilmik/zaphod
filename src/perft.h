@@ -47,7 +47,8 @@ class Perft {
                 if(valid){
                     divideNodes = perft(board, depth-1);
                     nrOfNodes += divideNodes;
-                    std::cout << board.sqToNotation[move.fromSq] << "" << board.sqToNotation[move.toSq] <<": " << divideNodes << std::endl;
+                    std::string notation = getNotation(move);
+                    std::cout << notation << ": " << divideNodes << std::endl;
                 } else {
                     nrOfNodes--;
                 }
@@ -56,6 +57,29 @@ class Perft {
                 
             }
             return nrOfNodes;      
+        }
+
+        static std::string getNotation(Move move){
+            std::string promotion = "";
+            
+                if(move.promotion == Board::Q){
+                    promotion = "Q";
+                } else if (move.promotion == Board::q){
+                    promotion = "q";
+                } else if (move.promotion == Board::B){
+                    promotion = "B";
+                } else if (move.promotion == Board::b){
+                    promotion = "b";
+                } else if (move.promotion == Board::r){
+                    promotion = "r";
+                } else if (move.promotion == Board::R){
+                    promotion = "R";
+                } else if (move.promotion == Board::n){
+                    promotion = "n";
+                } else if (move.promotion == Board::N){
+                    promotion = "N";
+                }
+            return Board::sqToNotation[move.fromSq] + Board::sqToNotation[move.toSq] + promotion;
         }
 };
 
