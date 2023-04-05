@@ -357,9 +357,8 @@ int Board::popLsb(BitBoard& board)
 
 bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitBoardEnum promotion)
 {
-    for(int i = 0; i< 15; i++){
-        bitBoardArrayCopy[i] = bitBoardArray[i];
-    }
+    int length = sizeof(bitBoardArray)/sizeof(bitBoardArray[0]);
+    std::copy(bitBoardArray,bitBoardArray+length,bitBoardArrayCopy);
     sideToMoveCopy = sideToMove;
 
     bool inAllBoard = checkBit(BitBoardEnum::All,fromSq);
@@ -420,9 +419,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitB
 
 void Board::revertLastMove()
 {
-    for(int i = 0; i< 15; i++){
-        bitBoardArray[i] = bitBoardArrayCopy[i];
-    }
+    int length = sizeof(bitBoardArray)/sizeof(bitBoardArray[0]);
+    std::copy(bitBoardArrayCopy,bitBoardArrayCopy+length,bitBoardArray);
     sideToMove = sideToMoveCopy;
 }
 
