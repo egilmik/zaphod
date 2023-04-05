@@ -13,7 +13,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
     generatePawnMoves(board,moveList);
 }
 
-void MoveGenerator::generatePawnMoves(Board board, MoveList &moveList)
+void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
 {
     BitBoard pawns;
 
@@ -123,7 +123,7 @@ void MoveGenerator::generatePawnMoves(Board board, MoveList &moveList)
 }
 
 
-void MoveGenerator::generateKnightMoves(Board board, MoveList &moveList)
+void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList)
 {
     BitBoard knights;
 
@@ -165,7 +165,7 @@ void MoveGenerator::generateKnightMoves(Board board, MoveList &moveList)
     }
 }
 
-void MoveGenerator::generateRookMoves(Board board, MoveList &moveList)
+void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
 {
     BitBoard allPieces = board.getBitboard(Board::All);
     BitBoard emptySquares = ~allPieces;
@@ -210,7 +210,7 @@ void MoveGenerator::generateRookMoves(Board board, MoveList &moveList)
     }
 }
 
-void MoveGenerator::generateBishopMoves(Board board, MoveList &moveList)
+void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
 {
     BitBoard allPieces = board.getBitboard(Board::All);
     Board::BitBoardEnum movedPiece;
@@ -253,7 +253,7 @@ void MoveGenerator::generateBishopMoves(Board board, MoveList &moveList)
     }
 }
 
-void MoveGenerator::generateQueenMoves(Board board, MoveList &moveList)
+void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
 {
     BitBoard allPieces = board.getBitboard(Board::All);
     Board::BitBoardEnum movedPiece;
@@ -300,7 +300,7 @@ void MoveGenerator::generateQueenMoves(Board board, MoveList &moveList)
     }
 }
 
-void MoveGenerator::generateKingMoves(Board board, MoveList &moveList)
+void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
 {
     BitBoard king;
 

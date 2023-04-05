@@ -25,12 +25,12 @@ class MoveGenerator {
         void generateMoves(Board &board,MoveList &moveList);      
 
     private:
-        void generatePawnMoves(Board board,MoveList &moveList);
-        void generateKnightMoves(Board board, MoveList &moveList);
-        void generateRookMoves(Board board, MoveList &moveList);
-        void generateBishopMoves(Board board, MoveList &moveList);
-        void generateQueenMoves(Board board, MoveList &moveList);
-        void generateKingMoves(Board board, MoveList &moveList);
+        void generatePawnMoves(Board &board,MoveList &moveList);
+        void generateKnightMoves(Board &board, MoveList &moveList);
+        void generateRookMoves(Board &board, MoveList &moveList);
+        void generateBishopMoves(Board &board, MoveList &moveList);
+        void generateQueenMoves(Board &board, MoveList &moveList);
+        void generateKingMoves(Board &board, MoveList &moveList);
 
 
 };
