@@ -8,16 +8,20 @@
 
 class Perft {
     public:
+        
+
         static int perft(Board board, int depth){
             MoveGenerator generator;
             int nrOfNodes = 0;
             if(depth == 0){
                 return 0;
             }
-            std::vector<Move> moveVector;
-            generator.generateMoves(board,moveVector);
-            nrOfNodes += moveVector.size();
-            for(Move move: moveVector){
+
+            MoveList moveList;
+            generator.generateMoves(board,moveList);
+            nrOfNodes += moveList.counter;
+            for(int i = 0; i < moveList.counter; i++){
+                Move move = moveList.moves[i];
                 bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,false,move.promotion);
                 if(valid){
                     nrOfNodes += perft(board, depth-1);
@@ -39,10 +43,11 @@ class Perft {
             if(depth == 0){
                 return 0;
             }
-            std::vector<Move> moveVector;
-            generator.generateMoves(board,moveVector);
-            //nrOfNodes += moveVector.size();
-            for(Move move: moveVector){
+            MoveList moveList;
+            generator.generateMoves(board,moveList);
+            
+            for(int i = 0; i < moveList.counter; i++){
+                Move move = moveList.moves[i];
                 bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,false, move.promotion);
                 if(valid){
                     divideNodes = perft(board, depth-1);
