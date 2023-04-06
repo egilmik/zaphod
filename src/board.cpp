@@ -391,6 +391,10 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         popBit(BitBoardEnum::White,fromSq);
         setBit(BitBoardEnum::White,toSq);
 
+        if(capture){
+            popBit(BitBoardEnum::Black,toSq);
+        }
+
         if(doublePush){
             setEnPassantSq(toSq-8);
         } else {
@@ -418,6 +422,11 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     } else {
         popBit(BitBoardEnum::Black,fromSq);
         setBit(BitBoardEnum::Black,toSq);
+
+
+        if(capture){
+            popBit(BitBoardEnum::White,toSq);
+        }
 
         if(doublePush){
             setEnPassantSq(toSq+8);
@@ -477,6 +486,10 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     if(promotion != Board::All){        
         popBit(piece,toSq);
         setBit(promotion,toSq);
+    }
+
+    if(checkBit(Black,toSq) && checkBit(White,toSq)){
+        int x = 0;
     }
 
     //Update castling rights
