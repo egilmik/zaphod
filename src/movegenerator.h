@@ -11,6 +11,7 @@ struct Move {
     Board::BitBoardEnum promotion;
     bool doublePawnPush;
     bool enpassant;
+    bool castling;
     Board::BitBoardEnum piece;
 };
 

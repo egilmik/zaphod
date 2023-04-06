@@ -6,6 +6,15 @@
 #include "movegenerator.h"
 #include <iostream>
 
+struct PerftResults {
+    long nodes = 0;
+    long captures = 0;
+    long enPassant = 0;
+    long castle = 0;
+    long promotions = 0;
+    long checks = 0;
+};
+
 class Perft {
     public:
         
@@ -22,7 +31,7 @@ class Perft {
             nrOfNodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
-                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.promotion);
+                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
                 if(valid){
                     nrOfNodes += perft(board, depth-1);
                     //board.printBoard();
@@ -49,7 +58,7 @@ class Perft {
             
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
-                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.promotion);
+                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling, move.promotion);
                 if(valid){
                     divideNodes = perft(board, depth-1);
                     nrOfNodes += divideNodes;
@@ -63,6 +72,43 @@ class Perft {
                 
             }
             return nrOfNodes;      
+        }
+
+        static void perftWithStats(Board board, int depth, PerftResults &results){
+            MoveGenerator generator;
+            if(depth == 0){
+                return;
+            }
+
+            MoveList moveList;
+            generator.generateMoves(board,moveList);
+            results.nodes += moveList.counter;
+            for(int i = 0; i < moveList.counter; i++){
+                Move move = moveList.moves[i];
+                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
+                if(valid){
+                    perftWithStats(board, depth-1,results);
+                    if(move.capture){
+                        results.captures +=1;
+                    } 
+                    if(move.castling){
+                        results.castle += 1;
+                    } 
+                    if(move.enpassant){
+                        results.enPassant += 1;
+                    } 
+                    if(move.promotion){
+                        results.promotions += 1;
+                    }
+                    //board.printBoard();
+                    //std::cout << board.sqToNotation[move.fromSq] << "" << board.sqToNotation[move.toSq] << std::endl;
+                } else {
+                    results.nodes--;
+                }
+
+                board.revertLastMove();               
+                
+            }
         }
 
         static std::string getNotation(Move move){

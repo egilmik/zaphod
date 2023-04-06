@@ -29,7 +29,6 @@ include(CPack)
 
 enable_testing()
 
-
 add_executable(
   zaphod_test
   test/testboard.cpp test/testperft.cpp src/board.h src/board.cpp src/perft.h src/movegenerator.cpp src/movegenerator.h
