@@ -372,10 +372,13 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     castleBKCopy = castleBK;
     castleBQCopy = castleBK;
 
+    
+
     bool inAllBoard = checkBit(BitBoardEnum::All,fromSq);
     bool inPieceSpecificBoard = checkBit(piece,fromSq);
 
     if(!inAllBoard || !inPieceSpecificBoard){
+        printBoard();
         std::cout << "Error in makeMove() " << piece << " from " << fromSq << " to " << toSq << " in all board:" << inAllBoard << " in piece specific:" << inPieceSpecificBoard  <<  std::endl;
         return false;
     }
@@ -499,6 +502,10 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         } else if( fromSq == 63){
             castleBK = false;
         }
+    }
+
+    if(!checkBit(All,toSq)){
+        std::cout << "Why" << std::endl;
     }
 
     if(sideToMove == White){
