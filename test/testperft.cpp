@@ -42,22 +42,24 @@ TEST(PerftTest, perftStartingPosition){
 }
 
 TEST(PerftTest,Position2ChessProgramming){
-    GTEST_SKIP();
+
     //https://www.chessprogramming.org/Perft_Results#Position_2
     Board board;
     board.parseFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
     PerftResults results;
     Perft::perftWithStats(board,4,results);
 
-    int expectedNodes =49+2039+97862+4085603;
+    int expectedNodes =48+2039+97862+4085603;
     int expectedCaptures = 8+351+17102+757163;
-    int expectedEnPassant = 21+45+1929;
+    int expectedEnPassant = 1+45+1929;
+    int expectedCastle = 2+91+3162+128013;
+    int expectedPromotions = 15172;
 
     EXPECT_EQ(expectedNodes ,results.nodes);
     EXPECT_EQ(expectedCaptures, results.captures);
     EXPECT_EQ(expectedEnPassant, results.enPassant);
-    EXPECT_EQ(0,results.castle);
-    EXPECT_EQ(0, results.promotions);
+    EXPECT_EQ(expectedCastle,results.castle);
+    EXPECT_EQ(expectedPromotions, results.promotions);
 }
 
 TEST(PerftTest,Position3ChessProgramming){   
@@ -68,15 +70,16 @@ TEST(PerftTest,Position3ChessProgramming){
     PerftResults results;
     Perft::perftWithStats(board,6,results);
 
-    int expectedNodes =14+191+2812+43238+674624+11030083;
+    int expectedNodes = 14+191+2812+43238+674624+11030083;
     int expectedCaptures = 1+14+209+3348+52051+940350;
     int expectedEnPassant = 2+123+1165+33325;
+    int expectedPromotions = 7552;
 
     EXPECT_EQ(expectedNodes ,results.nodes);
     EXPECT_EQ(expectedCaptures, results.captures);
     EXPECT_EQ(expectedEnPassant, results.enPassant);
-    EXPECT_EQ(0,results.castle);
-    EXPECT_EQ(0, results.promotions);
+    EXPECT_EQ(7795,results.castle);
+    EXPECT_EQ(expectedPromotions, results.promotions);
 }
 
 TEST(PerftTest,Position4ChessProgramming){
