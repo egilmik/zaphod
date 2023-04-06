@@ -7,7 +7,7 @@
 
 int main(int, char**) {
 
-    Test test;
+    /*Test test;
     test.runAllTest();
 
     //Perft results and FEN, https://www.chessprogramming.org/Perft_Results
@@ -25,7 +25,7 @@ int main(int, char**) {
     //Expected at depth 1 - 16 nodes, no capture, castling is the 16th node
     std::string singleWhiteRookFen = "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1";
     Board singleWhiteRook;
-    singleWhiteRook.parseFen(singleWhiteRookFen);
+    singleWhiteRook.parseFen(singleWhiteRookFen);*/
 
 /*
     auto start = std::chrono::high_resolution_clock::now();

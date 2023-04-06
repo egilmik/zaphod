@@ -21,7 +21,7 @@ struct TestDefinition {
 
 class Test {
     public:
-        void runAllTest();
+        void runAllTest(std::vector<TestDefinition> &testVector);
 
     private:
         void printResult(TestResult result, TestDefinition def);

@@ -12,9 +12,18 @@ TEST(PerftTest, enPassantBasicTest){
     EXPECT_EQ(actual,expected);
 }
 
+TEST(PerftTest, BasicPawnMoves){
+
+    Board board;
+    board.parseFen("4k3/8/8/8/8/5r2/PPPPP3/2K5 w - - 0 1");
+    int actual = Perft::perft(board,3);
+    int expected = 2473+223+13;
+
+    EXPECT_EQ(actual,expected);
+}
+
 TEST(PerftTest, perftStartingPosition){
     // https://www.chessprogramming.org/Perft_Results#Initial_Position
-
     Board board;
     board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
     PerftResults results;
