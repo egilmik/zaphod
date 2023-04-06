@@ -32,7 +32,7 @@ enable_testing()
 
 add_executable(
   zaphod_test
-  test/testboard.cpp src/board.h src/board.cpp
+  test/testboard.cpp test/testperft.cpp src/board.h src/board.cpp src/perft.h src/movegenerator.cpp src/movegenerator.h
 )
 target_link_libraries(
   zaphod_test

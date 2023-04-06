@@ -355,11 +355,12 @@ int Board::popLsb(BitBoard& board)
     return lsb;
 }
 
-bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitBoardEnum promotion)
+bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush, BitBoardEnum promotion)
 {
     int length = sizeof(bitBoardArray)/sizeof(bitBoardArray[0]);
     std::copy(bitBoardArray,bitBoardArray+length,bitBoardArrayCopy);
     sideToMoveCopy = sideToMove;
+    enPassantSqCopy = enPassantSqCopy;
 
     bool inAllBoard = checkBit(BitBoardEnum::All,fromSq);
     bool inPieceSpecificBoard = checkBit(piece,fromSq);
@@ -369,6 +370,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitB
         return false;
     }
 
+
     popBit(BitBoardEnum::All,fromSq);
     setBit(BitBoardEnum::All,toSq);
     popBit(piece,  fromSq);
@@ -376,11 +378,37 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitB
     if(sideToMove == BitBoardEnum::White){
         popBit(BitBoardEnum::White,fromSq);
         setBit(BitBoardEnum::White,toSq);
+
+        if(doublePush){
+            setEnPassantSq(toSq-8);
+        } else {
+            setEnPassantSq(noSq);
+        }
+
     } else {
         popBit(BitBoardEnum::Black,fromSq);
         setBit(BitBoardEnum::Black,toSq);
+
+        if(doublePush){
+            setEnPassantSq(toSq+8);
+        } else {
+            setEnPassantSq(noSq);
+        }
     }
 
+    if(enPassant){
+        if(sideToMove == BitBoardEnum::White){
+            popBit(p,toSq-8);
+            popBit(All, toSq-8);
+            popBit(Black, toSq-8);
+        } else {
+            popBit(P,toSq+8);
+            popBit(All, toSq+8);
+            popBit(White, toSq+8);
+            
+        }  
+        //std::cout << "En passant " << sqToNotation[fromSq] << " " << sqToNotation[toSq] << std::endl;
+    }
 
     int black = BitBoardEnum::Black;
     int white = BitBoardEnum::White;
@@ -394,9 +422,9 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitB
             (i != currentPiece)){
                 BitBoardEnum val = static_cast<BitBoardEnum>(i);
                 popBit(val,toSq);
-            }
+        }
     }
-
+    
     if(promotion != Board::All){        
         popBit(piece,toSq);
         setBit(promotion,toSq);
@@ -422,6 +450,7 @@ void Board::revertLastMove()
     int length = sizeof(bitBoardArray)/sizeof(bitBoardArray[0]);
     std::copy(bitBoardArrayCopy,bitBoardArrayCopy+length,bitBoardArray);
     sideToMove = sideToMoveCopy;
+    enPassantSq = enPassantSqCopy;
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
@@ -508,8 +537,8 @@ void Board::printBoard(){
         }
     }
 
-    for(int i = 0;i < 64; i++){
-        if((i)%8== 0){
+    for(int i = 63;i >= 0; i--){
+        if((i+1)%8== 0){
             std::cout << std::endl;
         }
         std::cout << printBoard[i] << " ";

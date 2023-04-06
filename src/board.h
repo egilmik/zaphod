@@ -70,7 +70,7 @@ class Board {
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
         int popLsb(BitBoard& board);
-        bool makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture, BitBoardEnum promotion);
+        bool makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush, BitBoardEnum promotion);
         void revertLastMove();
         bool isSquareAttacked(BitBoard targetSquares, BitBoardEnum attackingSide);
 
@@ -95,15 +95,24 @@ class Board {
         void changeSideToMove();
         BitBoardEnum getSideToMove();
 
+        void setEnPassantSq(int sq){enPassantSq = sq;};
+        int getEnPassantSq(){return enPassantSq;};
+        int getNoSq(){return noSq;};
+
     private:
         void parseFenPosition(char value, int &bitCout);
 
         
-        BitBoardEnum sideToMoveCopy;
-
+        const int noSq = -1;
+        
         BitBoard bitBoardArrayCopy[15];
-        BitBoardEnum sideToMove = White;
+        BitBoardEnum sideToMoveCopy;
+        int enPassantSqCopy = noSq;
+        
         BitBoard bitBoardArray[15];
+        BitBoardEnum sideToMove = White;
+        int enPassantSq = noSq;
+
         /*std::map<BitBoardEnum,BitBoard> bitBoardMap = {
             {All, 0},
             {White, 0},

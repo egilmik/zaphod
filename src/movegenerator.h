@@ -9,6 +9,8 @@ struct Move {
     int toSq;
     bool capture;
     Board::BitBoardEnum promotion;
+    bool doublePawnPush;
+    bool enpassant;
     Board::BitBoardEnum piece;
 };
 

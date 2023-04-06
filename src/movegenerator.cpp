@@ -26,8 +26,10 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
     int pawnDoubleIncrement = 16;
     int pawnCaptureLeftIncrement = 7;
     int pawnCaptureRightIncrement = 9;
+    int enPassantIncrement = -8;
     BitBoard doublePushRank = board.Rank2Mask;
     BitBoard promotionRank = board.Rank8Mask;
+
 
     Board::BitBoardEnum queenPromo = Board::Q;
     Board::BitBoardEnum bishopPromo = Board::B;
@@ -46,6 +48,7 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
         pawnIncrement = -8;
         pawnCaptureLeftIncrement = -7;
         pawnCaptureRightIncrement = -9;
+        
         doublePushRank = board.Rank7Mask;
         promotionRank = board.Rank1Mask;
 
@@ -67,12 +70,12 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
 
             
             if((sqBoard & promotionRank) != 0){
-                moveList.moves[moveList.counter++] = {fromSq,toSq,false,queenPromo,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,false,rookPromo,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,false,knightPromo,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,false,bishopPromo,movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq,false,queenPromo,false,false,movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq,false,rookPromo,false,false,movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq,false,knightPromo,false,false,movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq,false,bishopPromo,false,false,movedPiece};
             } else {
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false, Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, false, Board::All,false, false,movedPiece};
             }
             
         }
@@ -82,7 +85,7 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
             toSq =fromSq+pawnDoubleIncrement;
 
             if(!board.checkBit(allPieces,toSq) && !board.checkBit(allPieces,fromSq+pawnIncrement)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All,true,false,movedPiece};
             }
         }
 
@@ -106,15 +109,35 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
             board.setBit(sqBoard,toSq);
 
             if((sqBoard & promotionRank) != 0){
-                moveList.moves[moveList.counter++] = {fromSq,toSq,true,queenPromo,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,true,rookPromo,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,true,knightPromo,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,true,bishopPromo,movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq,true,queenPromo,false,false,movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq,true,rookPromo,false,false,movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq,true,knightPromo,false,false,movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq,true,bishopPromo,false,false,movedPiece};
             } else {
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All,false,false,movedPiece};
             }
         }
-        
+
+        if(board.getEnPassantSq() != board.getNoSq()){
+            BitBoard attack = 0;
+            BitBoard enPassantBoard = 0;
+            board.setBit(enPassantBoard,board.getEnPassantSq());
+
+            if(sideToMove == board.White){
+                attack = enPassantBoard & board.southEastOne(pawn);
+                attack |= enPassantBoard & board.southWestOne(pawn);
+            } else {            
+                attack = enPassantBoard & board.northEastOne(pawn);
+                attack |= enPassantBoard & board.northWestOne(pawn);
+            }
+
+            while(attack != 0){
+                toSq = board.popLsb(attack);
+                BitBoard sqBoard = 0;
+                board.setBit(sqBoard,toSq);
+                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All,false,true, movedPiece};
+            }
+        }
         // En passant
 
 
@@ -153,12 +176,12 @@ void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList)
         while(knightMoves != 0){
             toSq = board.popLsb(knightMoves);
             if(!board.checkBit(allPieces,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All,false, false,movedPiece};
             }
 
             
             if(board.checkBit(enemyBoard,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All,false, false,movedPiece};
             }
            
         }
@@ -199,9 +222,9 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
         while(moves != 0){
             toSq = board.popLsb(moves);
             if(board.checkBit(emptySquares,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All,false, false,movedPiece};
             } else if(board.checkBit(enemyBoard,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All,false, false,movedPiece};
             }
 
             
@@ -244,9 +267,9 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
         while(moves != 0){
             toSq = board.popLsb(moves);
             if(board.checkBit(emptySquares,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All,false, false,movedPiece};
             } else if(board.checkBit(enemyBoard,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All,false, false,movedPiece};
             }
         }
         
@@ -291,9 +314,9 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
         while(moves != 0){
             toSq = board.popLsb(moves);
             if(board.checkBit(emptySquares,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All,false, false,movedPiece};
             } else if(board.checkBit(enemyBoard,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All, movedPiece};
+                moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All,false, false,movedPiece};
             }
         }
         
@@ -326,9 +349,9 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
         toSq = board.popLsb(kingMove);;
         
         if(!board.checkBit(allPieces,toSq)){
-            moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All, movedPiece};
+            moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All,false, false,movedPiece};
         } else if(board.checkBit(enemyBoard,toSq)){
-            moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All, movedPiece};
+            moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All,false, false,movedPiece};
         }
         
     }

@@ -22,9 +22,10 @@ class Perft {
             nrOfNodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
-                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,false,move.promotion);
+                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.promotion);
                 if(valid){
                     nrOfNodes += perft(board, depth-1);
+                    //board.printBoard();
                     //std::cout << board.sqToNotation[move.fromSq] << "" << board.sqToNotation[move.toSq] << std::endl;
                 } else {
                     nrOfNodes--;
@@ -48,7 +49,7 @@ class Perft {
             
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
-                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,false, move.promotion);
+                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.promotion);
                 if(valid){
                     divideNodes = perft(board, depth-1);
                     nrOfNodes += divideNodes;
