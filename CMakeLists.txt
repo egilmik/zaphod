@@ -18,6 +18,9 @@ FetchContent_MakeAvailable(googletest)
 file(GLOB src CONFIGURE_DEPENDS "*.h" "*.cpp")
 
 add_executable(Zaphod src/board.cpp src/board.h src/main.cpp src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h)
+add_executable(Perft src/board.cpp src/board.h src/mainperft.cpp src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h
+  
+)
 
 target_include_directories(Zaphod PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
@@ -33,6 +36,9 @@ add_executable(
   zaphod_test
   test/testboard.cpp test/testperft.cpp src/board.h src/board.cpp src/perft.h src/movegenerator.cpp src/movegenerator.h
 )
+
+
+
 target_link_libraries(
   zaphod_test
   GTest::gtest_main
