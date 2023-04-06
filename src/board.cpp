@@ -134,6 +134,12 @@ void Board::parseFen(std::string fen){
             } else {
                 sideToMove = Black;
             }
+            break;
+        case 2:
+            if(fen[i] == 'K'){ castleWK = true;}
+            if(fen[i] == 'Q'){ castleWQ = true;}
+            if(fen[i] == 'k'){ castleBK = true;}
+            if(fen[i] == 'q'){ castleBQ = true;}
         
         default:
             break;

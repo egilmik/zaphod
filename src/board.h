@@ -121,10 +121,10 @@ class Board {
         BitBoard bitBoardArray[15];
         BitBoardEnum sideToMove = White;
         int enPassantSq = noSq;
-        bool castleWK = true;
-        bool castleWQ = true;
-        bool castleBK = true;
-        bool castleBQ = true;
+        bool castleWK = false;
+        bool castleWQ = false;
+        bool castleBK = false;
+        bool castleBQ = false;
 
         /*std::map<BitBoardEnum,BitBoard> bitBoardMap = {
             {All, 0},
