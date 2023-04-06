@@ -504,10 +504,6 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         }
     }
 
-    if(!checkBit(All,toSq)){
-        std::cout << "Why" << std::endl;
-    }
-
     if(sideToMove == White){
         if(isSquareAttacked(bitBoardArray[K], White)){
             return false;
@@ -566,21 +562,23 @@ bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
         queenBishops = bitBoardArray[Q] | bitBoardArray[B];
     }
 
-        
-        int knightSquare = 0;
-        while(knights != 0){
-            knightSquare = popLsb(knights);
-            if((knightmask[knightSquare] & targetSquares) != 0) return true;
-        }
 
-        if((southOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
-        if((westOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
-        if((eastOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
-        if((northOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
-        if((northEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
-        if((northWestccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
-        if((southEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
-        if((southWestOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
+    int knightSquare = 0;
+    while(knights != 0){
+        knightSquare = popLsb(knights);
+        if((knightmask[knightSquare] & targetSquares) != 0) return true;
+    }
+
+    if((kingMask[popLsb(king)] & targetSquares) != 0) return true;
+
+    if((southOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
+    if((westOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
+    if((eastOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
+    if((northOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
+    if((northEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
+    if((northWestccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
+    if((southEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
+    if((southWestOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
 
     return false;
 }
