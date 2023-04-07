@@ -388,6 +388,12 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     popBit(piece,  fromSq);
     setBit(piece, toSq);
     if(sideToMove == BitBoardEnum::White){
+        if(!capture){
+            if(checkBit(BitBoardEnum::Black,toSq) || checkBit(BitBoardEnum::White,toSq)){
+                int x = 0;
+            }
+        }
+
         popBit(BitBoardEnum::White,fromSq);
         setBit(BitBoardEnum::White,toSq);
 
@@ -479,6 +485,9 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
             (i != all) &&
             (i != currentPiece)){
                 BitBoardEnum val = static_cast<BitBoardEnum>(i);
+                if(checkBit(val,toSq) && !capture){
+                    int x = 0;
+                }
                 popBit(val,toSq);
         }
     }
@@ -490,6 +499,15 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
 
     if(checkBit(Black,toSq) && checkBit(White,toSq)){
         int x = 0;
+    }
+
+    inAllBoard = checkBit(BitBoardEnum::All,toSq);
+    inPieceSpecificBoard = checkBit(piece,toSq);
+
+    if((!inAllBoard || !inPieceSpecificBoard) && promotion == BitBoardEnum::All){
+        printBoard();
+        std::cout << "Error in makeMove() " << piece << " from " << fromSq << " to " << toSq << " in all board:" << inAllBoard << " in piece specific:" << inPieceSpecificBoard  <<  std::endl;
+        return false;
     }
 
     //Update castling rights
