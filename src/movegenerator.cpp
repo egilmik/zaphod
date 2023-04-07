@@ -379,7 +379,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard castlineSquares;
             board.setBit(castlineSquares,61);
             board.setBit(castlineSquares,62);
-            if(board.isSquareAttacked(castlineSquares, Board::Black) && (allPieces & castlineSquares) == 0){
+            if(board.isSquareAttacked(castlineSquares, Board::White) && (allPieces & castlineSquares) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq+2,false,Board::All,false,false,true,movedPiece};
             }
         }
@@ -388,7 +388,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             board.setBit(castlineSquares,57);
             board.setBit(castlineSquares,58);
             board.setBit(castlineSquares,59);
-            if(board.isSquareAttacked(castlineSquares, Board::Black) && (allPieces & castlineSquares) == 0){
+            if(board.isSquareAttacked(castlineSquares, Board::White) && (allPieces & castlineSquares) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,Board::All,false,false,true,movedPiece};
             }
         }
