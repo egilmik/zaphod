@@ -23,19 +23,6 @@ void Board::initRayAttacks()
     BitBoard north = FileHMask;
     BitBoard south = FileHMask;
     
-
-    for(int i = 0; i < 64; i++){
-        rayAttackNorth[i] = north <<=1;
-    }
-
-    for(int i = 63; i >= 0; i--){
-        rayAttackSouth[i] = south >>=1;
-    }
-
-    for(int i = 0; i< 64; i++){
-        BitBoard one = 1;
-        rayAttackEast[i] = ((one << (i|7)));//- (one << i))); 
-    }
 }
 
 void Board::initKingMask(){

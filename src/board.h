@@ -31,15 +31,7 @@ class Board {
         BitBoard sqToBitBoard[64];
         BitBoard knightmask[64];
         BitBoard kingMask[64];
-        BitBoard rayAttackNorth[64];
-        BitBoard rayAttackSouth[64];
-        BitBoard rayAttackNW[64];
-        BitBoard rayAttackNE[64];
-        BitBoard rayAttackWest[64];
-        BitBoard rayAttackEast[64];
-        BitBoard rayAttackSE[64];
-        BitBoard rayAttackSW[64];
-
+        
         inline static const std::string sqToNotation[64] = {"a1","b1","c1","d1","e1","f1","g1","h1",
                                             "a2","b2","c2","d2","e2","f2","g2","h2",
                                             "a3","b3","c3","d3","e3","f3","g3","h3",
