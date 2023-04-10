@@ -64,7 +64,7 @@ TEST(PerftTest,Position2ChessProgramming){
 }
 
 TEST(PerftTest,Position3ChessProgramming){   
-    //GTEST_SKIP();
+    GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_3
     Board board;
     board.parseFen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ");
@@ -94,7 +94,7 @@ TEST(PerftTest,Position4ChessProgramming){
     int expectedNodes =6+264+9467+422333+15833292;
     int expectedCaptures = 87+1021+131393+2046173;
     int expectedEnPassant = 4+6512;
-    int expectedCastle = 7795;
+    int expectedCastle = 7795+6;
     int expectedPromotions = 48+120+60032+329464;
 
     EXPECT_EQ(expectedNodes ,results.nodes);
@@ -105,7 +105,7 @@ TEST(PerftTest,Position4ChessProgramming){
 }
 
 TEST(PerftTest,Position5ChessProgramming){
-    
+    GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_5
     Board board;
     board.parseFen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");

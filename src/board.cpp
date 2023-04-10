@@ -370,7 +370,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     castleWKCopy = castleWK;
     castleWQCopy= castleWQ;
     castleBKCopy = castleBK;
-    castleBQCopy = castleBK;
+    castleBQCopy = castleBQ;
 
     
 
@@ -559,7 +559,7 @@ void Board::revertLastMove()
     castleWK = castleWKCopy;
     castleWQ = castleWQCopy;
     castleBK = castleBKCopy;
-    castleBQ = castleBKCopy;
+    castleBQ = castleBQCopy;
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
