@@ -9,6 +9,13 @@ Board::Board(){
     initKnightMask();
     initKingMask();
     initRayAttacks();
+
+    for(int i = 0; i < 64; i++){
+        BitBoard mapping = 0;
+        setBit(mapping,i);
+        sqToBitBoard[i] = mapping;
+
+    }
 }
 
 void Board::initRayAttacks()
@@ -485,9 +492,6 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
             (i != all) &&
             (i != currentPiece)){
                 BitBoardEnum val = static_cast<BitBoardEnum>(i);
-                if(checkBit(val,toSq) && !capture){
-                    int x = 0;
-                }
                 popBit(val,toSq);
         }
     }
@@ -495,19 +499,6 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     if(promotion != Board::All){        
         popBit(piece,toSq);
         setBit(promotion,toSq);
-    }
-
-    if(checkBit(Black,toSq) && checkBit(White,toSq)){
-        int x = 0;
-    }
-
-    inAllBoard = checkBit(BitBoardEnum::All,toSq);
-    inPieceSpecificBoard = checkBit(piece,toSq);
-
-    if((!inAllBoard || !inPieceSpecificBoard) && promotion == BitBoardEnum::All){
-        printBoard();
-        std::cout << "Error in makeMove() " << piece << " from " << fromSq << " to " << toSq << " in all board:" << inAllBoard << " in piece specific:" << inPieceSpecificBoard  <<  std::endl;
-        return false;
     }
 
     //TODO Castline status overly complex

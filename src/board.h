@@ -126,23 +126,7 @@ class Board {
         bool castleBK = false;
         bool castleBQ = false;
 
-        /*std::map<BitBoardEnum,BitBoard> bitBoardMap = {
-            {All, 0},
-            {White, 0},
-            {Black,0},
-            {R,0},
-            {r,0},
-            {N,0},
-            {n,0},
-            {B,0},
-            {b,0},
-            {Q,0},
-            {q,0},
-            {K,0},
-            {k,0},
-            {P,0},
-            {p,0},
-        };*/
+        BitBoard sqToBitBoard[64];
 
         inline static const int fenToBitMapping[64] = {56,57,58,59,60,61,62,63,
                                    48,49,50,51,52,53,54,55,
