@@ -28,9 +28,9 @@ class Board {
         static constexpr BitBoard Rank7Mask = Rank1Mask << (8 * 6);
         static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
 
-        BitBoard sqToBitBoard[64];
-        BitBoard knightmask[64];
-        BitBoard kingMask[64];
+        static const std::array<BitBoard,64> sqToBitBoard;
+        static const std::array<BitBoard,64> knightmask;
+        static const std::array<BitBoard,64> kingMask;
         
         inline static const std::string sqToNotation[64] = {"a1","b1","c1","d1","e1","f1","g1","h1",
                                             "a2","b2","c2","d2","e2","f2","g2","h2",
@@ -42,9 +42,7 @@ class Board {
                                             "a8","b8","c8","d8","e8","f8","g8","h8"
                                         };
 
-        void initRayAttacks();
-        void initKnightMask();
-        void initKingMask();
+
         BitBoard getKnightMask(int square);
         BitBoard getKingMask(int square);
         BitBoard getRankMask(int square);
@@ -55,8 +53,8 @@ class Board {
         void printBoard(BitBoard board);
         void printBoard(BitBoard board, int origin);
         void popBit(BitBoard &board, int bitNr);
-        void setBit(BitBoard &board, int bitNr);
-        void setBit(BitBoard &board, bool highLow, int bitNr);
+        static void setBit(BitBoard &board, int bitNr);
+        static void setBit(BitBoard &board, bool highLow, int bitNr);
         void setBit(BitBoardEnum piece, int bitNr);
         void popBit(BitBoardEnum piece, int bitNr);
         bool checkBit(BitBoard &board, int bitNr);

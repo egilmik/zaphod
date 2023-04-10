@@ -2,44 +2,35 @@
 #include <iostream>
 #include <string>
 
-Board::Board(){
-    for(int i = 0; i< 15; i++){
-        bitBoardArray[i] = 0;
-    }
-    initKnightMask();
-    initKingMask();
-    initRayAttacks();
+static std::array<BitBoard,64> initSqToBitMapping(){
+    std::array<BitBoard,64> mapping;
+
 
     for(int i = 0; i < 64; i++){
-        BitBoard mapping = 0;
-        setBit(mapping,i);
-        sqToBitBoard[i] = mapping;
-
+        BitBoard bb = 0;
+        Board::setBit(bb,i);
+        mapping[i] = bb;
     }
+
+    return mapping;
 }
 
-void Board::initRayAttacks()
-{
-    BitBoard north = FileHMask;
-    BitBoard south = FileHMask;
-    
-}
-
-void Board::initKingMask(){
+static std::array<BitBoard,64> initKingMask(){
+    std::array<BitBoard,64> kingMask;
     for(int i =0; i< 64;i++){
         BitBoard piece = 0;
         BitBoard moves = 0;
         
-        setBit(piece,true,i);
+        Board::setBit(piece,true,i);
 
-        if(!(piece & FileAMask)){
+        if(!(piece & Board::FileAMask)){
             moves |= piece >> 7 ;
             moves |= piece << 1 ;
             moves |= piece << 9 ;
         }
         
 
-        if(!(piece & FileHMask)){
+        if(!(piece & Board::FileHMask)){
             moves |= piece >> 9;
             moves |= piece >> 1;
             moves |= piece << 7 ;
@@ -48,34 +39,36 @@ void Board::initKingMask(){
         moves |= piece << 8;
 
         kingMask[i] = moves;
-        
     }
+
+    return kingMask;
 }
 
-void Board::initKnightMask()
+static std::array<BitBoard,64> initKnightMask()
 {  
+    std::array<BitBoard,64> knightmask;
     for(int i =0; i< 64;i++){
         BitBoard piece = 0;
         BitBoard moves = 0;
 
         
-        setBit(piece,true,i);
+        Board::setBit(piece,true,i);
 
-        if(!(piece & FileAMask)){
+        if(!(piece & Board::FileAMask)){
             moves |= piece >> 15;
             moves |= piece << 17;
         }
-        if(!(piece & FileABMask)){
+        if(!(piece & Board::FileABMask)){
             moves |= piece >> 6;
             moves |= piece << 10;
         }
 
-        if(!(piece & FileHMask)){
+        if(!(piece & Board::FileHMask)){
             moves |= piece >> 17;
             moves |= piece << 15;
         }
 
-        if(!(piece & FileGHMask)){
+        if(!(piece & Board::FileGHMask)){
             moves |= piece >> 10;
             moves |= piece << 6;
         }
@@ -83,8 +76,21 @@ void Board::initKnightMask()
         knightmask[i] = moves;
         
     }
+    return knightmask;
 
 }
+
+
+const std::array<BitBoard,64> Board::sqToBitBoard = initSqToBitMapping();
+const std::array<BitBoard,64> Board::kingMask = initKingMask();
+const std::array<BitBoard,64> Board::knightmask = initKnightMask();
+
+Board::Board(){
+    for(int i = 0; i< 15; i++){
+        bitBoardArray[i] = 0;
+    }
+}
+
 
 BitBoard Board::getKnightMask(int square)
 {
