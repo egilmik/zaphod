@@ -63,7 +63,7 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
     {        
         int toSq = fromSq+pawnIncrement;
 
-        if(!board.checkBit(allPieces,toSq)){
+        if((board.sqToBitBoard[toSq] & allPieces) == 0){
 
             BitBoard sqBoard = 0;
             board.setBit(sqBoard,toSq);
@@ -80,11 +80,11 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
             
         }
         
-        if(board.checkBit(doublePushRank,fromSq)){
+        if((board.sqToBitBoard[fromSq] & doublePushRank) != 0){
             //Two squares forward from starting position
             toSq =fromSq+pawnDoubleIncrement;
 
-            if(!board.checkBit(allPieces,toSq) && !board.checkBit(allPieces,fromSq+pawnIncrement)){
+            if((board.sqToBitBoard[toSq] & allPieces) == 0 && (board.sqToBitBoard[fromSq+pawnIncrement] & allPieces) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,toSq, false,Board::All,true,false,false,movedPiece};
             }
         }

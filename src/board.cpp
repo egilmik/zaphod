@@ -380,7 +380,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     castleBQCopy = castleBQ;
 
     
-
+    /*
     bool inAllBoard = checkBit(BitBoardEnum::All,fromSq);
     bool inPieceSpecificBoard = checkBit(piece,fromSq);
 
@@ -389,23 +389,23 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         std::cout << "Error in makeMove() " << piece << " from " << fromSq << " to " << toSq << " in all board:" << inAllBoard << " in piece specific:" << inPieceSpecificBoard  <<  std::endl;
         return false;
     }
+    */
 
     popBit(BitBoardEnum::All,fromSq);
     setBit(BitBoardEnum::All,toSq);
     popBit(piece,  fromSq);
     setBit(piece, toSq);
     if(sideToMove == BitBoardEnum::White){
-        if(!capture){
-            if(checkBit(BitBoardEnum::Black,toSq) || checkBit(BitBoardEnum::White,toSq)){
-                int x = 0;
-            }
-        }
-
         popBit(BitBoardEnum::White,fromSq);
         setBit(BitBoardEnum::White,toSq);
 
         if(capture){
             popBit(BitBoardEnum::Black,toSq);
+            popBit(BitBoardEnum::p, toSq);
+            popBit(BitBoardEnum::n, toSq);
+            popBit(BitBoardEnum::q, toSq);
+            popBit(BitBoardEnum::b, toSq);
+            popBit(BitBoardEnum::r, toSq);
         }
 
         if(doublePush){
@@ -439,6 +439,11 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
 
         if(capture){
             popBit(BitBoardEnum::White,toSq);
+            popBit(BitBoardEnum::P, toSq);
+            popBit(BitBoardEnum::N, toSq);
+            popBit(BitBoardEnum::Q, toSq);
+            popBit(BitBoardEnum::B, toSq);
+            popBit(BitBoardEnum::R, toSq);
         }
 
         if(doublePush){
@@ -486,7 +491,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     int currentPiece = piece;
 
     //TODO if capture and only then
-    for(int i = 0; i < 15; i++){
+    /*for(int i = 0; i < 15; i++){
         if((i != black) &&
             (i != white) &&
             (i != all) &&
@@ -494,7 +499,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
                 BitBoardEnum val = static_cast<BitBoardEnum>(i);
                 popBit(val,toSq);
         }
-    }
+    }*/
     
     if(promotion != Board::All){        
         popBit(piece,toSq);

@@ -28,7 +28,7 @@ class Board {
         static constexpr BitBoard Rank7Mask = Rank1Mask << (8 * 6);
         static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
 
-
+        BitBoard sqToBitBoard[64];
         BitBoard knightmask[64];
         BitBoard kingMask[64];
         BitBoard rayAttackNorth[64];
@@ -126,7 +126,7 @@ class Board {
         bool castleBK = false;
         bool castleBQ = false;
 
-        BitBoard sqToBitBoard[64];
+        
 
         inline static const int fenToBitMapping[64] = {56,57,58,59,60,61,62,63,
                                    48,49,50,51,52,53,54,55,
