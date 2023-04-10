@@ -8,7 +8,7 @@ void Test::runAllTest(std::vector<TestDefinition> &testVector)
 {
     for(TestDefinition def: testVector){
         TestResult result = standardTest(def);
-        if(!result.result){
+        if(!result.result || def.printResult){
             printResult(result,def);
         }
     }
@@ -19,7 +19,7 @@ TestResult Test::standardTest(TestDefinition definition)
     Board board;
     board.parseFen(definition.fen);
     auto start = std::chrono::high_resolution_clock::now();    
-    int nrOfNodes = Perft::perft(board,definition.depth);
+    unsigned long long nrOfNodes = Perft::perft(board,definition.depth);
     
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

@@ -9,14 +9,15 @@ struct TestResult {
     bool result;
     long runTimeMilliseconds;
     int nps;
-    long actualNodes;
+    unsigned long long actualNodes;
 };
 
 struct TestDefinition {
     int depth;
-    long expectedNodes;
+    unsigned long long expectedNodes;
     std::string text;
     std::string fen;  
+    bool printResult = false;
 };
 
 class Test {

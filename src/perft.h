@@ -7,21 +7,21 @@
 #include <iostream>
 
 struct PerftResults {
-    long nodes = 0;
-    long captures = 0;
-    long enPassant = 0;
-    long castle = 0;
-    long promotions = 0;
-    long checks = 0;
+    unsigned long long nodes = 0;
+    unsigned long long captures = 0;
+    unsigned long long enPassant = 0;
+    unsigned long long castle = 0;
+    unsigned long long promotions = 0;
+    unsigned long long checks = 0;
 };
 
 class Perft {
     public:
         
 
-        static int perft(Board board, int depth){
+        static unsigned long long perft(Board board, int depth){
             MoveGenerator generator;
-            int nrOfNodes = 0;
+            unsigned long long nrOfNodes = 0;
             if(depth == 0){
                 return 0;
             }
@@ -46,10 +46,10 @@ class Perft {
             return nrOfNodes;
         }
 
-        static int dperft(Board board, int depth){
+        static unsigned long long dperft(Board board, int depth){
             MoveGenerator generator;
-            int divideNodes = 0;
-            int nrOfNodes = 0;
+            unsigned long long divideNodes = 0;
+            unsigned long long nrOfNodes = 0;
             if(depth == 0){
                 return 0;
             }
