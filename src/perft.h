@@ -17,17 +17,14 @@ struct PerftResults {
 
 class Perft {
     public:
-        
-
         static unsigned long long perft(Board board, int depth){
-            MoveGenerator generator;
             unsigned long long nrOfNodes = 0;
             if(depth == 0){
                 return 0;
             }
 
             MoveList moveList;
-            generator.generateMoves(board,moveList);
+            MoveGenerator::generateMoves(board,moveList);
             nrOfNodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
@@ -47,14 +44,13 @@ class Perft {
         }
 
         static unsigned long long dperft(Board board, int depth){
-            MoveGenerator generator;
             unsigned long long divideNodes = 0;
             unsigned long long nrOfNodes = 0;
             if(depth == 0){
                 return 0;
             }
             MoveList moveList;
-            generator.generateMoves(board,moveList);
+            MoveGenerator::generateMoves(board,moveList);
             
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
@@ -75,13 +71,13 @@ class Perft {
         }
 
         static void perftWithStats(Board board, int depth, PerftResults &results){
-            MoveGenerator generator;
+            
             if(depth == 0){
                 return;
             }
 
             MoveList moveList;
-            generator.generateMoves(board,moveList);
+            MoveGenerator::generateMoves(board,moveList);
             results.nodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
