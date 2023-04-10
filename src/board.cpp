@@ -510,6 +510,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         return false;
     }
 
+    //TODO Castline status overly complex
     //Update castling rights
     if(piece == K){
         castleWK = false;
@@ -533,6 +534,23 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         } else if( fromSq == 63){
             castleBK = false;
         }
+    }
+
+
+    if(toSq == 0 && capture){
+        castleWQ = false;
+    }
+
+    if(toSq == 7 && capture){
+        castleWK = false;
+    }
+
+    if(toSq == 56 && capture){
+        castleBQ = false;
+    }
+
+    if(toSq == 63 && capture){
+        castleBK = false;
     }
 
     if(sideToMove == White){
@@ -648,12 +666,24 @@ void Board::printBoard(){
         }
     }
 
+    for(int i = 7; i >= 0; i--){
+        int startSquare = 8 * i;
+        for(int x = 0; x < 8; x++){
+            std::cout << printBoard[startSquare+x] << " ";    
+        }
+
+        std::cout << std::endl;
+
+    }
+
+    /*
     for(int i = 63;i >= 0; i--){
         if((i+1)%8== 0){
             std::cout << std::endl;
         }
         std::cout << printBoard[i] << " ";
     }
+    */
 
     std::cout << std::endl;
     std::cout << std::endl;
