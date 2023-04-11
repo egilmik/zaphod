@@ -62,14 +62,10 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
     while (fromSq != 0)
     {        
         int toSq = fromSq+pawnIncrement;
+        BitBoard fromSqBoard = board.sqToBitBoard[fromSq];
 
-        if((board.sqToBitBoard[toSq] & allPieces) == 0){
-
-            BitBoard sqBoard = 0;
-            board.setBit(sqBoard,toSq);
-
-            
-            if((sqBoard & promotionRank) != 0){
+        if((board.sqToBitBoard[toSq] & allPieces) == 0){            
+            if((board.sqToBitBoard[toSq] & promotionRank) != 0){
                 moveList.moves[moveList.counter++] = {fromSq,toSq,false,queenPromo,false,false,false,movedPiece};
                 moveList.moves[moveList.counter++] = {fromSq,toSq,false,rookPromo,false,false,false,movedPiece};
                 moveList.moves[moveList.counter++] = {fromSq,toSq,false,knightPromo,false,false,false,movedPiece};
@@ -80,7 +76,7 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
             
         }
         
-        if((board.sqToBitBoard[fromSq] & doublePushRank) != 0){
+        if((fromSqBoard & doublePushRank) != 0){
             //Two squares forward from starting position
             toSq =fromSq+pawnDoubleIncrement;
 
@@ -91,24 +87,20 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
 
         //Capture
         
-        BitBoard pawn = 0;
-        BitBoard attack = 0;
-        board.setBit(pawn,fromSq);
+        BitBoard attack = 0;        
 
         if(sideToMove == board.White){
-            attack = enemyBoard & board.southEastOne(pawn);
-            attack |= enemyBoard & board.southWestOne(pawn);
+            attack = enemyBoard & board.southEastOne(fromSqBoard);
+            attack |= enemyBoard & board.southWestOne(fromSqBoard);
         } else {            
-            attack = enemyBoard & board.northEastOne(pawn);
-            attack |= enemyBoard & board.northWestOne(pawn);
+            attack = enemyBoard & board.northEastOne(fromSqBoard);
+            attack |= enemyBoard & board.northWestOne(fromSqBoard);
         }
 
         while(attack != 0){
             toSq = board.popLsb(attack);
-            BitBoard sqBoard = 0;
-            board.setBit(sqBoard,toSq);
 
-            if((sqBoard & promotionRank) != 0){
+            if((board.sqToBitBoard[toSq] & promotionRank) != 0){
                 moveList.moves[moveList.counter++] = {fromSq,toSq,true,queenPromo,false,false,false,movedPiece};
                 moveList.moves[moveList.counter++] = {fromSq,toSq,true,rookPromo,false,false,false,movedPiece};
                 moveList.moves[moveList.counter++] = {fromSq,toSq,true,knightPromo,false,false,false,movedPiece};
@@ -120,26 +112,20 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
 
         if(board.getEnPassantSq() != board.getNoSq()){
             BitBoard attack = 0;
-            BitBoard enPassantBoard = 0;
-            board.setBit(enPassantBoard,board.getEnPassantSq());
 
             if(sideToMove == board.White){
-                attack = enPassantBoard & board.southEastOne(pawn);
-                attack |= enPassantBoard & board.southWestOne(pawn);
+                attack = board.sqToBitBoard[board.getEnPassantSq()] & board.southEastOne(fromSqBoard);
+                attack |= board.sqToBitBoard[board.getEnPassantSq()] & board.southWestOne(fromSqBoard);
             } else {            
-                attack = enPassantBoard & board.northEastOne(pawn);
-                attack |= enPassantBoard & board.northWestOne(pawn);
+                attack = board.sqToBitBoard[board.getEnPassantSq()] & board.northEastOne(fromSqBoard);
+                attack |= board.sqToBitBoard[board.getEnPassantSq()] & board.northWestOne(fromSqBoard);
             }
 
             while(attack != 0){
                 toSq = board.popLsb(attack);
-                BitBoard sqBoard = 0;
-                board.setBit(sqBoard,toSq);
                 moveList.moves[moveList.counter++] = {fromSq,toSq, true,Board::All,false,true, false,movedPiece};
             }
         }
-        // En passant
-
 
         fromSq = board.popLsb(pawns);
     }
