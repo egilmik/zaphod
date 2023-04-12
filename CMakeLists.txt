@@ -34,7 +34,7 @@ enable_testing()
 
 add_executable(
   zaphod_test
-  test/testboard.cpp test/testperft.cpp src/board.h src/board.cpp src/perft.h src/movegenerator.cpp src/movegenerator.h
+  test/testboard.cpp test/testperft.cpp test/testsearch.cpp src/board.h src/board.cpp src/search.h src/search.cpp src/perft.h src/movegenerator.cpp src/movegenerator.h
 )
 
 

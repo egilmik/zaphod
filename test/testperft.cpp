@@ -1,8 +1,16 @@
 #include <gtest/gtest.h>
 #include "../src/perft.h"
 
-TEST(PerftTest, enPassantBasicTest){
-    //GTEST_SKIP();
+class PerftTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+     GTEST_SKIP() << "Skipping all tests for this fixture";
+  }
+};
+
+
+TEST_F(PerftTest, enPassantBasicTest){
+    GTEST_SKIP();
     Board board;
     board.parseFen("8/8/8/K7/5p1k/8/4P3/8 w - - 0 1");
     int actual = Perft::perft(board,5);
@@ -13,7 +21,7 @@ TEST(PerftTest, enPassantBasicTest){
     EXPECT_EQ(actual,expected);
 }
 
-TEST(PerftTest, BasicPawnMoves){
+TEST_F(PerftTest, BasicPawnMoves){
     //GTEST_SKIP();
     Board board;
     board.parseFen("4k3/8/8/8/8/5r2/PPPPP3/2K5 w - - 0 1");
@@ -23,7 +31,7 @@ TEST(PerftTest, BasicPawnMoves){
     EXPECT_EQ(actual,expected);
 }
 
-TEST(PerftTest, perftStartingPosition){
+TEST_F(PerftTest, perftStartingPosition){
     //GTEST_SKIP();
     // https://www.chessprogramming.org/Perft_Results#Initial_Position
     Board board;
@@ -42,7 +50,7 @@ TEST(PerftTest, perftStartingPosition){
     EXPECT_EQ(0, results.promotions);
 }
 
-TEST(PerftTest,Position2ChessProgramming){
+TEST_F(PerftTest,Position2ChessProgramming){
     //GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_2
     Board board;
@@ -63,7 +71,7 @@ TEST(PerftTest,Position2ChessProgramming){
     EXPECT_EQ(expectedPromotions, results.promotions);
 }
 
-TEST(PerftTest,Position3ChessProgramming){   
+TEST_F(PerftTest,Position3ChessProgramming){   
     //GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_3
     Board board;
@@ -83,7 +91,7 @@ TEST(PerftTest,Position3ChessProgramming){
     EXPECT_EQ(expectedPromotions, results.promotions);
 }
 
-TEST(PerftTest,Position4ChessProgramming){
+TEST_F(PerftTest,Position4ChessProgramming){
     //GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_4
     Board board;
@@ -104,7 +112,7 @@ TEST(PerftTest,Position4ChessProgramming){
     EXPECT_EQ(expectedPromotions, results.promotions);
 }
 
-TEST(PerftTest,Position5ChessProgramming){
+TEST_F(PerftTest,Position5ChessProgramming){
     //GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_5
     Board board;

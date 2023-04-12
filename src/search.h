@@ -11,9 +11,6 @@ class Search {
     
     Move searchAlphaBeta(Board board,int depth);
 
-    int alphaBetaMax(Board board,int alpha, int beta, int depth);
-    int alphaBetaMin(Board board,int alpha, int beta, int depth);
-
     int negaMax(Board board, int alpha, int, int depthLeft);
 
     int evaluate(Board board);

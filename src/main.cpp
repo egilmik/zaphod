@@ -10,11 +10,18 @@ int main(int, char**) {
 
     Board board;    
 
-    board.parseFen("rnb1k1nr/ppp2pbR/8/3pp3/8/5P2/PPPPPP2/RNBQKBN1 b Qkq - 0 6");
+    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     Search search;
-    Move move = search.searchAlphaBeta(board,3);
-    std::cout << Perft::getNotation(move) << std::endl;
+
+    for(int i = 0; i < 12; i++){
+        Move move = search.searchAlphaBeta(board,4);
+        std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
+        board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
+    }
+    board.printBoard();
+    
+    
 
     /*int actual = Perft::perft(board,8);
     //Tested with qperft
