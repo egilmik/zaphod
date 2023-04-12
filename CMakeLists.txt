@@ -17,7 +17,7 @@ FetchContent_MakeAvailable(googletest)
 
 file(GLOB src CONFIGURE_DEPENDS "*.h" "*.cpp")
 
-add_executable(Zaphod src/board.cpp src/board.h src/main.cpp src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h)
+add_executable(Zaphod src/board.cpp src/board.h src/main.cpp src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h src/search.h src/search.cpp)
 add_executable(Perft src/board.cpp src/board.h src/mainperft.cpp src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h
   
 )

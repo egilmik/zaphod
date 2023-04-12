@@ -352,6 +352,17 @@ bool Board::checkBit(BitBoardEnum piece, int bitNr)
     return (board >> bitNr) & 1U;    
 }
 
+int Board::countSetBits(BitBoardEnum piece)
+{
+    BitBoard board = bitBoardArray[piece];
+    int count = 0;
+    while(board != 0){
+        popLsb(board);
+        count++;
+    }
+    return count;
+}
+
 int Board::popLsb(BitBoard& board)
 {   
     int lsb = __builtin_ctzll(board);

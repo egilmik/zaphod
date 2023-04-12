@@ -60,6 +60,7 @@ class Board {
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
         int popLsb(BitBoard& board);
+        int countSetBits(BitBoardEnum piece);
         bool makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush, bool castling, BitBoardEnum promotion);
         void revertLastMove();
         bool isSquareAttacked(BitBoard targetSquares, BitBoardEnum attackingSide);
