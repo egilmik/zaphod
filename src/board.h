@@ -12,7 +12,7 @@ class Board {
     public:
         Board();
 
-        enum BitBoardEnum {All,White,Black,R,r,N,n,B,b,Q,q,K,k,P,p};
+        enum BitBoardEnum {White,R,N,B,Q,K,P,Black,r,n,b,q,k,p,All};
 
         static constexpr BitBoard FileHMask = 0b0000000100000001000000010000000100000001000000010000000100000001;
         static constexpr BitBoard FileGHMask = 0b0000001100000011000000110000001100000011000000110000001100000011;
