@@ -51,14 +51,42 @@ int Search::negaMax(Board board, int alpha, int beta, int depthLeft)
 
 }
 
-int Search::evaluate(Board board)
+int Search::getPieceSquareScore(Board &board)
 {
-    int score = 200*(board.countSetBits(Board::K) - board.countSetBits(Board::k))
-                + 9*(board.countSetBits(Board::Q) - board.countSetBits(Board::q))
-                + 5*(board.countSetBits(Board::R) - board.countSetBits(Board::r))
-                + 3*(board.countSetBits(Board::B) - board.countSetBits(Board::b))
-                + 3*(board.countSetBits(Board::N) - board.countSetBits(Board::n))
-                + 1*(board.countSetBits(Board::P) - board.countSetBits(Board::p));
+    int score = getScoreForSpecificPiece(board,Board::P) -getScoreForSpecificPiece(board,Board::p);
+    
+    return score;
+}
+
+int Search::getScoreForSpecificPiece(Board &board,Board::BitBoardEnum piece)
+{
+    BitBoard pieceBoard = board.getBitboard(piece);
+    std::array<int,64> scoreArray = pieceSquareScoreArray[piece]; 
+    int score = 0;
+
+    int pieceSquare = 0;
+    while (pieceBoard != 0)    {
+        pieceSquare = board.popLsb(pieceBoard);
+        score = scoreArray[pieceSquare];
+    }
+    return score;
+}
+
+int Search::getMaterialScore(Board &board)
+{
+    int score = 2000*(board.countSetBits(Board::K) - board.countSetBits(Board::k))
+                + 900*(board.countSetBits(Board::Q) - board.countSetBits(Board::q))
+                + 500*(board.countSetBits(Board::R) - board.countSetBits(Board::r))
+                + 330*(board.countSetBits(Board::B) - board.countSetBits(Board::b))
+                + 320*(board.countSetBits(Board::N) - board.countSetBits(Board::n))
+                + 100*(board.countSetBits(Board::P) - board.countSetBits(Board::p));
+    return score;
+}
+
+int Search::evaluate(Board &board)
+{
+    int score = getPieceSquareScore(board);
+    score += getMaterialScore(board);
 
     if(board.getSideToMove() == Board::Black){
         return -score;

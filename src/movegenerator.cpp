@@ -342,12 +342,12 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
         
     }
 
-    if(sideToMove == Board::White && !board.isSquareAttacked(board.getBitboard(board.K), board.White)){
+    if(sideToMove == Board::White){
         if(board.getCastleRightsWK()){
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares,5);
             board.setBit(castlineSquares,6);
-            if(!board.isSquareAttacked(castlineSquares, Board::White) && (allPieces & castlineSquares) == 0){
+            if(!board.isSquareAttacked(castlineSquares | board.sqToBitBoard[fromSq], Board::White) && (allPieces & castlineSquares) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq+2,false,Board::All,false,false,true,movedPiece};
             }  //f1,g1;
         }
@@ -355,16 +355,16 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares,2);
             board.setBit(castlineSquares,3);
-            if(!board.isSquareAttacked(castlineSquares, Board::White) && (allPieces & castlineSquares) == 0){
+            if(!board.isSquareAttacked(castlineSquares| board.sqToBitBoard[fromSq], Board::White) && (allPieces & castlineSquares) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,Board::All,false,false,true,movedPiece};
             }  //b1,c1,d1;
         }
-    } else if(sideToMove == Board::Black && !board.isSquareAttacked(board.getBitboard(board.k), board.Black)){
+    } else if(sideToMove == Board::Black){
         if(board.getCastleRightsBK()){
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares,61);
             board.setBit(castlineSquares,62);
-            if(!board.isSquareAttacked(castlineSquares, Board::Black) && (allPieces & castlineSquares) == 0){
+            if(!board.isSquareAttacked(castlineSquares | board.sqToBitBoard[fromSq], Board::Black) && (allPieces & castlineSquares) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq+2,false,Board::All,false,false,true,movedPiece};
             }
         }
@@ -372,7 +372,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares,58);
             board.setBit(castlineSquares,59);
-            if(!board.isSquareAttacked(castlineSquares, Board::Black) && (allPieces & castlineSquares) == 0){
+            if(!board.isSquareAttacked(castlineSquares | board.sqToBitBoard[fromSq], Board::Black) && (allPieces & castlineSquares) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,Board::All,false,false,true,movedPiece};
             }
         }

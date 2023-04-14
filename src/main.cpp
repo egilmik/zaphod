@@ -13,13 +13,20 @@ int main(int, char**) {
     board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     Search search;
+    auto start = std::chrono::high_resolution_clock::now();    
 
-    for(int i = 0; i < 12; i++){
-        Move move = search.searchAlphaBeta(board,4);
+    for(int i = 0; i < 100; i++){
+        Move move = search.searchAlphaBeta(board,6);
         std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
         board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
+        board.printBoard();
     }
-    board.printBoard();
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+    std::cout << "Playtime " << (duration.count()/1000) << " ms" << std::endl;
+    
     
     
 

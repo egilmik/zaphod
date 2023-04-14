@@ -15,6 +15,19 @@ static std::array<BitBoard,64> initSqToBitMapping(){
     return mapping;
 }
 
+static std::array<BitBoard,64> initInvertedSqToBitMapping(){
+    std::array<BitBoard,64> mapping;
+
+
+    for(int i = 0; i < 64; i++){
+        BitBoard bb = 0;
+        Board::setBit(bb,i);
+        mapping[i] = ~bb;
+    }
+
+    return mapping;
+}
+
 static std::array<BitBoard,64> initKingMask(){
     std::array<BitBoard,64> kingMask;
     for(int i =0; i< 64;i++){
@@ -82,6 +95,7 @@ static std::array<BitBoard,64> initKnightMask()
 
 
 const std::array<BitBoard,64> Board::sqToBitBoard = initSqToBitMapping();
+const std::array<BitBoard,64> Board::sqToBitBoardInverted = initInvertedSqToBitMapping();
 const std::array<BitBoard,64> Board::kingMask = initKingMask();
 const std::array<BitBoard,64> Board::knightmask = initKnightMask();
 
@@ -393,22 +407,35 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     }
     */
 
-    popBit(BitBoardEnum::All,fromSq);
-    setBit(BitBoardEnum::All,toSq);
-    popBit(piece,  fromSq);
-    setBit(piece, toSq);
-    if(sideToMove == BitBoardEnum::White){
-        popBit(BitBoardEnum::White,fromSq);
-        setBit(BitBoardEnum::White,toSq);
+    BitBoardEnum enemy = BitBoardEnum::White;
+    if(sideToMove == White){
+        enemy = Black;
+    }
 
-        if(capture){
-            popBit(BitBoardEnum::Black,toSq);
-            popBit(BitBoardEnum::p, toSq);
-            popBit(BitBoardEnum::n, toSq);
-            popBit(BitBoardEnum::q, toSq);
-            popBit(BitBoardEnum::b, toSq);
-            popBit(BitBoardEnum::r, toSq);
-        }
+    BitBoard fromToBoard = 0;
+    fromToBoard = sqToBitBoard[fromSq] ^ sqToBitBoard[toSq];
+
+    // Pop and set bits in piece and all board
+    bitBoardArray[All] &= ~sqToBitBoard[fromSq];
+    bitBoardArray[All] |= sqToBitBoard[toSq];
+    bitBoardArray[piece] &= ~sqToBitBoard[fromSq];
+    bitBoardArray[piece] |= sqToBitBoard[toSq];
+    bitBoardArray[sideToMove] &= ~sqToBitBoard[fromSq];
+    bitBoardArray[sideToMove] |= sqToBitBoard[toSq];
+
+
+    if(capture){
+        bitBoardArray[enemy] &= ~sqToBitBoard[toSq];
+        bitBoardArray[P+enemy] &= ~sqToBitBoard[toSq];
+        bitBoardArray[N+enemy] &= ~sqToBitBoard[toSq];
+        bitBoardArray[Q+enemy] &= ~sqToBitBoard[toSq];
+        bitBoardArray[B+enemy] &= ~sqToBitBoard[toSq];
+        bitBoardArray[R+enemy] &= ~sqToBitBoard[toSq];
+    }
+
+    
+
+    if(sideToMove == BitBoardEnum::White){
 
         if(doublePush){
             setEnPassantSq(toSq-8);
@@ -435,18 +462,6 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         }
 
     } else {
-        popBit(BitBoardEnum::Black,fromSq);
-        setBit(BitBoardEnum::Black,toSq);
-
-
-        if(capture){
-            popBit(BitBoardEnum::White,toSq);
-            popBit(BitBoardEnum::P, toSq);
-            popBit(BitBoardEnum::N, toSq);
-            popBit(BitBoardEnum::Q, toSq);
-            popBit(BitBoardEnum::B, toSq);
-            popBit(BitBoardEnum::R, toSq);
-        }
 
         if(doublePush){
             setEnPassantSq(toSq+8);
@@ -485,24 +500,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
             
         }  
         //std::cout << "En passant " << sqToNotation[fromSq] << " " << sqToNotation[toSq] << std::endl;
-    }
-
-    int black = BitBoardEnum::Black;
-    int white = BitBoardEnum::White;
-    int all = BitBoardEnum::All;
-    int currentPiece = piece;
-
-    //TODO if capture and only then
-    /*for(int i = 0; i < 15; i++){
-        if((i != black) &&
-            (i != white) &&
-            (i != all) &&
-            (i != currentPiece)){
-                BitBoardEnum val = static_cast<BitBoardEnum>(i);
-                popBit(val,toSq);
-        }
-    }*/
-    
+    }    
     if(promotion != Board::All){        
         popBit(piece,toSq);
         setBit(promotion,toSq);
@@ -520,17 +518,19 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         castleBQ = false;
     }
 
-    if(piece == R){
-        if(fromSq == 0){
-            castleWQ = false;
-        } else if(fromSq == 7) {
-            castleWK = false;
-        }
-    } else if( piece == r){
-        if(fromSq == 56){
-            castleBQ = false;
-        } else if( fromSq == 63){
-            castleBK = false;
+    if(castling){
+        if(piece == R){
+            if(fromSq == 0){
+                castleWQ = false;
+            } else if(fromSq == 7) {
+                castleWK = false;
+            }
+        } else if( piece == r){
+            if(fromSq == 56){
+                castleBQ = false;
+            } else if( fromSq == 63){
+                castleBK = false;
+            }
         }
     }
 
@@ -551,16 +551,12 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         castleBK = false;
     }
 
-    if(sideToMove == White){
-        if(isSquareAttacked(bitBoardArray[K], White)){
-            return false;
-        }
-        
-    } else {
-        if(isSquareAttacked(bitBoardArray[k], Black)){
-            return false;
-        }
+    
+    
+    if(isSquareAttacked(bitBoardArray[K+sideToMove], sideToMove)){
+        return false;
     }
+        
 
     changeSideToMove();
     return true;
