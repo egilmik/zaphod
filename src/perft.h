@@ -13,6 +13,7 @@ struct PerftResults {
     unsigned long long castle = 0;
     unsigned long long promotions = 0;
     unsigned long long checks = 0;
+    unsigned long long checkmate = 0;
 };
 
 class Perft {
@@ -43,7 +44,29 @@ class Perft {
             return nrOfNodes;
         }
 
-        static unsigned long long dperft(Board board, int depth){
+        static void dperft(Board board, int depth){
+            unsigned long long divideNodes = 0;
+            
+            MoveList moveList;
+            MoveGenerator::generateMoves(board,moveList);
+            
+            for(int i = 0; i < moveList.counter; i++){
+                Move move = moveList.moves[i];
+                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling, move.promotion);
+                if(valid){
+                    int nodes = dperftLeafNodeCounter(board, depth-1);
+                    divideNodes += nodes;
+                    std::string notation = getNotation(move);
+                    std::cout << notation << ": " << nodes << std::endl;
+                }
+
+                board.revertLastMove();               
+                
+            }
+            std::cout << "Depth: " << depth << " Count: " << divideNodes << std::endl;
+        }
+
+        static unsigned long long dperftLeafNodeCounter(Board board, int depth){
             unsigned long long divideNodes = 0;
             unsigned long long nrOfNodes = 0;
             if(depth == 0){
@@ -56,10 +79,8 @@ class Perft {
                 Move move = moveList.moves[i];
                 bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling, move.promotion);
                 if(valid){
-                    divideNodes = perft(board, depth-1);
-                    nrOfNodes += divideNodes;
-                    std::string notation = getNotation(move);
-                    std::cout << notation << ": " << divideNodes << std::endl;
+                    divideNodes += dperftLeafNodeCounter(board, depth-1);
+                    nrOfNodes++;
                 } else {
                     nrOfNodes--;
                 }
@@ -67,8 +88,13 @@ class Perft {
                 board.revertLastMove();               
                 
             }
-            return nrOfNodes;      
+            if(depth == 1){
+                divideNodes+= nrOfNodes;
+            }
+
+            return divideNodes;
         }
+
 
         static void perftWithStats(Board board, int depth, PerftResults &results){
             
@@ -78,6 +104,15 @@ class Perft {
 
             MoveList moveList;
             MoveGenerator::generateMoves(board,moveList);
+            if(moveList.counter == 0){
+                BitBoard kingSquare = board.sqToBitBoard[board.getSideToMove()+Board::K];
+                if(board.isSquareAttacked(kingSquare,board.getSideToMove())){
+                        
+                }
+                
+            }
+
+            int actualPerformedMoves = moveList.counter;
             results.nodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
@@ -93,17 +128,21 @@ class Perft {
                     if(move.enpassant){
                         results.enPassant += 1;
                     } 
-                    if(move.promotion){
+                    if(move.promotion != Board::All){
                         results.promotions += 1;
                     }
                     //board.printBoard();
                     //std::cout << board.sqToNotation[move.fromSq] << "" << board.sqToNotation[move.toSq] << std::endl;
                 } else {
                     results.nodes--;
+                    actualPerformedMoves--;
                 }
 
                 board.revertLastMove();               
                 
+            }
+            if(actualPerformedMoves == 0){
+                results.checkmate+=1;
             }
         }
 
