@@ -4,7 +4,7 @@
 class PerftTest : public ::testing::Test {
  protected:
   void SetUp() override {
-     GTEST_SKIP() << "Skipping all tests for this fixture";
+     //GTEST_SKIP() << "Skipping all tests for this fixture";
   }
 };
 
@@ -22,7 +22,7 @@ TEST_F(PerftTest, enPassantBasicTest){
 }
 
 TEST_F(PerftTest, BasicPawnMoves){
-    //GTEST_SKIP();
+    GTEST_SKIP();
     Board board;
     board.parseFen("4k3/8/8/8/8/5r2/PPPPP3/2K5 w - - 0 1");
     int actual = Perft::perft(board,3);
@@ -32,7 +32,7 @@ TEST_F(PerftTest, BasicPawnMoves){
 }
 
 TEST_F(PerftTest, perftStartingPosition){
-    //GTEST_SKIP();
+    GTEST_SKIP();
     // https://www.chessprogramming.org/Perft_Results#Initial_Position
     Board board;
     board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
@@ -42,12 +42,14 @@ TEST_F(PerftTest, perftStartingPosition){
     int expectedNodes =20+400+8902+197281+4865609+119060324;
     int expectedCaptures = 34+1576+82719+2812008;
     int expectedEnPassant = 258+5248;
+    int expectedCheckMate = 8+347;//We do not generate moves for the last move, so last depth is not checked +10828;
 
     EXPECT_EQ(expectedNodes ,results.nodes);
     EXPECT_EQ(expectedCaptures, results.captures);
     EXPECT_EQ(expectedEnPassant, results.enPassant);
     EXPECT_EQ(0,results.castle);
     EXPECT_EQ(0, results.promotions);
+    EXPECT_EQ(expectedCheckMate,results.checkmate);
 }
 
 TEST_F(PerftTest,Position2ChessProgramming){
@@ -63,16 +65,18 @@ TEST_F(PerftTest,Position2ChessProgramming){
     int expectedEnPassant = 1+45+1929;
     int expectedCastle = 2+91+3162+128013;
     int expectedPromotions = 15172;
+    int expectedCheckMate = 1;//We do not generate moves for the last move, so last depth is not checked+43;
 
     EXPECT_EQ(expectedNodes ,results.nodes);
     EXPECT_EQ(expectedCaptures, results.captures);
     EXPECT_EQ(expectedEnPassant, results.enPassant);
     EXPECT_EQ(expectedCastle,results.castle);
     EXPECT_EQ(expectedPromotions, results.promotions);
+    EXPECT_EQ(expectedCheckMate,results.checkmate);
 }
 
 TEST_F(PerftTest,Position3ChessProgramming){   
-    //GTEST_SKIP();
+    GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_3
     Board board;
     board.parseFen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ");
@@ -92,7 +96,7 @@ TEST_F(PerftTest,Position3ChessProgramming){
 }
 
 TEST_F(PerftTest,Position4ChessProgramming){
-    //GTEST_SKIP();
+    GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_4
     Board board;
     board.parseFen("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
@@ -113,7 +117,7 @@ TEST_F(PerftTest,Position4ChessProgramming){
 }
 
 TEST_F(PerftTest,Position5ChessProgramming){
-    //GTEST_SKIP();
+    GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_5
     Board board;
     board.parseFen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");

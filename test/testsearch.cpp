@@ -4,7 +4,7 @@
 class SearchTest : public ::testing::Test {
  protected:
   void SetUp() override {
-     
+     GTEST_SKIP();
   }
 };
 

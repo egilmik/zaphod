@@ -10,24 +10,32 @@ int main(int, char**) {
 
     Board board;    
 
-    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    board.parseFen("2k5/8/8/8/8/8/7P/2K5 w - - 0 1");
 
-    Search search;
+    /*Search search;
     auto start = std::chrono::high_resolution_clock::now();    
 
     for(int i = 0; i < 100; i++){
-        Move move = search.searchAlphaBeta(board,6);
+        Move move = search.searchAlphaBeta(board,7);
+        if(move.fromSq == 0 && move.toSq == 0){
+            std::cout << "Check mate " << board.getSideToMove() << " lost" << std::endl;
+            break;
+        }
         std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
         board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
-        board.printBoard();
+        //board.printBoard();
     }
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-    std::cout << "Playtime " << (duration.count()/1000) << " ms" << std::endl;
+    std::cout << "Playtime " << (duration.count()/1000) << " s" << std::endl;
     
-    
+    */
+    Perft::dperft(board,6);
+    //for(int i = 0; i< 64; i++){
+    //    board.printBoard(Board::kingMask[i],i);
+    //}
     
 
     /*int actual = Perft::perft(board,8);
