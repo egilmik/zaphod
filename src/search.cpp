@@ -20,6 +20,13 @@ Move Search::searchAlphaBeta(Board board, int depth)
 
         board.revertLastMove();               
     }
+
+    if(currentBestScore <= -100000){
+        Move move;
+        move.fromSq = 0;
+        move.toSq = 0;
+        return move;
+    }
     std::cout << currentBestScore << std::endl;
     return bestMove;
     
