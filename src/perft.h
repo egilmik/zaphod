@@ -54,7 +54,7 @@ class Perft {
                 Move move = moveList.moves[i];
                 bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling, move.promotion);
                 if(valid){
-                    int nodes = dperftLeafNodeCounter(board, depth-1);
+                    unsigned long long nodes = dperftLeafNodeCounter(board, depth-1);
                     divideNodes += nodes;
                     std::string notation = getNotation(move);
                     std::cout << notation << ": " << nodes << std::endl;
@@ -68,20 +68,19 @@ class Perft {
 
         static unsigned long long dperftLeafNodeCounter(Board board, int depth){
             unsigned long long divideNodes = 0;
-            unsigned long long nrOfNodes = 0;
+            
             if(depth == 0){
                 return 0;
             }
             MoveList moveList;
             MoveGenerator::generateMoves(board,moveList);
-            
+            unsigned long long nrOfNodes = moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
                 bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling, move.promotion);
                 if(valid){
                     divideNodes += dperftLeafNodeCounter(board, depth-1);
-                    nrOfNodes++;
-                } else {
+                } else {                    
                     nrOfNodes--;
                 }
 
