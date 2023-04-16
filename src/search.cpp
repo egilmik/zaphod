@@ -2,6 +2,7 @@
 
 Move Search::searchAlphaBeta(Board board, int depth)
 {
+    pseudoLegalNodeCounter = 0;
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
     int score = 0;
@@ -11,6 +12,7 @@ Move Search::searchAlphaBeta(Board board, int depth)
         Move move = moveList.moves[i];
         bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
         if(valid){
+            pseudoLegalNodeCounter++;
             score = -negaMax(board,-1000000000,1000000000,depth);
             if(score >= currentBestScore){
                 currentBestScore = score;
@@ -38,6 +40,7 @@ int Search::negaMax(Board board, int alpha, int beta, int depthLeft)
     
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
+    pseudoLegalNodeCounter+= moveList.counter;
     int score = 0;
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
@@ -61,6 +64,11 @@ int Search::negaMax(Board board, int alpha, int beta, int depthLeft)
 int Search::getPieceSquareScore(Board &board)
 {
     int score = getScoreForSpecificPiece(board,Board::P) -getScoreForSpecificPiece(board,Board::p);
+    score += getScoreForSpecificPiece(board,Board::K) -getScoreForSpecificPiece(board,Board::k);
+    score += getScoreForSpecificPiece(board,Board::Q) -getScoreForSpecificPiece(board,Board::q);
+    score += getScoreForSpecificPiece(board,Board::R) -getScoreForSpecificPiece(board,Board::r);
+    score += getScoreForSpecificPiece(board,Board::N) -getScoreForSpecificPiece(board,Board::n);
+    score += getScoreForSpecificPiece(board,Board::B) -getScoreForSpecificPiece(board,Board::b);    
     
     return score;
 }
@@ -92,6 +100,7 @@ int Search::getMaterialScore(Board &board)
 
 int Search::evaluate(Board &board)
 {
+    evaluatedNodes++;
     int score = getPieceSquareScore(board);
     score += getMaterialScore(board);
 
