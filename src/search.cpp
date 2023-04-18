@@ -63,12 +63,18 @@ int Search::negaMax(Board board, int alpha, int beta, int depthLeft)
 
 int Search::getPieceSquareScore(Board &board)
 {
-    int score = getScoreForSpecificPiece(board,Board::P) -getScoreForSpecificPiece(board,Board::p);
-    score += getScoreForSpecificPiece(board,Board::K) -getScoreForSpecificPiece(board,Board::k);
-    score += getScoreForSpecificPiece(board,Board::Q) -getScoreForSpecificPiece(board,Board::q);
-    score += getScoreForSpecificPiece(board,Board::R) -getScoreForSpecificPiece(board,Board::r);
-    score += getScoreForSpecificPiece(board,Board::N) -getScoreForSpecificPiece(board,Board::n);
-    score += getScoreForSpecificPiece(board,Board::B) -getScoreForSpecificPiece(board,Board::b);    
+    int score = getScoreForSpecificPiece(board,Board::P);
+    score -= getScoreForSpecificPiece(board,Board::p);
+    score += getScoreForSpecificPiece(board,Board::K); 
+    score -= getScoreForSpecificPiece(board,Board::k);
+    score += getScoreForSpecificPiece(board,Board::Q);
+    score -= getScoreForSpecificPiece(board,Board::q);
+    score += getScoreForSpecificPiece(board,Board::R);
+    score -= getScoreForSpecificPiece(board,Board::r);
+    score += getScoreForSpecificPiece(board,Board::N); 
+    score -= getScoreForSpecificPiece(board,Board::n);
+    score += getScoreForSpecificPiece(board,Board::B);
+    score -= getScoreForSpecificPiece(board,Board::b);    
     
     return score;
 }
@@ -82,7 +88,7 @@ int Search::getScoreForSpecificPiece(Board &board,Board::BitBoardEnum piece)
     int pieceSquare = 0;
     while (pieceBoard != 0)    {
         pieceSquare = board.popLsb(pieceBoard);
-        score = scoreArray[pieceSquare];
+        score += scoreArray[pieceSquare];
     }
     return score;
 }
