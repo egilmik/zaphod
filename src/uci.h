@@ -1,0 +1,26 @@
+#ifndef UCI_H
+#define UCI_H
+
+#include "board.h"
+#include <vector>
+#include "movegenerator.h"
+#include <iostream>
+
+class UCI {
+    public:
+        void loop();
+        
+
+    private:
+        void setPosition(std::istringstream &is);
+        void parseMove(std::string token);
+        std::string moveToNotation(Move move);
+        void startSearch(std::istringstream &is);
+        void sendID();
+
+        
+
+        Board motherBoard;
+};
+
+#endif
