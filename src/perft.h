@@ -104,7 +104,7 @@ class Perft {
             MoveList moveList;
             MoveGenerator::generateMoves(board,moveList);
             if(moveList.counter == 0){
-                BitBoard kingSquare = board.sqToBitBoard[board.getSideToMove()+Board::K];
+                BitBoard kingSquare = board.sqToBitBoard[board.getSideToMove()+BitBoardEnum::K];
                 if(board.isSquareAttacked(kingSquare,board.getSideToMove())){
                         
                 }
@@ -127,7 +127,7 @@ class Perft {
                     if(move.enpassant){
                         results.enPassant += 1;
                     } 
-                    if(move.promotion != Board::All){
+                    if(move.promotion != BitBoardEnum::All){
                         results.promotions += 1;
                     }
                     //board.printBoard();
@@ -148,21 +148,21 @@ class Perft {
         static std::string getNotation(Move move){
             std::string promotion = "";
             
-                if(move.promotion == Board::Q){
+                if(move.promotion == BitBoardEnum::Q){
                     promotion = "Q";
-                } else if (move.promotion == Board::q){
+                } else if (move.promotion == BitBoardEnum::q){
                     promotion = "q";
-                } else if (move.promotion == Board::B){
+                } else if (move.promotion == BitBoardEnum::B){
                     promotion = "B";
-                } else if (move.promotion == Board::b){
+                } else if (move.promotion == BitBoardEnum::b){
                     promotion = "b";
-                } else if (move.promotion == Board::r){
+                } else if (move.promotion == BitBoardEnum::r){
                     promotion = "r";
-                } else if (move.promotion == Board::R){
+                } else if (move.promotion == BitBoardEnum::R){
                     promotion = "R";
-                } else if (move.promotion == Board::n){
+                } else if (move.promotion == BitBoardEnum::n){
                     promotion = "n";
-                } else if (move.promotion == Board::N){
+                } else if (move.promotion == BitBoardEnum::N){
                     promotion = "N";
                 }
             return Board::sqToNotation[move.fromSq] + Board::sqToNotation[move.toSq] + promotion;

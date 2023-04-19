@@ -6,13 +6,31 @@
 
 #define BitBoard __UINT64_TYPE__
 
+enum BitBoardEnum {White,R,N,B,Q,K,P,Black,r,n,b,q,k,p,All};
+
+struct Move {
+    int fromSq;
+    int toSq;
+    bool capture;
+    BitBoardEnum promotion;
+    bool doublePawnPush;
+    bool enpassant;
+    bool castling;
+    BitBoardEnum piece;
+};
+
+struct MoveList{
+    //218 seems to be the largest nr of moves for a position https://www.chessprogramming.org/Chess_Position
+    //No additional instructions to allocate 250, just to sure :)
+    Move moves[250];
+    int counter = 0;
+};
+
 
 class Board {
 
     public:
         Board();
-
-        enum BitBoardEnum {White,R,N,B,Q,K,P,Black,r,n,b,q,k,p,All};
 
         static constexpr BitBoard FileHMask = 0b0000000100000001000000010000000100000001000000010000000100000001;
         static constexpr BitBoard FileGHMask = 0b0000001100000011000000110000001100000011000000110000001100000011;
@@ -62,6 +80,7 @@ class Board {
         bool checkBit(BitBoardEnum piece, int bitNr);
         int popLsb(BitBoard& board);
         int countSetBits(BitBoardEnum piece);
+        bool makeMove(Move move);
         bool makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush, bool castling, BitBoardEnum promotion);
         void revertLastMove();
         bool isSquareAttacked(BitBoard targetSquares, BitBoardEnum attackingSide);

@@ -63,23 +63,23 @@ int Search::negaMax(Board board, int alpha, int beta, int depthLeft)
 
 int Search::getPieceSquareScore(Board &board)
 {
-    int score = getScoreForSpecificPiece(board,Board::P);
-    score -= getScoreForSpecificPiece(board,Board::p);
-    score += getScoreForSpecificPiece(board,Board::K); 
-    score -= getScoreForSpecificPiece(board,Board::k);
-    score += getScoreForSpecificPiece(board,Board::Q);
-    score -= getScoreForSpecificPiece(board,Board::q);
-    score += getScoreForSpecificPiece(board,Board::R);
-    score -= getScoreForSpecificPiece(board,Board::r);
-    score += getScoreForSpecificPiece(board,Board::N); 
-    score -= getScoreForSpecificPiece(board,Board::n);
-    score += getScoreForSpecificPiece(board,Board::B);
-    score -= getScoreForSpecificPiece(board,Board::b);    
+    int score = getScoreForSpecificPiece(board,BitBoardEnum::P);
+    score -= getScoreForSpecificPiece(board,BitBoardEnum::p);
+    score += getScoreForSpecificPiece(board,BitBoardEnum::K); 
+    score -= getScoreForSpecificPiece(board,BitBoardEnum::k);
+    score += getScoreForSpecificPiece(board,BitBoardEnum::Q);
+    score -= getScoreForSpecificPiece(board,BitBoardEnum::q);
+    score += getScoreForSpecificPiece(board,BitBoardEnum::R);
+    score -= getScoreForSpecificPiece(board,BitBoardEnum::r);
+    score += getScoreForSpecificPiece(board,BitBoardEnum::N); 
+    score -= getScoreForSpecificPiece(board,BitBoardEnum::n);
+    score += getScoreForSpecificPiece(board,BitBoardEnum::B);
+    score -= getScoreForSpecificPiece(board,BitBoardEnum::b);    
     
     return score;
 }
 
-int Search::getScoreForSpecificPiece(Board &board,Board::BitBoardEnum piece)
+int Search::getScoreForSpecificPiece(Board &board,BitBoardEnum piece)
 {
     BitBoard pieceBoard = board.getBitboard(piece);
     std::array<int,64> scoreArray = pieceSquareScoreArray[piece]; 
@@ -95,12 +95,12 @@ int Search::getScoreForSpecificPiece(Board &board,Board::BitBoardEnum piece)
 
 int Search::getMaterialScore(Board &board)
 {
-    int score = 2000*(board.countSetBits(Board::K) - board.countSetBits(Board::k))
-                + 900*(board.countSetBits(Board::Q) - board.countSetBits(Board::q))
-                + 500*(board.countSetBits(Board::R) - board.countSetBits(Board::r))
-                + 330*(board.countSetBits(Board::B) - board.countSetBits(Board::b))
-                + 320*(board.countSetBits(Board::N) - board.countSetBits(Board::n))
-                + 100*(board.countSetBits(Board::P) - board.countSetBits(Board::p));
+    int score = 2000*(board.countSetBits(BitBoardEnum::K) - board.countSetBits(BitBoardEnum::k))
+                + 900*(board.countSetBits(BitBoardEnum::Q) - board.countSetBits(BitBoardEnum::q))
+                + 500*(board.countSetBits(BitBoardEnum::R) - board.countSetBits(BitBoardEnum::r))
+                + 330*(board.countSetBits(BitBoardEnum::B) - board.countSetBits(BitBoardEnum::b))
+                + 320*(board.countSetBits(BitBoardEnum::N) - board.countSetBits(BitBoardEnum::n))
+                + 100*(board.countSetBits(BitBoardEnum::P) - board.countSetBits(BitBoardEnum::p));
     return score;
 }
 
@@ -110,7 +110,7 @@ int Search::evaluate(Board &board)
     int score = getPieceSquareScore(board);
     score += getMaterialScore(board);
 
-    if(board.getSideToMove() == Board::Black){
+    if(board.getSideToMove() == BitBoardEnum::Black){
         return -score;
     }
                    

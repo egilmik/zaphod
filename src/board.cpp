@@ -296,7 +296,7 @@ void Board::changeSideToMove()
     }
 }
 
-Board::BitBoardEnum Board::getSideToMove()
+BitBoardEnum Board::getSideToMove()
 {
     return sideToMove;
 }
@@ -382,6 +382,11 @@ int Board::popLsb(BitBoard& board)
     int lsb = __builtin_ctzll(board);
     board &= board - 1;
     return lsb;
+}
+
+bool Board::makeMove(Move move)
+{
+    return makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
 }
 
 bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush,bool castling, BitBoardEnum promotion)
@@ -501,7 +506,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         }  
         //std::cout << "En passant " << sqToNotation[fromSq] << " " << sqToNotation[toSq] << std::endl;
     }    
-    if(promotion != Board::All){        
+    if(promotion != BitBoardEnum::All){        
         popBit(piece,toSq);
         setBit(promotion,toSq);
     }
@@ -633,29 +638,29 @@ void Board::printBoard(){
     for(int i = 0; i < 64; i++){
         printBoard[i] = '*';
 
-        if(checkBit(Board::R,i)){
+        if(checkBit(BitBoardEnum::R,i)){
             printBoard[i] = 'R';
-        } else if(checkBit(Board::r,i)){
+        } else if(checkBit(BitBoardEnum::r,i)){
             printBoard[i] = 'r';
-        } else if(checkBit(Board::N,i)){
+        } else if(checkBit(BitBoardEnum::N,i)){
             printBoard[i] = 'N';
-        } else if(checkBit(Board::n,i)){
+        } else if(checkBit(BitBoardEnum::n,i)){
             printBoard[i] = 'n';
-        } else if(checkBit(Board::B,i)){
+        } else if(checkBit(BitBoardEnum::B,i)){
             printBoard[i] = 'B';
-        } else if(checkBit(Board::b,i)){
+        } else if(checkBit(BitBoardEnum::b,i)){
             printBoard[i] = 'b';
-        } else if(checkBit(Board::Q,i)){
+        } else if(checkBit(BitBoardEnum::Q,i)){
             printBoard[i] = 'Q';
-        } else if(checkBit(Board::q,i)){
+        } else if(checkBit(BitBoardEnum::q,i)){
             printBoard[i] = 'q';
-        } else if(checkBit(Board::K,i)){
+        } else if(checkBit(BitBoardEnum::K,i)){
             printBoard[i] = 'K';
-        } else if(checkBit(Board::k,i)){
+        } else if(checkBit(BitBoardEnum::k,i)){
             printBoard[i] = 'k';
-        } else if(checkBit(Board::P,i)){
+        } else if(checkBit(BitBoardEnum::P,i)){
             printBoard[i] = 'P';
-        } else if(checkBit(Board::p,i)){
+        } else if(checkBit(BitBoardEnum::p,i)){
             printBoard[i] = 'p';
         }
     }

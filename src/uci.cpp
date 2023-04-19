@@ -107,8 +107,7 @@ void UCI::setPosition(std::istringstream &is)
     is >> std::skipws >> nextToken;
     if(nextToken == "moves"){
         while(!nextToken.empty()){
-            Move move = parseMove(nextToken);
-            motherBoard.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
+            parseMove(nextToken);
             is >> std::skipws >> nextToken;
 
         }
@@ -138,13 +137,8 @@ void UCI::parseMove(std::string token)
     MoveGenerator::generateMoves(motherBoard,list);
     for(int i = 0; i < list.counter; i++){
         if(token == Perft::getNotation(list.moves[i])){
-            motherBoard.makeMove()
+            motherBoard.makeMove(list.moves[i]);
+            break;
         }
     }
-}
-
-std::string UCI::moveToNotation(Move move)
-{
-    
-
 }

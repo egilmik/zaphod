@@ -14,7 +14,7 @@ class Search {
         int negaMax(Board board, int alpha, int, int depthLeft);
         int evaluate(Board &board);
         int getPieceSquareScore(Board &board);
-        int getScoreForSpecificPiece(Board &board,Board::BitBoardEnum piece);
+        int getScoreForSpecificPiece(Board &board,BitBoardEnum piece);
         int getMaterialScore(Board &board);
 
         //{White,R,N,B,Q,K,P,Black,r,n,b,q,k,p,All};
