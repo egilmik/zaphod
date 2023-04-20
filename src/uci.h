@@ -13,7 +13,7 @@ class UCI {
 
     private:
         void setPosition(std::istringstream &is);
-        void parseMove(std::string token);
+        bool parseMove(std::string token);
         void startSearch(std::istringstream &is);
         void sendID();
 

@@ -96,21 +96,20 @@ void UCI::setPosition(std::istringstream &is)
     std::string nextToken;
     std::string fenString;
     is >> std::skipws >> nextToken;
+
     if(nextToken == "fen"){
         is >> std::skipws >> nextToken;
-        if(nextToken == "startpos"){
-            fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        while (is >> nextToken && nextToken != "moves"){
+            fenString += nextToken + " ";
         }
+    } else if(nextToken == "startpos"){
+        fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        is >> nextToken; // Move string is just consumed....
     }
     motherBoard.parseFen(fenString);
-
-    is >> std::skipws >> nextToken;
-    if(nextToken == "moves"){
-        while(!nextToken.empty()){
-            parseMove(nextToken);
-            is >> std::skipws >> nextToken;
-
-        }
+    is >> nextToken;
+    while(!nextToken.empty() && parseMove(nextToken)){
+        is >> nextToken;
     }
 
     
@@ -119,7 +118,7 @@ void UCI::setPosition(std::istringstream &is)
 void UCI::startSearch(std::istringstream &is)
 {
     Search search;
-    Move move = search.searchAlphaBeta(motherBoard,2);
+    Move move = search.searchAlphaBeta(motherBoard,5);
     std::string bestMove = Perft::getNotation(move);
     std::cout << "bestmove " << bestMove << std::endl;
 }
@@ -131,14 +130,15 @@ void UCI::sendID()
     std::cout << "uciok" << std::endl;
 }
 
-void UCI::parseMove(std::string token)
+bool UCI::parseMove(std::string token)
 {
     MoveList list;
     MoveGenerator::generateMoves(motherBoard,list);
     for(int i = 0; i < list.counter; i++){
         if(token == Perft::getNotation(list.moves[i])){
             motherBoard.makeMove(list.moves[i]);
-            break;
+            return true;
         }
     }
+    return false;
 }
