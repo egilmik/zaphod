@@ -10,7 +10,7 @@ Move Search::searchAlphaBeta(Board board, int depth)
     Move bestMove;
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
-        bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
+        bool valid = board.makeMove(move);
         if(valid){
             pseudoLegalNodeCounter++;
             score = -negaMax(board,-1000000000,1000000000,depth);
@@ -44,7 +44,7 @@ int Search::negaMax(Board board, int alpha, int beta, int depthLeft)
     int score = 0;
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
-        bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
+        bool valid = board.makeMove(move);
         if(valid){
             score = -negaMax(board,-beta,-alpha,depthLeft-1);
         }

@@ -128,7 +128,21 @@ BitBoard Board::getLineMask(int square)
     return mask << (square & 7);
 }
 
+void Board::clearBoard()
+{
+    for(int i = 0; i < 15; i++){
+        bitBoardArray[i] = 0;
+    }
+    sideToMove = White;
+    enPassantSq = noSq;
+    castleWK = false;
+    castleWQ = false;
+    castleBK = false;
+    castleBQ = false;
+}
+
 void Board::parseFen(std::string fen){
+    clearBoard();
     int count = 0;
     int state = 0;
     for(std::string::size_type i = 0; i < fen.size(); ++i) {
@@ -523,21 +537,21 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         castleBQ = false;
     }
 
-    if(castling){
-        if(piece == R){
-            if(fromSq == 0){
-                castleWQ = false;
-            } else if(fromSq == 7) {
-                castleWK = false;
-            }
-        } else if( piece == r){
-            if(fromSq == 56){
-                castleBQ = false;
-            } else if( fromSq == 63){
-                castleBK = false;
-            }
+
+    if(piece == R){
+        if(fromSq == 0){
+            castleWQ = false;
+        } else if(fromSq == 7) {
+            castleWK = false;
+        }
+    } else if( piece == r){
+        if(fromSq == 56){
+            castleBQ = false;
+        } else if( fromSq == 63){
+            castleBK = false;
         }
     }
+
 
 
     if(toSq == 0 && capture){

@@ -117,7 +117,7 @@ class Board {
 
     private:
         void parseFenPosition(char value, int &bitCout);
-
+        void clearBoard();
         
         const int noSq = -1;
         
