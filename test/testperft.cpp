@@ -117,7 +117,6 @@ TEST_F(PerftTest,Position4ChessProgramming){
 }
 
 TEST_F(PerftTest,Position5ChessProgramming){
-    GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_5
     Board board;
     board.parseFen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
