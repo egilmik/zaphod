@@ -22,7 +22,7 @@ TEST(BoardTest, rookTargetsSquaresAroundKing){
     BitBoard attackedSquares = 0;
     board.setBit(attackedSquares,61);
     board.setBit(attackedSquares,53);
-    bool isAttacked = board.isSquareAttacked(attackedSquares, Board::BitBoardEnum::Black);
+    bool isAttacked = board.isSquareAttacked(attackedSquares, BitBoardEnum::Black);
     EXPECT_TRUE(isAttacked);
 
 }

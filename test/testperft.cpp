@@ -10,7 +10,7 @@ class PerftTest : public ::testing::Test {
 
 
 TEST_F(PerftTest, enPassantBasicTest){
-    GTEST_SKIP();
+    //GTEST_SKIP();
     Board board;
     board.parseFen("8/8/8/K7/5p1k/8/4P3/8 w - - 0 1");
     int actual = Perft::perft(board,5);
@@ -22,7 +22,7 @@ TEST_F(PerftTest, enPassantBasicTest){
 }
 
 TEST_F(PerftTest, BasicPawnMoves){
-    GTEST_SKIP();
+    //GTEST_SKIP();
     Board board;
     board.parseFen("4k3/8/8/8/8/5r2/PPPPP3/2K5 w - - 0 1");
     int actual = Perft::perft(board,3);
@@ -32,7 +32,7 @@ TEST_F(PerftTest, BasicPawnMoves){
 }
 
 TEST_F(PerftTest, perftStartingPosition){
-    GTEST_SKIP();
+    //GTEST_SKIP();
     // https://www.chessprogramming.org/Perft_Results#Initial_Position
     Board board;
     board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
@@ -76,7 +76,7 @@ TEST_F(PerftTest,Position2ChessProgramming){
 }
 
 TEST_F(PerftTest,Position3ChessProgramming){   
-    GTEST_SKIP();
+    //GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_3
     Board board;
     board.parseFen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ");
@@ -96,7 +96,7 @@ TEST_F(PerftTest,Position3ChessProgramming){
 }
 
 TEST_F(PerftTest,Position4ChessProgramming){
-    GTEST_SKIP();
+    //GTEST_SKIP();
     //https://www.chessprogramming.org/Perft_Results#Position_4
     Board board;
     board.parseFen("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
