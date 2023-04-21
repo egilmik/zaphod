@@ -353,6 +353,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
         }
         if(board.getCastleRightsWQ()){
             BitBoard castlineSquares = 0;
+            board.setBit(castlineSquares,1);
             board.setBit(castlineSquares,2);
             board.setBit(castlineSquares,3);
             if(!board.isSquareAttacked(castlineSquares| board.sqToBitBoard[fromSq], BitBoardEnum::White) && (allPieces & castlineSquares) == 0){
@@ -370,6 +371,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
         }
         if(board.getCastleRightsBQ()){
             BitBoard castlineSquares = 0;
+            board.setBit(castlineSquares,57);
             board.setBit(castlineSquares,58);
             board.setBit(castlineSquares,59);
             if(!board.isSquareAttacked(castlineSquares | board.sqToBitBoard[fromSq], BitBoardEnum::Black) && (allPieces & castlineSquares) == 0){
