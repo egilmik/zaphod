@@ -352,11 +352,14 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             }  //f1,g1;
         }
         if(board.getCastleRightsWQ()){
-            BitBoard castlineSquares = 0;
-            board.setBit(castlineSquares,1);
-            board.setBit(castlineSquares,2);
-            board.setBit(castlineSquares,3);
-            if(!board.isSquareAttacked(castlineSquares| board.sqToBitBoard[fromSq], BitBoardEnum::White) && (allPieces & castlineSquares) == 0){
+            BitBoard checkSquaresWQ = 0;            
+            board.setBit(checkSquaresWQ,2);
+            board.setBit(checkSquaresWQ,3);
+
+            BitBoard emptySquaresWQ = checkSquaresWQ;
+            board.setBit(emptySquaresWQ,1);
+
+            if(!board.isSquareAttacked(checkSquaresWQ| board.sqToBitBoard[fromSq], BitBoardEnum::White) && (allPieces & emptySquaresWQ) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }  //b1,c1,d1;
         }
@@ -370,11 +373,13 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             }
         }
         if(board.getCastleRightsBQ()){
-            BitBoard castlineSquares = 0;
-            board.setBit(castlineSquares,57);
-            board.setBit(castlineSquares,58);
-            board.setBit(castlineSquares,59);
-            if(!board.isSquareAttacked(castlineSquares | board.sqToBitBoard[fromSq], BitBoardEnum::Black) && (allPieces & castlineSquares) == 0){
+            BitBoard checkSquaresBQ = 0;
+            
+            board.setBit(checkSquaresBQ,58);
+            board.setBit(checkSquaresBQ,59);
+            BitBoard emptySquaresBQ = checkSquaresBQ;
+            board.setBit(emptySquaresBQ,57);
+            if(!board.isSquareAttacked(checkSquaresBQ | board.sqToBitBoard[fromSq], BitBoardEnum::Black) && (allPieces & emptySquaresBQ) == 0){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }
         }
