@@ -11,7 +11,7 @@ int main(int, char**) {
 
     Board board;    
 
-    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
+    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     /*
     
@@ -39,8 +39,8 @@ int main(int, char**) {
     std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
     */
 
-    UCI uci;
-    uci.loop();
+    //UCI uci;
+    //uci.loop();
 
     //unsigned long long nodes = Perft::perft(board,6);
 
@@ -50,7 +50,7 @@ int main(int, char**) {
     //}
     
 
-    //int actual = Perft::perft(board,6);
+    Perft::dperft(board,7);
     /*
     //Tested with qperft
     int expected = 7+44+356+2482+21066+156403+1319736+10148801;
