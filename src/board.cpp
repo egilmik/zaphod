@@ -95,8 +95,6 @@ static std::array<BitBoard,64> initKnightMask()
 }
 
 
-const std::array<BitBoard,64> Board::sqToBitBoard = initSqToBitMapping();
-const std::array<BitBoard,64> Board::sqToBitBoardInverted = initInvertedSqToBitMapping();
 const std::array<BitBoard,64> Board::kingMask = initKingMask();
 const std::array<BitBoard,64> Board::knightmask = initKnightMask();
 
@@ -433,24 +431,24 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     }
 
     BitBoard fromToBoard = 0;
-    fromToBoard = sqToBitBoard[fromSq] ^ sqToBitBoard[toSq];
+    fromToBoard = sqBB[fromSq] ^ sqBB[toSq];
 
     // Pop and set bits in piece and all board
-    bitBoardArray[All] &= ~sqToBitBoard[fromSq];
-    bitBoardArray[All] |= sqToBitBoard[toSq];
-    bitBoardArray[piece] &= ~sqToBitBoard[fromSq];
-    bitBoardArray[piece] |= sqToBitBoard[toSq];
-    bitBoardArray[sideToMove] &= ~sqToBitBoard[fromSq];
-    bitBoardArray[sideToMove] |= sqToBitBoard[toSq];
+    bitBoardArray[All] &= ~sqBB[fromSq];
+    bitBoardArray[All] |= sqBB[toSq];
+    bitBoardArray[piece] &= ~sqBB[fromSq];
+    bitBoardArray[piece] |= sqBB[toSq];
+    bitBoardArray[sideToMove] &= ~sqBB[fromSq];
+    bitBoardArray[sideToMove] |= sqBB[toSq];
 
 
     if(capture){
-        bitBoardArray[enemy] &= ~sqToBitBoard[toSq];
-        bitBoardArray[P+enemy] &= ~sqToBitBoard[toSq];
-        bitBoardArray[N+enemy] &= ~sqToBitBoard[toSq];
-        bitBoardArray[Q+enemy] &= ~sqToBitBoard[toSq];
-        bitBoardArray[B+enemy] &= ~sqToBitBoard[toSq];
-        bitBoardArray[R+enemy] &= ~sqToBitBoard[toSq];
+        bitBoardArray[enemy] &= ~sqBB[toSq];
+        bitBoardArray[P+enemy] &= ~sqBB[toSq];
+        bitBoardArray[N+enemy] &= ~sqBB[toSq];
+        bitBoardArray[Q+enemy] &= ~sqBB[toSq];
+        bitBoardArray[B+enemy] &= ~sqBB[toSq];
+        bitBoardArray[R+enemy] &= ~sqBB[toSq];
     }
 
     

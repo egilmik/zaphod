@@ -104,7 +104,7 @@ class Perft {
             MoveList moveList;
             MoveGenerator::generateMoves(board,moveList);
             if(moveList.counter == 0){
-                BitBoard kingSquare = board.sqToBitBoard[board.getSideToMove()+BitBoardEnum::K];
+                BitBoard kingSquare = board.sqBB[board.getSideToMove()+BitBoardEnum::K];
                 if(board.isSquareAttacked(kingSquare,board.getSideToMove())){
                         
                 }
