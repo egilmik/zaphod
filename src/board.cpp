@@ -1,6 +1,7 @@
 #include "board.h"
 #include <iostream>
 #include <string>
+#include <cstring>
 
 static std::array<BitBoard,64> initSqToBitMapping(){
     std::array<BitBoard,64> mapping;
@@ -405,8 +406,8 @@ bool Board::makeMove(Move move)
 
 bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush,bool castling, BitBoardEnum promotion)
 {
-    int length = sizeof(bitBoardArray)/sizeof(bitBoardArray[0]);
-    std::copy(bitBoardArray,bitBoardArray+length,bitBoardArrayCopy);
+    int size = 15*sizeof(bitBoardArray[0]);
+    std::memcpy(&bitBoardArrayCopy,&bitBoardArray,size);
     sideToMoveCopy = sideToMove;
     enPassantSqCopy = enPassantSqCopy;
     castleWKCopy = castleWK;
@@ -583,8 +584,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
 
 void Board::revertLastMove()
 {
-    int length = sizeof(bitBoardArray)/sizeof(bitBoardArray[0]);
-    std::copy(bitBoardArrayCopy,bitBoardArrayCopy+length,bitBoardArray);
+    int size = 15*sizeof(bitBoardArray[0]);
+    std::memcpy(&bitBoardArray,&bitBoardArrayCopy,size);
     sideToMove = sideToMoveCopy;
     enPassantSq = enPassantSqCopy;
     castleWK = castleWKCopy;
