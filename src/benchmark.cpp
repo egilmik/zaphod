@@ -7,8 +7,9 @@
 #include <chrono>
 
 int main(int, char**) {
-    Board board;    
-    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
+
+    //Board board;    
+    //board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
     /*Search search;
     Move move = search.searchAlphaBeta(board,7);
     std::cout << Perft::getNotation(move) << std::endl;
@@ -17,7 +18,7 @@ int main(int, char**) {
     move = search.searchAlphaBeta(board,7);
     std::cout << Perft::getNotation(move) << std::endl;*/
 
-
+    /*
     Search search;
     for(int i = 0; i < 10; i++){
         Move move = search.searchAlphaBeta(board,3);
@@ -29,17 +30,25 @@ int main(int, char**) {
         board.makeMove(move);
         //board.printBoard();
     }
-
-    Board board;    
-
-    board.parseFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
-
+    */
     /*
+    Search search;
+    Board board;
+    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
     
     auto start = std::chrono::high_resolution_clock::now();    
+    Move move = search.searchAlphaBeta(board,9);
+    std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
+    */
+   for(int i = 0; i < 64; i++){
+        BitBoard bb = 0;
+        Board::setBit(bb,i);
 
-    for(int i = 0; i < 100; i++){
-        Move move = search.searchAlphaBeta(board,6);
+        std::cout << bb << std::endl;
+    }
+    /*
+    for(int i = 0; i < 6; i++){
+        Move move = search.searchAlphaBeta(board,4);
         if(move.fromSq == 0 && move.toSq == 0){
             std::cout << "Check mate " << board.getSideToMove() << " lost" << std::endl;
             break;
@@ -48,12 +57,12 @@ int main(int, char**) {
         board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
         //board.printBoard();
     }
-
+    
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-    std::cout << "Playtime " << (duration.count()/1000) << " s" << std::endl;*/
-    
+    std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
+    */
     /*
     Search search;
     Move move = search.searchAlphaBeta(board,2);

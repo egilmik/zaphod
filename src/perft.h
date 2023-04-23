@@ -29,7 +29,7 @@ class Perft {
             nrOfNodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
-                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
+                bool valid = board.makeMove(move);
                 if(valid){
                     nrOfNodes += perft(board, depth-1);
                     //board.printBoard();
@@ -52,7 +52,7 @@ class Perft {
             
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
-                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling, move.promotion);
+                bool valid = board.makeMove(move);
                 if(valid){
                     unsigned long long nodes = dperftLeafNodeCounter(board, depth-1);
                     divideNodes += nodes;
@@ -77,7 +77,7 @@ class Perft {
             unsigned long long nrOfNodes = moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
-                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling, move.promotion);
+                bool valid = board.makeMove(move);
                 if(valid){
                     divideNodes += dperftLeafNodeCounter(board, depth-1);
                 } else {                    
@@ -115,7 +115,7 @@ class Perft {
             results.nodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
-                bool valid = board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
+                bool valid = board.makeMove(move);
                 if(valid){
                     perftWithStats(board, depth-1,results);
                     if(move.capture){
