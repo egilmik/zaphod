@@ -110,7 +110,7 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
             }
         }
 
-        if(board.getEnPassantSq() != board.getNoSq()){
+        if(board.getEnPassantSq() != Board::noSq){
             BitBoard attack = 0;
 
             if(sideToMove == BitBoardEnum::White){

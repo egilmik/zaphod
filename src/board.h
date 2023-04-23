@@ -113,6 +113,8 @@ class Board {
                                     };
         static const std::array<BitBoard,64> knightmask;
         static const std::array<BitBoard,64> kingMask;
+
+        static const int noSq = -1;
         
         inline static const std::string sqToNotation[64] = {"a1","b1","c1","d1","e1","f1","g1","h1",
                                             "a2","b2","c2","d2","e2","f2","g2","h2",
@@ -171,7 +173,6 @@ class Board {
 
         void setEnPassantSq(int sq){enPassantSq = sq;};
         int getEnPassantSq(){return enPassantSq;};
-        int getNoSq(){return noSq;};
         bool getCastleRightsWK(){return castleWK;};
         bool getCastleRightsWQ(){return castleWQ;};
         bool getCastleRightsBK(){return castleBK;};
@@ -181,8 +182,6 @@ class Board {
     private:
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
-        
-        const int noSq = -1;
         
         BitBoard bitBoardArrayCopy[15];
         BitBoardEnum sideToMoveCopy;
