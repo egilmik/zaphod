@@ -347,7 +347,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares,5);
             board.setBit(castlineSquares,6);
-            if(!board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::White) && (allPieces & castlineSquares) == 0){
+            if((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::White)){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq+2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }  //f1,g1;
         }
@@ -359,7 +359,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard emptySquaresWQ = checkSquaresWQ;
             board.setBit(emptySquaresWQ,1);
 
-            if(!board.isSquareAttacked(checkSquaresWQ| board.sqBB[fromSq], BitBoardEnum::White) && (allPieces & emptySquaresWQ) == 0){
+            if((allPieces & emptySquaresWQ) == 0 && !board.isSquareAttacked(checkSquaresWQ| board.sqBB[fromSq], BitBoardEnum::White)){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }  //b1,c1,d1;
         }
@@ -368,7 +368,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares,61);
             board.setBit(castlineSquares,62);
-            if(!board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::Black) && (allPieces & castlineSquares) == 0){
+            if((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::Black)){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq+2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }
         }
@@ -379,7 +379,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             board.setBit(checkSquaresBQ,59);
             BitBoard emptySquaresBQ = checkSquaresBQ;
             board.setBit(emptySquaresBQ,57);
-            if(!board.isSquareAttacked(checkSquaresBQ | board.sqBB[fromSq], BitBoardEnum::Black) && (allPieces & emptySquaresBQ) == 0){
+            if((allPieces & emptySquaresBQ) == 0 && !board.isSquareAttacked(checkSquaresBQ | board.sqBB[fromSq], BitBoardEnum::Black)){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }
         }
