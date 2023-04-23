@@ -445,9 +445,9 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     if(sideToMove == BitBoardEnum::White){
 
         if(doublePush){
-            setEnPassantSq(toSq-8);
+            enPassantSq = toSq-8;            
         } else {
-            setEnPassantSq(noSq);
+            enPassantSq = noSq;
         }
 
         if(castling){
@@ -471,9 +471,9 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     } else {
 
         if(doublePush){
-            setEnPassantSq(toSq+8);
+            enPassantSq = toSq+8;            
         } else {
-            setEnPassantSq(noSq);
+            enPassantSq = noSq;
         }
 
         if(castling){
@@ -584,6 +584,7 @@ void Board::revertLastMove()
 bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
 {
     BitBoard allPieces = bitBoardArray[All];
+    BitBoard empty = ~allPieces;
     BitBoard queenRooks = 0;
     BitBoard queenBishops = 0;
     BitBoard knights = 0;
@@ -621,14 +622,14 @@ bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
 
     if((kingMask[popLsb(king)] & targetSquares) != 0) return true;
 
-    if((southOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
-    if((westOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
-    if((eastOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
-    if((northOccludedMoves(queenRooks, ~allPieces) & targetSquares) != 0) return true;
-    if((northEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
-    if((northWestccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
-    if((southEastOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
-    if((southWestOccludedMoves(queenBishops, ~allPieces) & targetSquares) != 0) return true;
+    if((southOccludedMoves(queenRooks, empty) & targetSquares) != 0) return true;
+    if((westOccludedMoves(queenRooks, empty) & targetSquares) != 0) return true;
+    if((eastOccludedMoves(queenRooks, empty) & targetSquares) != 0) return true;
+    if((northOccludedMoves(queenRooks, empty) & targetSquares) != 0) return true;
+    if((northEastOccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
+    if((northWestccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
+    if((southEastOccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
+    if((southWestOccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
 
     return false;
 }
