@@ -33,9 +33,9 @@ Move Search::searchAlphaBeta(Board board, int depth)
         return move;
     }
     std::cout << bestMove.score << std::endl;
-    for(int i = 0; i < depth; i++){
-        std::cout << Perft::getNotation(bestMove.moves.moves[i]) << std::endl;
-    }   
+    //for(int i = 0; i < depth; i++){
+    //    std::cout << Perft::getNotation(bestMove.moves.moves[i]) << std::endl;
+    //}   
 
     return bestMove.moves.moves[0];
     
@@ -57,11 +57,11 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
             score = -negaMax(board,-beta,-alpha,depth);
         }
         if(score >= beta){
+            
             return beta;
         }
         if(score > alpha){
             alpha = score;
-            bestMove.moves.moves[depth] = move;
             
         }
 
