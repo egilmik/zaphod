@@ -1,42 +1,50 @@
 #include "search.h"
+#include "perft.h"
+#include "material.h"
 
 Move Search::searchAlphaBeta(Board board, int depth)
 {
-    pseudoLegalNodeCounter = 0;
+    targetDepth = depth;
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
     int score = 0;
     int currentBestScore = -100000;
-    Move bestMove;
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
         bool valid = board.makeMove(move);
         if(valid){
             pseudoLegalNodeCounter++;
-            score = -negaMax(board,-1000000000,1000000000,depth);
-            if(score >= currentBestScore){
-                currentBestScore = score;
-                bestMove = move;
+            score = -negaMax(board,-1000000000,1000000000,0);
+            if(score >= bestMove.score){
+                bestMove.score = score;
+                bestMove.depth = depth;
+                bestMove.moves.moves[0] = move;
+                bestMove.moves.counter = 1;
             }
         }
 
         board.revertLastMove();               
     }
 
-    if(currentBestScore <= -100000){
+    if(bestMove.score <= -100000){
         Move move;
         move.fromSq = 0;
         move.toSq = 0;
         return move;
     }
-    std::cout << currentBestScore << std::endl;
-    return bestMove;
+    std::cout << bestMove.score << std::endl;
+    for(int i = 0; i < depth; i++){
+        std::cout << Perft::getNotation(bestMove.moves.moves[i]) << std::endl;
+    }   
+
+    return bestMove.moves.moves[0];
     
 }
 
-int Search::negaMax(Board board, int alpha, int beta, int depthLeft)
+int Search::negaMax(Board board, int alpha, int beta, int depth)
 {
-    if(depthLeft == 0) return evaluate(board);
+    depth +=1;
+    if(targetDepth == depth) return evaluate(board);
     
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
@@ -46,13 +54,15 @@ int Search::negaMax(Board board, int alpha, int beta, int depthLeft)
         Move move = moveList.moves[i];
         bool valid = board.makeMove(move);
         if(valid){
-            score = -negaMax(board,-beta,-alpha,depthLeft-1);
+            score = -negaMax(board,-beta,-alpha,depth);
         }
         if(score >= beta){
             return beta;
         }
         if(score > alpha){
             alpha = score;
+            bestMove.moves.moves[depth] = move;
+            
         }
 
         board.revertLastMove();               
@@ -82,7 +92,7 @@ int Search::getPieceSquareScore(Board &board)
 int Search::getScoreForSpecificPiece(Board &board,BitBoardEnum piece)
 {
     BitBoard pieceBoard = board.getBitboard(piece);
-    std::array<int,64> scoreArray = pieceSquareScoreArray[piece]; 
+    std::array<int,64> scoreArray = Material::pieceSquareScoreArray[piece]; 
     int score = 0;
 
     int pieceSquare = 0;
