@@ -2,6 +2,7 @@
 #include "perft.h"
 #include "material.h"
 
+
 Move Search::searchAlphaBeta(Board board, int depth)
 {
     targetDepth = depth;
@@ -11,10 +12,24 @@ Move Search::searchAlphaBeta(Board board, int depth)
     int currentBestScore = -100000;
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
-        bool valid = board.makeMove(move);
+        bool valid = board.makeMove(move);      
+
         if(valid){
-            pseudoLegalNodeCounter++;
-            score = -negaMax(board,-1000000000,1000000000,0);
+            /*BitBoard key = ttable.generateKey(board);
+            std::map<BitBoard,TranspositionEntry>::iterator it = ttable.transpositionMap.find(key);
+            if(it != ttable.transpositionMap.end()){
+                TranspositionEntry entry = it->second;
+                if(entry.depth >= targetDepth){
+                    score = entry.score;
+                }
+            } else {*/
+                score = -negaMax(board,-1000000000,1000000000,0);
+                /*TranspositionEntry entry = {move,targetDepth,score};
+                BitBoard key = ttable.generateKey(board);
+                ttable.transpositionMap[key] = entry;
+            }*/
+
+            
             if(score >= bestMove.score){
                 bestMove.score = score;
                 bestMove.depth = depth;
@@ -54,7 +69,19 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
         Move move = moveList.moves[i];
         bool valid = board.makeMove(move);
         if(valid){
-            score = -negaMax(board,-beta,-alpha,depth);
+            /*BitBoard key = ttable.generateKey(board);
+            std::map<BitBoard,TranspositionEntry>::iterator it = ttable.transpositionMap.find(key);
+            if(it != ttable.transpositionMap.end()){
+                TranspositionEntry entry = it->second;
+                if(entry.depth >= targetDepth){
+                    score = entry.score;
+                }
+            } else {*/
+                score = -negaMax(board,-beta,-alpha,depth);
+                TranspositionEntry entry = {move,targetDepth-depth,score};
+                //BitBoard key = ttable.generateKey(board);
+                //ttable.transpositionMap[key] = entry;
+            //}
         }
         if(score >= beta){
             

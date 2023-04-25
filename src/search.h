@@ -5,6 +5,7 @@
 #include <vector>
 #include "movegenerator.h"
 #include <iostream>
+#include "transpositiontable.h"
 
 struct BestMove {
     int depth = 0;
@@ -26,6 +27,7 @@ class Search {
     private:
         BestMove bestMove;
         int targetDepth;
+        TranspositionTable ttable;
         
           
 };
