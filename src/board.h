@@ -178,6 +178,8 @@ class Board {
         bool getCastleRightsBK(){return castleBK;};
         bool getCastleRightsBQ(){return castleBQ;};
 
+        int getPieceSquareScore(){ return materialScore;};
+
 
     private:
         void parseFenPosition(char value, int &bitCout);
@@ -190,6 +192,7 @@ class Board {
         bool castleWQCopy = true;
         bool castleBKCopy = true;
         bool castleBQCopy = true;
+        int materialScoreCopy = 0;
         
         BitBoard bitBoardArray[15];
         BitBoardEnum sideToMove = White;
@@ -198,6 +201,7 @@ class Board {
         bool castleWQ = false;
         bool castleBK = false;
         bool castleBQ = false;
+        int materialScore = 0;
 
         
 

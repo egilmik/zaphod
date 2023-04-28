@@ -144,7 +144,7 @@ int Search::getMaterialScore(Board &board)
 int Search::evaluate(Board &board)
 {
     evaluatedNodes++;
-    int score = getPieceSquareScore(board);
+    int score = board.getPieceSquareScore();
     score += getMaterialScore(board);
 
     if(board.getSideToMove() == BitBoardEnum::Black){
