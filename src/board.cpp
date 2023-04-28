@@ -174,7 +174,7 @@ void Board::parseFen(std::string fen){
         }
     }
 
-    materialScore = Material::getMaterialScore(*this);
+    materialScore = Material::getPieceSquareScore(*this);
 
 }
 
