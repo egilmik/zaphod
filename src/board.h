@@ -178,7 +178,8 @@ class Board {
         bool getCastleRightsBK(){return castleBK;};
         bool getCastleRightsBQ(){return castleBQ;};
 
-        int getPieceSquareScore(){ return materialScore;};
+        int getPieceSquareScore(){ return pieceSquareScore;};
+        int getMaterialScore(){ return materialScore;};
 
 
     private:
@@ -193,6 +194,7 @@ class Board {
         bool castleBKCopy = true;
         bool castleBQCopy = true;
         int materialScoreCopy = 0;
+        int pieceSquareScoreCopy = 0;
         
         BitBoard bitBoardArray[15];
         BitBoardEnum sideToMove = White;
@@ -201,6 +203,7 @@ class Board {
         bool castleWQ = false;
         bool castleBK = false;
         bool castleBQ = false;
+        int pieceSquareScore = 0;
         int materialScore = 0;
 
         

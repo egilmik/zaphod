@@ -174,7 +174,8 @@ void Board::parseFen(std::string fen){
         }
     }
 
-    materialScore = Material::getPieceSquareScore(*this);
+    materialScore = Material::getMaterialScore(*this);
+    pieceSquareScore = Material::getPieceSquareScore(*this);
 
 }
 
@@ -409,6 +410,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     castleWQCopy= castleWQ;
     castleBKCopy = castleBK;
     castleBQCopy = castleBQ;
+    pieceSquareScoreCopy = pieceSquareScore;
     materialScoreCopy = materialScore;
 
 
@@ -429,8 +431,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     bitBoardArray[sideToMove] |= sqBB[toSq];
 
     // Upadet score for moved piece
-    materialScore -= Material::pieceSquareScoreArray[piece][fromSq];
-    materialScore += Material::pieceSquareScoreArray[piece][toSq];
+    pieceSquareScore -= Material::pieceSquareScoreArray[piece][fromSq];
+    pieceSquareScore += Material::pieceSquareScoreArray[piece][toSq];
 
 
     if(capture){
@@ -454,7 +456,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         }
         
         // Update score for captured piece
-        materialScore -= Material::pieceSquareScoreArray[capturedPiece][fromSq];        
+        pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][fromSq];        
+        materialScore = Material::getMaterialScore(*this);
         
     }
 
@@ -478,8 +481,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
                 setBit(BitBoardEnum::R,3);
 
                 // Upadet score for rook
-                materialScore -= Material::pieceSquareScoreArray[R][0];
-                materialScore += Material::pieceSquareScoreArray[R][3];
+                pieceSquareScore -= Material::pieceSquareScoreArray[R][0];
+                pieceSquareScore += Material::pieceSquareScoreArray[R][3];
 
             } else {
                 popBit(BitBoardEnum::All,7);
@@ -489,8 +492,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
                 setBit(BitBoardEnum::White,5);
                 setBit(BitBoardEnum::R,5);
                 // Upadet score for rook
-                materialScore -= Material::pieceSquareScoreArray[R][7];
-                materialScore += Material::pieceSquareScoreArray[R][5];
+                pieceSquareScore -= Material::pieceSquareScoreArray[R][7];
+                pieceSquareScore += Material::pieceSquareScoreArray[R][5];
             }
         }
 
@@ -512,8 +515,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
                 setBit(BitBoardEnum::r,59);
 
                 // Upadet score for rook
-                materialScore -= Material::pieceSquareScoreArray[R][56];
-                materialScore += Material::pieceSquareScoreArray[R][59];
+                pieceSquareScore -= Material::pieceSquareScoreArray[R][56];
+                pieceSquareScore += Material::pieceSquareScoreArray[R][59];
             } else {
                 popBit(BitBoardEnum::All,63);
                 popBit(BitBoardEnum::Black,63);
@@ -523,8 +526,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
                 setBit(BitBoardEnum::r,61);
 
                 // Upadet score for rook
-                materialScore -= Material::pieceSquareScoreArray[R][63];
-                materialScore += Material::pieceSquareScoreArray[R][61];
+                pieceSquareScore -= Material::pieceSquareScoreArray[R][63];
+                pieceSquareScore += Material::pieceSquareScoreArray[R][61];
             }
         }
     }
@@ -534,21 +537,22 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
             popBit(p,toSq-8);
             popBit(All, toSq-8);
             popBit(Black, toSq-8);
-            materialScore -= Material::pieceSquareScoreArray[p][toSq-8];
+            pieceSquareScore -= Material::pieceSquareScoreArray[p][toSq-8];
         } else {
             popBit(P,toSq+8);
             popBit(All, toSq+8);
             popBit(White, toSq+8);
-            materialScore -= Material::pieceSquareScoreArray[P][toSq+8];
+            pieceSquareScore -= Material::pieceSquareScoreArray[P][toSq+8];
             
         }  
         //std::cout << "En passant " << sqToNotation[fromSq] << " " << sqToNotation[toSq] << std::endl;
     }    
     if(promotion != BitBoardEnum::All){        
         popBit(piece,toSq);
-        materialScore -= Material::pieceSquareScoreArray[piece][toSq];
+        pieceSquareScore -= Material::pieceSquareScoreArray[piece][toSq];
         setBit(promotion,toSq);
-        materialScore += Material::pieceSquareScoreArray[promotion][toSq];
+        pieceSquareScore += Material::pieceSquareScoreArray[promotion][toSq];
+        materialScore = Material::getMaterialScore(*this);
     }
 
     //TODO Castline status overly complex
@@ -617,6 +621,7 @@ void Board::revertLastMove()
     castleWQ = castleWQCopy;
     castleBK = castleBKCopy;
     castleBQ = castleBQCopy;
+    pieceSquareScore = pieceSquareScoreCopy;
     materialScore = materialScoreCopy;
 }
 

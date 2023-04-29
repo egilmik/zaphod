@@ -8,6 +8,38 @@ class Material {
   public:
     static int getPieceSquareScore(Board &board)
     {
+        int score = getScoreForSpecificPiece(board,BitBoardEnum::P);
+        score -= getScoreForSpecificPiece(board,BitBoardEnum::p);
+        score += getScoreForSpecificPiece(board,BitBoardEnum::K); 
+        score -= getScoreForSpecificPiece(board,BitBoardEnum::k);
+        score += getScoreForSpecificPiece(board,BitBoardEnum::Q);
+        score -= getScoreForSpecificPiece(board,BitBoardEnum::q);
+        score += getScoreForSpecificPiece(board,BitBoardEnum::R);
+        score -= getScoreForSpecificPiece(board,BitBoardEnum::r);
+        score += getScoreForSpecificPiece(board,BitBoardEnum::N); 
+        score -= getScoreForSpecificPiece(board,BitBoardEnum::n);
+        score += getScoreForSpecificPiece(board,BitBoardEnum::B);
+        score -= getScoreForSpecificPiece(board,BitBoardEnum::b);    
+        
+        return score;
+    }
+
+    static int getScoreForSpecificPiece(Board &board,BitBoardEnum piece)
+    {
+        BitBoard pieceBoard = board.getBitboard(piece);
+        std::array<int,64> scoreArray = Material::pieceSquareScoreArray[piece]; 
+        int score = 0;
+
+        int pieceSquare = 0;
+        while (pieceBoard != 0)    {
+            pieceSquare = board.popLsb(pieceBoard);
+            score += scoreArray[pieceSquare];
+        }
+        return score;
+    }
+
+    static int getMaterialScore(Board &board)
+    {
       int score = 2000*(board.countSetBits(BitBoardEnum::K) - board.countSetBits(BitBoardEnum::k))
                   + 900*(board.countSetBits(BitBoardEnum::Q) - board.countSetBits(BitBoardEnum::q))
                   + 500*(board.countSetBits(BitBoardEnum::R) - board.countSetBits(BitBoardEnum::r))
