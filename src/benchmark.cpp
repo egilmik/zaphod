@@ -8,15 +8,17 @@
 
 int main(int, char**) {
 
-    //Board board;    
-    //board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
-    /*Search search;
-    Move move = search.searchAlphaBeta(board,7);
-    std::cout << Perft::getNotation(move) << std::endl;
-    board.makeMove(move);
+    Board board;    
+    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
+    Search search;
+    auto start = std::chrono::high_resolution_clock::now();    
 
-    move = search.searchAlphaBeta(board,7);
-    std::cout << Perft::getNotation(move) << std::endl;*/
+    Move move = search.searchAlphaBeta(board,9);
+    std::cout << Perft::getNotation(move) << std::endl;
+    
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
 
     /*
     Search search;
@@ -40,12 +42,6 @@ int main(int, char**) {
     Move move = search.searchAlphaBeta(board,9);
     std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
     */
-   for(int i = 0; i < 64; i++){
-        BitBoard bb = 0;
-        Board::setBit(bb,i);
-
-        std::cout << bb << std::endl;
-    }
     /*
     for(int i = 0; i < 6; i++){
         Move move = search.searchAlphaBeta(board,4);
@@ -58,8 +54,7 @@ int main(int, char**) {
         //board.printBoard();
     }
     
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
 
     std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
     */

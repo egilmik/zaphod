@@ -109,7 +109,7 @@ class Board {
                                         1152921504606846976,
                                         2305843009213693952,
                                         4611686018427387904,
-                                        9223372036854775808
+                                        9223372036854775808ull
                                     };
         static const std::array<BitBoard,64> knightmask;
         static const std::array<BitBoard,64> kingMask;

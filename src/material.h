@@ -1,10 +1,22 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include "board.h"
 
 class Material {
 
-    public:
+  public:
+    static int getPieceSquareScore(Board &board)
+    {
+      int score = 2000*(board.countSetBits(BitBoardEnum::K) - board.countSetBits(BitBoardEnum::k))
+                  + 900*(board.countSetBits(BitBoardEnum::Q) - board.countSetBits(BitBoardEnum::q))
+                  + 500*(board.countSetBits(BitBoardEnum::R) - board.countSetBits(BitBoardEnum::r))
+                  + 330*(board.countSetBits(BitBoardEnum::B) - board.countSetBits(BitBoardEnum::b))
+                  + 320*(board.countSetBits(BitBoardEnum::N) - board.countSetBits(BitBoardEnum::n))
+                  + 100*(board.countSetBits(BitBoardEnum::P) - board.countSetBits(BitBoardEnum::p));
+      return score;
+    }
+
       inline static const std::array<std::array<int,64>,14> pieceSquareScoreArray = {{
             // Empty white
             {-5,0,0,0,0,0,0,-5,
@@ -133,17 +145,6 @@ class Material {
             5 ,-5,-10,0,0,-10,-5,5,
             5,10,10,-20,-20,10,10,5,
             0,0,0,0,0,0,0,0, }}};
-
-      static int getPieceSquareScore(Board &board)
-      {
-        int score = 2000*(board.countSetBits(BitBoardEnum::K) - board.countSetBits(BitBoardEnum::k))
-                  + 900*(board.countSetBits(BitBoardEnum::Q) - board.countSetBits(BitBoardEnum::q))
-                  + 500*(board.countSetBits(BitBoardEnum::R) - board.countSetBits(BitBoardEnum::r))
-                  + 330*(board.countSetBits(BitBoardEnum::B) - board.countSetBits(BitBoardEnum::b))
-                  + 320*(board.countSetBits(BitBoardEnum::N) - board.countSetBits(BitBoardEnum::n))
-                  + 100*(board.countSetBits(BitBoardEnum::P) - board.countSetBits(BitBoardEnum::p));
-      return score;
-}
 
 };
 
