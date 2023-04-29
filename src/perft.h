@@ -28,12 +28,8 @@ class Perft {
             MoveGenerator::generateMoves(board,moveList);
             nrOfNodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
-                Move move = moveList.moves[i];
-                bool valid = board.makeMove(move);
-                if(valid){
+                if(board.makeMove(moveList.moves[i])){
                     nrOfNodes += perft(board, depth-1);
-                    //board.printBoard();
-                    //std::cout << board.sqToNotation[move.fromSq] << "" << board.sqToNotation[move.toSq] << std::endl;
                 } else {
                     nrOfNodes--;
                 }
