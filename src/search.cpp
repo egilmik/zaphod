@@ -19,7 +19,7 @@ Move Search::searchAlphaBeta(Board board, int depth)
 
         if(valid){
             BitBoard key = ttable.generateKey(board);
-            std::map<BitBoard,TranspositionEntry>::iterator it = ttable.transpositionMap.find(key);
+            std::unordered_map<BitBoard,TranspositionEntry>::iterator it = ttable.transpositionMap.find(key);
             if(it != ttable.transpositionMap.end() && it->second.depth >= targetDepth){
                 TranspositionEntry entry = it->second;
                 score = entry.score;
@@ -71,7 +71,7 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
         bool valid = board.makeMove(move);
         if(valid){
             BitBoard key = ttable.generateKey(board);
-            std::map<BitBoard,TranspositionEntry>::iterator it = ttable.transpositionMap.find(key);
+            std::unordered_map<BitBoard,TranspositionEntry>::iterator it = ttable.transpositionMap.find(key);
             if(it != ttable.transpositionMap.end() && it->second.depth >= targetDepth-depth){                
                 score = it->second.score;
                 ttHits++;

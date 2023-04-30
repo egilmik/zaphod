@@ -9,16 +9,19 @@
 int main(int, char**) {
 
     Board board;    
-    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
+    board.parseFen("r1b1kbnr/p1pp1pp1/1pn5/4N1Bp/3PP3/8/PPP2PPP/RN1QKB1R w KQkq - 1 7");
     Search search;
-    auto start = std::chrono::high_resolution_clock::now();    
 
-    Move move = search.searchAlphaBeta(board,9);
-    std::cout << Perft::getNotation(move) << std::endl;
-    
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
+    for(int i = 3; i <= 7; i+=1){
+        auto start = std::chrono::high_resolution_clock::now();    
+
+        Move move = search.searchAlphaBeta(board,i);
+        //std::cout << Perft::getNotation(move) << std::endl;
+        
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
+    }
 
     /*
     Search search;

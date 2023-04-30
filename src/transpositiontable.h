@@ -3,6 +3,7 @@
 
 #include "board.h"
 #include <random>
+#include <unordered_map>
 
 struct TranspositionEntry {
     Move bestMove;
@@ -71,7 +72,7 @@ class TranspositionTable {
             return key;
         }
 
-        std::map<BitBoard,TranspositionEntry> transpositionMap;
+        std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
 
         
 };
