@@ -1,6 +1,5 @@
 #include "uci.h"
 #include <sstream>
-#include "search.h"
 #include "perft.h"
 
 void UCI::loop(/*int argc, char* argv[]*/) {
@@ -117,15 +116,14 @@ void UCI::setPosition(std::istringstream &is)
 
 void UCI::startSearch(std::istringstream &is)
 {
-    Search search;
-    Move move = search.searchAlphaBeta(motherBoard,5);
+    Move move = search.searchAlphaBeta(motherBoard,7);
     std::string bestMove = Perft::getNotation(move);
     std::cout << "bestmove " << bestMove << std::endl;
 }
 
 void UCI::sendID()
 {
-    std::cout << "id name Zaphod 0.1" << std::endl;
+    std::cout << "id name Zaphod 0.3-beta" << std::endl;
     std::cout << "id author Egil Tennfjord Mikalsen" << std::endl;
     std::cout << "uciok" << std::endl;
 }

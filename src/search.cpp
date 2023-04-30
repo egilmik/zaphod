@@ -33,8 +33,8 @@ Move Search::searchAlphaBeta(Board board, int depth)
             if(score >= bestMove.score){
                 bestMove.score = score;
                 bestMove.depth = depth;
-                bestMove.moves.moves[0] = move;
-                bestMove.moves.counter = 1;
+                bestMove.bestMove = move;
+                
             }
         }
 
@@ -47,13 +47,13 @@ Move Search::searchAlphaBeta(Board board, int depth)
         move.toSq = 0;
         return move;
     }
-    std::cout << Perft::getNotation(bestMove.moves.moves[0]) << " Score: " << bestMove.score << " Depth: "<< targetDepth << std::endl;
+    std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << bestMove.score << " Depth: "<< targetDepth << std::endl;
     std::cout << "TT hits " << ttHits << std::endl;
     //for(int i = 0; i < depth; i++){
     //    std::cout << Perft::getNotation(bestMove.moves.moves[i]) << std::endl;
     //}   
 
-    return bestMove.moves.moves[0];
+    return bestMove.bestMove;
     
 }
 

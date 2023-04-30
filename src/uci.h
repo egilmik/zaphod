@@ -1,10 +1,12 @@
 #ifndef UCI_H
 #define UCI_H
 
-#include "board.h"
 #include <vector>
-#include "movegenerator.h"
 #include <iostream>
+#include "board.h"
+#include "movegenerator.h"
+#include "search.h"
+
 
 class UCI {
     public:
@@ -17,9 +19,8 @@ class UCI {
         void startSearch(std::istringstream &is);
         void sendID();
 
-        
-
         Board motherBoard;
+        Search search;
 };
 
 #endif

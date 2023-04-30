@@ -10,7 +10,7 @@
 struct BestMove {
     int depth = 0;
     int score = -100000;
-    MoveList moves;
+    Move bestMove;
 };
 
 class Search {
