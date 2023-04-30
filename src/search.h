@@ -7,7 +7,7 @@
 #include <iostream>
 #include "transpositiontable.h"
 
-struct BestMove {
+struct Score {
     int depth = 0;
     int score = -100000;
     Move bestMove;
@@ -18,7 +18,7 @@ class Search {
         unsigned long long pseudoLegalNodeCounter = 0;
         unsigned long long evaluatedNodes = 0;
         unsigned long long ttHits = 0;
-        Move searchAlphaBeta(Board board,int depth);
+        Score searchAlphaBeta(Board board,int depth);
         int negaMax(Board board, int alpha, int, int depthLeft);
         int evaluate(Board &board);
         int getPieceSquareScore(Board &board);
@@ -26,7 +26,7 @@ class Search {
         int getMaterialScore(Board &board);
 
     private:
-        BestMove bestMove;
+        Score bestMove;
         int targetDepth;
         TranspositionTable ttable;
         

@@ -3,7 +3,7 @@
 #include "material.h"
 
 
-Move Search::searchAlphaBeta(Board board, int depth)
+Score Search::searchAlphaBeta(Board board, int depth)
 {
     targetDepth = depth;
     bestMove.depth = 0;
@@ -41,19 +41,10 @@ Move Search::searchAlphaBeta(Board board, int depth)
         board.revertLastMove();               
     }
 
-    if(bestMove.score <= -100000){
-        Move move;
-        move.fromSq = 0;
-        move.toSq = 0;
-        return move;
-    }
     std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << bestMove.score << " Depth: "<< targetDepth << std::endl;
     std::cout << "TT hits " << ttHits << std::endl;
-    //for(int i = 0; i < depth; i++){
-    //    std::cout << Perft::getNotation(bestMove.moves.moves[i]) << std::endl;
-    //}   
 
-    return bestMove.bestMove;
+    return bestMove;
     
 }
 
