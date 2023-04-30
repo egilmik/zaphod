@@ -17,6 +17,7 @@ class Search {
     public:
         unsigned long long pseudoLegalNodeCounter = 0;
         unsigned long long evaluatedNodes = 0;
+        unsigned long long ttHits = 0;
         Move searchAlphaBeta(Board board,int depth);
         int negaMax(Board board, int alpha, int, int depthLeft);
         int evaluate(Board &board);

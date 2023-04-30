@@ -6,6 +6,9 @@
 Move Search::searchAlphaBeta(Board board, int depth)
 {
     targetDepth = depth;
+    bestMove.depth = 0;
+    bestMove.score = -100000;
+    ttHits = 0;
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
     int score = 0;
@@ -15,20 +18,17 @@ Move Search::searchAlphaBeta(Board board, int depth)
         bool valid = board.makeMove(move);      
 
         if(valid){
-            /*BitBoard key = ttable.generateKey(board);
+            BitBoard key = ttable.generateKey(board);
             std::map<BitBoard,TranspositionEntry>::iterator it = ttable.transpositionMap.find(key);
-            if(it != ttable.transpositionMap.end()){
+            if(it != ttable.transpositionMap.end() && it->second.depth >= targetDepth){
                 TranspositionEntry entry = it->second;
-                if(entry.depth >= targetDepth){
-                    score = entry.score;
-                }
-            } else {*/
+                score = entry.score;
+                ttHits++;
+            } else {
                 score = -negaMax(board,-1000000000,1000000000,0);
-                /*TranspositionEntry entry = {move,targetDepth,score};
-                BitBoard key = ttable.generateKey(board);
+                TranspositionEntry entry = {move,targetDepth,score};
                 ttable.transpositionMap[key] = entry;
-            }*/
-
+            }
             
             if(score >= bestMove.score){
                 bestMove.score = score;
@@ -47,7 +47,8 @@ Move Search::searchAlphaBeta(Board board, int depth)
         move.toSq = 0;
         return move;
     }
-    std::cout << bestMove.score << std::endl;
+    std::cout << Perft::getNotation(bestMove.moves.moves[0]) << " Score: " << bestMove.score << " Depth: "<< targetDepth << std::endl;
+    std::cout << "TT hits " << ttHits << std::endl;
     //for(int i = 0; i < depth; i++){
     //    std::cout << Perft::getNotation(bestMove.moves.moves[i]) << std::endl;
     //}   
@@ -69,22 +70,18 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
         Move move = moveList.moves[i];
         bool valid = board.makeMove(move);
         if(valid){
-            /*BitBoard key = ttable.generateKey(board);
+            BitBoard key = ttable.generateKey(board);
             std::map<BitBoard,TranspositionEntry>::iterator it = ttable.transpositionMap.find(key);
-            if(it != ttable.transpositionMap.end()){
-                TranspositionEntry entry = it->second;
-                if(entry.depth >= targetDepth){
-                    score = entry.score;
-                }
-            } else {*/
+            if(it != ttable.transpositionMap.end() && it->second.depth >= targetDepth-depth){                
+                score = it->second.score;
+                ttHits++;
+            } else {
                 score = -negaMax(board,-beta,-alpha,depth);
-                TranspositionEntry entry = {move,targetDepth-depth,score};
-                //BitBoard key = ttable.generateKey(board);
-                //ttable.transpositionMap[key] = entry;
-            //}
+                TranspositionEntry entry = {move,targetDepth-depth,score};                
+                ttable.transpositionMap[key] = entry;
+            }
         }
-        if(score >= beta){
-            
+        if(score >= beta){            
             return beta;
         }
         if(score > alpha){

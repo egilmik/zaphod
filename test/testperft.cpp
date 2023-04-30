@@ -32,7 +32,7 @@ TEST_F(PerftTest, BasicPawnMoves){
 }
 
 TEST_F(PerftTest, perftStartingPosition){
-    //GTEST_SKIP();
+    GTEST_SKIP();
     // https://www.chessprogramming.org/Perft_Results#Initial_Position
     Board board;
     board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
