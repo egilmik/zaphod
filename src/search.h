@@ -20,14 +20,12 @@ class Search {
         unsigned long long ttHits = 0;
         Score searchAlphaBeta(Board board,int depth);
         int negaMax(Board board, int alpha, int, int depthLeft);
+        void sortMoveList(Board board,MoveList &list);
         int evaluate(Board &board);
-        int getPieceSquareScore(Board &board);
-        int getScoreForSpecificPiece(Board &board,BitBoardEnum piece);
-        int getMaterialScore(Board &board);
+        
 
     private:
         Score bestMove;
-        int targetDepth;
         TranspositionTable ttable;
         
           
