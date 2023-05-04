@@ -9,13 +9,13 @@
 int main(int, char**) {
 
     Board board;    
-    board.parseFen("r1b1kbnr/p1pp1pp1/1pn5/4N1Bp/3PP3/8/PPP2PPP/RN1QKB1R w KQkq - 1 7");
+    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
     Search search;
 
-    for(int i = 3; i <= 7; i+=1){
+    for(int i = 3; i <= 10; i+=1){
         auto start = std::chrono::high_resolution_clock::now();    
 
-        Move move = search.searchAlphaBeta(board,i);
+        Score move = search.searchAlphaBeta(board,i);
         //std::cout << Perft::getNotation(move) << std::endl;
         
         auto stop = std::chrono::high_resolution_clock::now();
