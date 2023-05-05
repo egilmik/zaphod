@@ -116,7 +116,10 @@ void UCI::setPosition(std::istringstream &is)
 
 void UCI::startSearch(std::istringstream &is)
 {
-    Score move = search.searchAlphaBeta(motherBoard,7);
+    Score move;
+    for(int i = 3; i <= 7; i+=1){
+        move = search.searchAlphaBeta(motherBoard,i);
+    }
     std::string bestMove = Perft::getNotation(move.bestMove);
     std::cout << "bestmove " << bestMove << std::endl;
 }

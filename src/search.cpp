@@ -44,7 +44,7 @@ Score Search::searchAlphaBeta(Board board, int depth)
 
     std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << bestMove.score << " Depth: "<< depth << std::endl;
     std::cout << "TT hits " << ttHits << std::endl;
-
+    std::cout << "TT size " << ttable.transpositionMap.size() << std::endl;
     return bestMove;
     
 }
