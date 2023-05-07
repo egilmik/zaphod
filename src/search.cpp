@@ -8,7 +8,10 @@ Score Search::searchAlphaBeta(Board board, int depth)
 {
     bestMove.depth = 0;
     bestMove.score = -100000;
+    evaluatedNodes = 0;
     ttHits = 0;
+    int alpha = -1000000000;
+    int beta = 1000000000;
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
     sortMoveList(board,moveList);
@@ -26,7 +29,7 @@ Score Search::searchAlphaBeta(Board board, int depth)
                 score = entry.score;
                 ttHits++;
             } else {
-                score = -negaMax(board,-1000000000,1000000000,depth);
+                score = -negaMax(board,alpha,beta,depth);
                 TranspositionEntry entry = {move,depth,score};
                 ttable.transpositionMap[key] = entry;
             }
@@ -35,7 +38,14 @@ Score Search::searchAlphaBeta(Board board, int depth)
                 bestMove.score = score;
                 bestMove.depth = depth;
                 bestMove.bestMove = move;
-                
+            }
+
+            if(score > alpha){
+                alpha = score;
+            }
+
+            if(alpha >= beta){            
+                return bestMove;
             }
         }
 
@@ -45,6 +55,7 @@ Score Search::searchAlphaBeta(Board board, int depth)
     std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << bestMove.score << " Depth: "<< depth << std::endl;
     std::cout << "TT hits " << ttHits << std::endl;
     std::cout << "TT size " << ttable.transpositionMap.size() << std::endl;
+    std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
     return bestMove;
     
 }
@@ -56,7 +67,6 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
     
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
-    pseudoLegalNodeCounter+= moveList.counter;
     int score = 0;
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
@@ -69,17 +79,15 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
                 ttHits++;
             } else {
                 score = -negaMax(board,-beta,-alpha,depth-1);
-                //TranspositionEntry entry = {move,depth,score};                
-                //ttable.transpositionMap[key] = entry;
             }
-        }
-        if(score >= beta){            
-            return beta;
         }
         if(score > alpha){
             alpha = score;
-            
         }
+        if(alpha >= beta){            
+            return beta;
+        }
+        
 
         board.revertLastMove();               
     }
