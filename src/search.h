@@ -16,9 +16,11 @@ struct Score {
 class Search {
     public:
         unsigned long long evaluatedNodes = 0;
+        unsigned long long evaluatedQuinesenceNodes = 0;
         unsigned long long ttHits = 0;
         Score searchAlphaBeta(Board board,int depth);
-        int negaMax(Board board, int alpha, int, int depthLeft);
+        int negaMax(Board board, int alpha, int beta, int depthLeft);
+        int quinesence(Board board, int alpha, int beta, int depth);
         void sortMoveList(Board board,MoveList &list);
         int evaluate(Board &board);
         

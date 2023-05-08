@@ -40,13 +40,15 @@ Score Search::searchAlphaBeta(Board board, int depth)
                 bestMove.bestMove = move;
             }
 
+            if(score >= beta){            
+                return bestMove;
+            }
+
             if(score > alpha){
                 alpha = score;
             }
 
-            if(alpha >= beta){            
-                return bestMove;
-            }
+            
         }
 
         board.revertLastMove();               
@@ -63,6 +65,7 @@ Score Search::searchAlphaBeta(Board board, int depth)
 int Search::negaMax(Board board, int alpha, int beta, int depth)
 {
     
+    //if(depth == 0) return quinesence(board,-beta,-alpha,2);
     if(depth == 0) return evaluate(board);
     
     MoveList moveList;
@@ -80,7 +83,49 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
             } else {
                 score = -negaMax(board,-beta,-alpha,depth-1);
             }
+
+            if(score >= beta){            
+                 return beta;
+            }
+    
+            if(score > alpha){
+                alpha = score;
+            }
+            
         }
+        
+        
+
+        board.revertLastMove();               
+    }
+    return alpha;
+
+}
+
+int Search::quinesence(Board board, int alpha, int beta,int depth)
+{
+    if(depth == 0) return evaluate(board);
+    
+    MoveList moveList;
+    MoveList moveListReduced;
+    MoveGenerator::generateMoves(board,moveList);
+    for(int i = 0; i < moveList.counter; i++){
+        if(moveList.moves[i].capture || moveList.moves[i].promotion){
+            moveListReduced.moves[moveListReduced.counter++] = moveList.moves[i];
+        }
+    }
+    if(moveListReduced.counter == 0){
+        return evaluate(board);
+    }
+
+    int score = 0;
+    for(int i = 0; i < moveListReduced.counter; i++){
+        Move move = moveListReduced.moves[i];
+        bool valid = board.makeMove(move);
+        if(valid){            
+            score = -quinesence(board,-beta,-alpha,depth-1);
+        }
+
         if(score > alpha){
             alpha = score;
         }
@@ -92,7 +137,6 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
         board.revertLastMove();               
     }
     return alpha;
-
 }
 
 struct SortStruct {
