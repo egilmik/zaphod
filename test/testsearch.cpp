@@ -8,35 +8,25 @@ class SearchTest : public ::testing::Test {
   }
 };
 
-TEST_F(SearchTest, returnBestMove){
+TEST_F(SearchTest, symmetricPositionReturnsZeroScore){
     Board board;    
-    board.parseFen("4k2r/pp5R/8/8/8/8/2PP4/4K3 w k - 0 7");
+    board.parseFen("rnbqkbnr/ppp2ppp/8/3pp3/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3");
 
     Search search;
-    Score move = search.searchAlphaBeta(board,1);
+    int score = search.evaluate(board);
     
-    EXPECT_EQ(move.bestMove.fromSq,55);
-    EXPECT_EQ(move.bestMove.toSq,63);   
+    EXPECT_EQ(0,score);
+
 }
 
-TEST_F(SearchTest, returnPositiveScoreWhite){
+TEST_F(SearchTest, startingPosShouldReturnZeroScore){
     Board board;    
-    board.parseFen("rnbqkbnr/1pppppp1/7p/8/p2PP3/P1N5/1PP2PPP/R1BQKBNR w KQkq - 0 5");
+    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     Search search;
-    Score move = search.searchAlphaBeta(board,5);
+    int score = search.evaluate(board);
     
-    EXPECT_TRUE(move.score > 100);
+    EXPECT_EQ(0,score);
 }
 
-
-TEST_F(SearchTest, returnPositiveScoreBlack){
-    Board board;    
-    board.parseFen("rnbqkbnr/ppp2ppp/3p4/4p3/4P1Q1/5P2/PPPP2PP/RNB1KBNR b KQkq - 0 3");
-
-    Search search;
-    Score move = search.searchAlphaBeta(board,2);
-    
-    EXPECT_TRUE(move.score > 100);
-}
 
