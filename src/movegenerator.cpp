@@ -87,14 +87,12 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
 
         //Capture
         
-        BitBoard attack = 0;        
+        BitBoard attack = 0;   
 
         if(sideToMove == BitBoardEnum::White){
-            attack = enemyBoard & board.southEastOne(fromSqBoard);
-            attack |= enemyBoard & board.southWestOne(fromSqBoard);
+            attack = enemyBoard & (board.southEastOne(fromSqBoard) | board.southWestOne(fromSqBoard));
         } else {            
-            attack = enemyBoard & board.northEastOne(fromSqBoard);
-            attack |= enemyBoard & board.northWestOne(fromSqBoard);
+            attack = enemyBoard & (board.northEastOne(fromSqBoard) | board.northWestOne(fromSqBoard));
         }
 
         while(attack != 0){
@@ -114,11 +112,9 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
             BitBoard attack = 0;
 
             if(sideToMove == BitBoardEnum::White){
-                attack = board.sqBB[board.getEnPassantSq()] & board.southEastOne(fromSqBoard);
-                attack |= board.sqBB[board.getEnPassantSq()] & board.southWestOne(fromSqBoard);
+                attack = board.sqBB[board.getEnPassantSq()] & (board.southEastOne(fromSqBoard) | board.southWestOne(fromSqBoard));
             } else {            
-                attack = board.sqBB[board.getEnPassantSq()] & board.northEastOne(fromSqBoard);
-                attack |= board.sqBB[board.getEnPassantSq()] & board.northWestOne(fromSqBoard);
+                attack = board.sqBB[board.getEnPassantSq()] & (board.northEastOne(fromSqBoard) | board.northWestOne(fromSqBoard));
             }
 
             while(attack != 0){
