@@ -148,7 +148,7 @@ class Board {
         bool makeMove(Move move);
         bool makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush, bool castling, BitBoardEnum promotion);
         void revertLastMove();
-        bool isSquareAttacked(BitBoard targetSquares, BitBoardEnum attackingSide);
+        bool isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker);
 
 
         

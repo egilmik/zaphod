@@ -402,7 +402,7 @@ bool Board::makeMove(Move move)
 
 bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush,bool castling, BitBoardEnum promotion)
 {
-    int size = 15*sizeof(bitBoardArray[0]);
+    const int size = 15*sizeof(bitBoardArray[0]);
     std::memcpy(&bitBoardArrayCopy,&bitBoardArray,size);
     sideToMoveCopy = sideToMove;
     enPassantSqCopy = enPassantSqCopy;
@@ -414,13 +414,11 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     materialScoreCopy = materialScore;
 
 
-    BitBoardEnum enemy = BitBoardEnum::White;
+    BitBoardEnum attacker = BitBoardEnum::White;
     if(sideToMove == White){
-        enemy = Black;
+        attacker = Black;
     }
-
-    BitBoard fromToBoard = 0;
-    fromToBoard = sqBB[fromSq] ^ sqBB[toSq];
+    
 
     // Pop and set bits in piece and all board
     bitBoardArray[All] &= ~sqBB[fromSq];
@@ -436,22 +434,22 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
 
 
     if(capture){
-        bitBoardArray[enemy] &= ~sqBB[toSq];
+        bitBoardArray[attacker] &= ~sqBB[toSq];
         BitBoardEnum capturedPiece = All;
-        if((bitBoardArray[P+enemy] & sqBB[toSq]) != 0){
-            bitBoardArray[P+enemy] &= ~sqBB[toSq];
+        if((bitBoardArray[P+attacker] & sqBB[toSq]) != 0){
+            bitBoardArray[P+attacker] &= ~sqBB[toSq];
             capturedPiece = P;
-        } else if((bitBoardArray[N+enemy] & sqBB[toSq]) != 0){
-            bitBoardArray[N+enemy] &= ~sqBB[toSq];
+        } else if((bitBoardArray[N+attacker] & sqBB[toSq]) != 0){
+            bitBoardArray[N+attacker] &= ~sqBB[toSq];
             capturedPiece = N;
-        } else if((bitBoardArray[B+enemy] & sqBB[toSq]) != 0){
-            bitBoardArray[B+enemy] &= ~sqBB[toSq];
+        } else if((bitBoardArray[B+attacker] & sqBB[toSq]) != 0){
+            bitBoardArray[B+attacker] &= ~sqBB[toSq];
             capturedPiece = B;
-        } else if((bitBoardArray[R+enemy] & sqBB[toSq]) != 0){
-            bitBoardArray[R+enemy] &= ~sqBB[toSq];
+        } else if((bitBoardArray[R+attacker] & sqBB[toSq]) != 0){
+            bitBoardArray[R+attacker] &= ~sqBB[toSq];
             capturedPiece = R;
-        } else if((bitBoardArray[Q+enemy] & sqBB[toSq]) != 0){
-            bitBoardArray[Q+enemy] &= ~sqBB[toSq];
+        } else if((bitBoardArray[Q+attacker] & sqBB[toSq]) != 0){
+            bitBoardArray[Q+attacker] &= ~sqBB[toSq];
             capturedPiece = Q;
         }
         
@@ -602,7 +600,7 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
 
     
     
-    if(isSquareAttacked(bitBoardArray[K+sideToMove], sideToMove)){
+    if(isSquareAttacked(bitBoardArray[K+sideToMove], attacker)){
         return false;
     }
         
@@ -625,36 +623,19 @@ void Board::revertLastMove()
     materialScore = materialScoreCopy;
 }
 
-bool Board::isSquareAttacked(BitBoard targetSquares, BitBoardEnum sideAttacked)
+bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
 {
-    BitBoard allPieces = bitBoardArray[All];
-    BitBoard empty = ~allPieces;
-    BitBoard queenRooks = 0;
-    BitBoard queenBishops = 0;
-    BitBoard knights = 0;
-    BitBoard king = 0;
+    BitBoard empty = ~bitBoardArray[All];
+    BitBoard queenRooks = bitBoardArray[Q+attacker] | bitBoardArray[R+attacker];;
+    BitBoard queenBishops = bitBoardArray[Q+attacker] | bitBoardArray[B+attacker];
+    BitBoard knights = bitBoardArray[N+attacker];
+    BitBoard king = bitBoardArray[K+attacker];;
 
-    if(sideAttacked == BitBoardEnum::White){
-        BitBoard blackPawns = bitBoardArray[p];
-        
-        if((northWestOne(blackPawns) & targetSquares) != 0) return true; 
-        if((northEastOne(blackPawns) & targetSquares) != 0) return true;
-
-        king = bitBoardArray[k];
-        knights = bitBoardArray[n];
-        queenRooks = bitBoardArray[q] | bitBoardArray[r];
-        queenBishops = bitBoardArray[q] | bitBoardArray[b];
-        
+    if(attacker == BitBoardEnum::Black){
+        if(((northWestOne(bitBoardArray[p]) | northEastOne(bitBoardArray[p])) & targetSquares) != 0) return true;         
 
     } else {
-        BitBoard whitePawns = bitBoardArray[P];
-        if((southEastOne(whitePawns) & targetSquares) != 0) return true; 
-        if((southWestOne(whitePawns) & targetSquares) != 0) return true;
-        
-        king = bitBoardArray[K];
-        knights = bitBoardArray[N];
-        queenRooks = bitBoardArray[Q] | bitBoardArray[R];
-        queenBishops = bitBoardArray[Q] | bitBoardArray[B];
+        if(((southEastOne(bitBoardArray[P]) | southWestOne(bitBoardArray[P])) & targetSquares) != 0) return true; 
     }
 
 

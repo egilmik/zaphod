@@ -260,9 +260,8 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
 
 void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
 {
-    BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece;
-    BitBoard emptySquares = ~allPieces;
+    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoardEnum sideToMove = board.getSideToMove();
     BitBoard enemyBoard = board.getEnemyBoard();
     BitBoard ownBoard = board.getOwnBoard();
@@ -279,9 +278,7 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
     int fromSq = 0;
     while(queens != 0){
         fromSq = board.popLsb(queens);
-        BitBoard queenBoard = 0;
-        board.setBit(queenBoard,fromSq);
-
+        BitBoard queenBoard = board.sqBB[fromSq];
         BitBoard moves = board.southOccludedMoves(queenBoard, emptySquares);
         moves |= board.northOccludedMoves(queenBoard, emptySquares);
         moves |= board.westOccludedMoves(queenBoard, emptySquares);
@@ -343,7 +340,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares,5);
             board.setBit(castlineSquares,6);
-            if((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::White)){
+            if((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::Black)){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq+2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }  //f1,g1;
         }
@@ -355,7 +352,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard emptySquaresWQ = checkSquaresWQ;
             board.setBit(emptySquaresWQ,1);
 
-            if((allPieces & emptySquaresWQ) == 0 && !board.isSquareAttacked(checkSquaresWQ| board.sqBB[fromSq], BitBoardEnum::White)){
+            if((allPieces & emptySquaresWQ) == 0 && !board.isSquareAttacked(checkSquaresWQ| board.sqBB[fromSq], BitBoardEnum::Black)){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }  //b1,c1,d1;
         }
@@ -364,7 +361,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares,61);
             board.setBit(castlineSquares,62);
-            if((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::Black)){
+            if((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::White)){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq+2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }
         }
@@ -375,7 +372,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
             board.setBit(checkSquaresBQ,59);
             BitBoard emptySquaresBQ = checkSquaresBQ;
             board.setBit(emptySquaresBQ,57);
-            if((allPieces & emptySquaresBQ) == 0 && !board.isSquareAttacked(checkSquaresBQ | board.sqBB[fromSq], BitBoardEnum::Black)){
+            if((allPieces & emptySquaresBQ) == 0 && !board.isSquareAttacked(checkSquaresBQ | board.sqBB[fromSq], BitBoardEnum::White)){
                 moveList.moves[moveList.counter++] = {fromSq,fromSq-2,false,BitBoardEnum::All,false,false,true,movedPiece};
             }
         }
