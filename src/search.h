@@ -5,7 +5,6 @@
 #include <vector>
 #include "movegenerator.h"
 #include <iostream>
-#include "transpositiontable.h"
 
 struct Score {
     int depth = 0;
@@ -27,7 +26,8 @@ class Search {
 
     private:
         Score bestMove;
-        TranspositionTable ttable;
+        
+        std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
         
           
 };

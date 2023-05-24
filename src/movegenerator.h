@@ -2,6 +2,7 @@
 #define MOVEGENERATOR_H
 
 #include "board.h"
+#include "move.h"
 #include <vector>
 
 class MoveGenerator {

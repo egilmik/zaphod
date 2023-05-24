@@ -1,9 +1,12 @@
 #ifndef TRANSPOSITIONTABLE_H
 #define TRANSPOSITIONTABLE_H
 
-#include "board.h"
+
 #include <random>
 #include <unordered_map>
+#include "bitboard.h"
+#include "move.h"
+#include <iostream>
 
 struct TranspositionEntry {
     Move bestMove;
@@ -14,7 +17,7 @@ struct TranspositionEntry {
 class TranspositionTable {
     public:
 
-        BitBoard pieceKeys[12][64];
+        BitBoard pieceKeys[15][64];
         BitBoard sideToMoveKey[2];
         BitBoard castlingRightsKeys[4];
         BitBoard enPassantKeys[64];
@@ -24,7 +27,7 @@ class TranspositionTable {
             gen.seed(220818100915);
             std::uniform_int_distribution<unsigned long long> dis;
 
-            for(int i = 0; i < 12; i++){
+            for(int i = 0; i < 15; i++){
                 for(int x = 0; x < 64; x++){
                     pieceKeys[i][x] = dis(gen);
                 }
@@ -40,39 +43,6 @@ class TranspositionTable {
             }
         };
 
-        BitBoard generateKey(Board &board){
-            BitBoard key = 0;
-
-            for (int pieceValue = BitBoardEnum::R; pieceValue != BitBoardEnum::All; pieceValue++ ){
-                if(pieceValue != BitBoardEnum::All && pieceValue != BitBoardEnum::White && pieceValue != BitBoardEnum::Black){
-                    BitBoardEnum pieceEnum = static_cast<BitBoardEnum>(pieceValue);
-                    BitBoard pieceBoard = board.getBitboard(pieceEnum);
-
-                    while(pieceBoard != 0){
-                        key ^= pieceKeys[pieceEnum][board.popLsb(pieceBoard)];
-                    }
-                }
-            }
-            if(board.getCastleRightsWK()){
-                key ^= castlingRightsKeys[0];
-            }
-            if(board.getCastleRightsWQ()){
-                key ^= castlingRightsKeys[1];
-            }
-            if(board.getCastleRightsBK()){
-                key ^= castlingRightsKeys[1];
-            }
-            if(board.getCastleRightsBQ()){
-                key ^= castlingRightsKeys[1];
-            }
-
-            if(board.getEnPassantSq() != board.noSq){
-                key ^= enPassantKeys[board.getEnPassantSq()];
-            }
-            return key;
-        }
-
-        std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
 
         
 };

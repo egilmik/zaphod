@@ -103,6 +103,8 @@ Board::Board(){
     for(int i = 0; i< 15; i++){
         bitBoardArray[i] = 0;
     }
+
+    ttable.initKeys();
 }
 
 
@@ -176,8 +178,41 @@ void Board::parseFen(std::string fen){
 
     materialScore = Material::getMaterialScore(*this);
     pieceSquareScore = Material::getPieceSquareScore(*this);
-
+    hashKey = generateHashKey();
 }
+
+BitBoard Board::generateHashKey(){
+    BitBoard key = 0;
+
+    for (int pieceValue = BitBoardEnum::R; pieceValue != BitBoardEnum::All; pieceValue++ ){
+        if(pieceValue != BitBoardEnum::All && pieceValue != BitBoardEnum::White && pieceValue != BitBoardEnum::Black){
+            BitBoardEnum pieceEnum = static_cast<BitBoardEnum>(pieceValue);
+            BitBoard pieceBoard = getBitboard(pieceEnum);
+
+            while(pieceBoard != 0){
+                key ^= ttable.pieceKeys[pieceEnum][popLsb(pieceBoard)];
+            }
+        }
+    }
+    if(getCastleRightsWK()){
+        key ^= ttable.castlingRightsKeys[0];
+    }
+    if(getCastleRightsWQ()){
+        key ^= ttable.castlingRightsKeys[1];
+    }
+    if(getCastleRightsBK()){
+        key ^= ttable.castlingRightsKeys[2];
+    }
+    if(getCastleRightsBQ()){
+        key ^= ttable.castlingRightsKeys[3];
+    }
+
+    if(getEnPassantSq() != noSq){
+        key ^= ttable.enPassantKeys[getEnPassantSq()];
+    }
+    return key;
+}
+
 
 
 BitBoard Board::southOccludedMoves(BitBoard pieces, BitBoard empty)
@@ -287,6 +322,12 @@ BitBoard Board::southWestOne(BitBoard pieces)
 }
 
 BitBoard Board::getBitboard(BitBoardEnum piece)
+{
+    return bitBoardArray[piece];
+}
+
+
+BitBoard Board::getBitboard(int piece)
 {
     return bitBoardArray[piece];
 }

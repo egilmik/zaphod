@@ -1,30 +1,11 @@
-#ifndef BITBOARD_H
-#define BITBOARD_H
+#ifndef BOARD_H
+#define BOARD_H
 
 #include <string>
 #include <map>
-
-#define BitBoard __UINT64_TYPE__
-
-enum BitBoardEnum {White,R,N,B,Q,K,P,Black,r,n,b,q,k,p,All};
-
-struct Move {
-    int fromSq;
-    int toSq;
-    bool capture;
-    BitBoardEnum promotion;
-    bool doublePawnPush;
-    bool enpassant;
-    bool castling;
-    BitBoardEnum piece;
-};
-
-struct MoveList{
-    //218 seems to be the largest nr of moves for a position https://www.chessprogramming.org/Chess_Position
-    //No additional instructions to allocate 250, just to sure :)
-    Move moves[250];
-    int counter = 0;
-};
+#include "bitboard.h"
+#include "move.h"
+#include "transpositiontable.h"
 
 
 class Board {
@@ -166,6 +147,7 @@ class Board {
         BitBoard southWestOne(BitBoard pieces);
 
         BitBoard getBitboard(BitBoardEnum piece);
+        BitBoard getBitboard(int piece);
         BitBoard getEnemyBoard();
         BitBoard getOwnBoard();
         void changeSideToMove();
@@ -181,6 +163,10 @@ class Board {
         int getPieceSquareScore(){ return pieceSquareScore;};
         int getMaterialScore(){ return materialScore;};
 
+        BitBoard generateHashKey();
+        BitBoard getHashKey(){ return hashKey;};
+
+        TranspositionTable ttable;
 
     private:
         void parseFenPosition(char value, int &bitCout);
@@ -195,6 +181,7 @@ class Board {
         bool castleBQCopy = true;
         int materialScoreCopy = 0;
         int pieceSquareScoreCopy = 0;
+        BitBoard hashKeyCopy = 0;
         
         BitBoard bitBoardArray[15];
         BitBoardEnum sideToMove = White;
@@ -205,7 +192,9 @@ class Board {
         bool castleBQ = false;
         int pieceSquareScore = 0;
         int materialScore = 0;
+        BitBoard hashKey = 0;
 
+        
         
 
             inline static const int fenToBitMapping[64] = {56,57,58,59,60,61,62,63,

@@ -21,9 +21,9 @@ FetchContent_MakeAvailable(googletest)
 
 file(GLOB src CONFIGURE_DEPENDS "*.h" "*.cpp")
 
-add_executable(Zaphod src/board.cpp src/board.h src/main.cpp src/transpositiontable.h src/material.h src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h src/search.h src/search.cpp src/uci.cpp src/uci.h)
-add_executable(Benchmark src/board.cpp src/board.h src/benchmark.cpp src/transpositiontable.h src/material.h src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h src/search.h src/search.cpp)
-add_executable(Perft src/board.cpp src/board.h src/mainperft.cpp src/transpositiontable.h src/material.h src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h
+add_executable(Zaphod src/board.cpp src/move.h src/bitboard.h src/board.h src/main.cpp src/transpositiontable.h src/material.h src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h src/search.h src/search.cpp src/uci.cpp src/uci.h)
+add_executable(Benchmark src/board.cpp src/move.h src/bitboard.h src/board.h src/benchmark.cpp src/transpositiontable.h src/material.h src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h src/search.h src/search.cpp)
+add_executable(Perft src/board.cpp src/move.h src/bitboard.h src/board.h src/mainperft.cpp src/transpositiontable.h src/material.h src/movegenerator.cpp src/movegenerator.h src/perft.h src/test.cpp src/test.h
   
 )
 
@@ -39,7 +39,7 @@ enable_testing()
 
 add_executable(
   zaphod_test
-  test/testboard.cpp test/testperft.cpp test/testtranspositiontable.cpp test/testsearch.cpp test/testuci.cpp src/uci.cpp src/uci.h src/board.h src/board.cpp src/search.h src/search.cpp src/perft.h src/movegenerator.cpp src/transpositiontable.h src/movegenerator.h
+  test/testboard.cpp test/testperft.cpp src/move.h src/bitboard.h test/testtranspositiontable.cpp test/testsearch.cpp test/testuci.cpp src/uci.cpp src/uci.h src/board.h src/board.cpp src/search.h src/search.cpp src/perft.h src/movegenerator.cpp src/transpositiontable.h src/movegenerator.h
 )
 
 

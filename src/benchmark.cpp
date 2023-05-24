@@ -9,7 +9,7 @@
 int main(int, char**) {
 
     Board board;    
-    board.parseFen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1");
+    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
     Search search;
 
     for(int i = 1; i <= 6; i+=1){
