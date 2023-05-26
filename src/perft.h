@@ -141,6 +141,17 @@ class Perft {
             }
         }
 
+        static Move moveFromNotation(std::string move, Board &board){
+            MoveList list;
+            MoveGenerator::generateMoves(board,list);
+            for(int i = 0; i < list.counter; i++){
+                if(move == Perft::getNotation(list.moves[i])){
+                    return list.moves[i];
+                }
+            }
+            return {};
+        }
+
         static std::string getNotation(Move move){
             std::string promotion = "";
             

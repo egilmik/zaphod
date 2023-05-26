@@ -76,12 +76,20 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
         bool valid = board.makeMove(move);
         if(valid){
             BitBoard key = board.generateHashKey();
+            BitBoard incKey = board.getHashKey();
+            if(key != incKey){
+
+                std::cout << Perft::getNotation(move) << std::endl;
+                board.printBoard();
+                int x = 0;
+            }
             std::unordered_map<BitBoard,TranspositionEntry>::iterator it = transpositionMap.find(key);
             if(it != transpositionMap.end() && it->second.depth >= depth){                
                 score = it->second.score;
                 ttHits++;
             } else {
                 score = -negaMax(board,-beta,-alpha,depth-1);
+                
             }
 
             if(score >= beta){            
