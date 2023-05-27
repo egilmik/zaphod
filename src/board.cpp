@@ -170,6 +170,15 @@ void Board::parseFen(std::string fen){
             if(fen[i] == 'Q'){ castleWQ = true;}
             if(fen[i] == 'k'){ castleBK = true;}
             if(fen[i] == 'q'){ castleBQ = true;}
+            break;
+        case 3:
+            for(int x = 0; x < 64; x++){
+                if(fen.substr(i,2) == sqToNotation[x]){
+                    enPassantSq = x;
+                }
+            }
+            break;
+            
         
         default:
             break;
@@ -480,34 +489,48 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
 
 
     if(capture){
-        bitBoardArray[attacker] &= ~sqBB[toSq];
-        BitBoardEnum capturedPiece = All;
-        if((bitBoardArray[P+attacker] & sqBB[toSq]) != 0){
-            bitBoardArray[P+attacker] &= ~sqBB[toSq];
-            capturedPiece = static_cast<BitBoardEnum>(P+attacker);
-        } else if((bitBoardArray[N+attacker] & sqBB[toSq]) != 0){
-            bitBoardArray[N+attacker] &= ~sqBB[toSq];
-            capturedPiece = static_cast<BitBoardEnum>(N+attacker);
-        } else if((bitBoardArray[B+attacker] & sqBB[toSq]) != 0){
-            bitBoardArray[B+attacker] &= ~sqBB[toSq];
-            capturedPiece = static_cast<BitBoardEnum>(B+attacker);
-        } else if((bitBoardArray[R+attacker] & sqBB[toSq]) != 0){
-            bitBoardArray[R+attacker] &= ~sqBB[toSq];
-            capturedPiece = static_cast<BitBoardEnum>(R+attacker);
-        } else if((bitBoardArray[Q+attacker] & sqBB[toSq]) != 0){
-            bitBoardArray[Q+attacker] &= ~sqBB[toSq];
-            capturedPiece = static_cast<BitBoardEnum>(Q+attacker);
-        }
-        
-        // Update score for captured piece
-        pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][fromSq];        
-        materialScore = Material::getMaterialScore(*this);
+        if(enPassant){
+            if(sideToMove == BitBoardEnum::White){
+                popBit(p,toSq-8);
+                popBit(All, toSq-8);
+                popBit(Black, toSq-8);
+                pieceSquareScore -= Material::pieceSquareScoreArray[p][toSq-8];
 
-        hashKey ^= ttable.pieceKeys[capturedPiece][toSq];
-        
+                hashKey ^= ttable.pieceKeys[p][toSq-8];
+            } else {
+                popBit(P,toSq+8);
+                popBit(All, toSq+8);
+                popBit(White, toSq+8);
+                pieceSquareScore -= Material::pieceSquareScoreArray[P][toSq+8];
+                hashKey ^= ttable.pieceKeys[P][toSq+8];
+            }
+        } else {       
+            bitBoardArray[attacker] &= ~sqBB[toSq];
+            BitBoardEnum capturedPiece = All;
+            if((bitBoardArray[P+attacker] & sqBB[toSq]) != 0){
+                bitBoardArray[P+attacker] &= ~sqBB[toSq];
+                capturedPiece = static_cast<BitBoardEnum>(P+attacker);
+            } else if((bitBoardArray[N+attacker] & sqBB[toSq]) != 0){
+                bitBoardArray[N+attacker] &= ~sqBB[toSq];
+                capturedPiece = static_cast<BitBoardEnum>(N+attacker);
+            } else if((bitBoardArray[B+attacker] & sqBB[toSq]) != 0){
+                bitBoardArray[B+attacker] &= ~sqBB[toSq];
+                capturedPiece = static_cast<BitBoardEnum>(B+attacker);
+            } else if((bitBoardArray[R+attacker] & sqBB[toSq]) != 0){
+                bitBoardArray[R+attacker] &= ~sqBB[toSq];
+                capturedPiece = static_cast<BitBoardEnum>(R+attacker);
+            } else if((bitBoardArray[Q+attacker] & sqBB[toSq]) != 0){
+                bitBoardArray[Q+attacker] &= ~sqBB[toSq];
+                capturedPiece = static_cast<BitBoardEnum>(Q+attacker);
+            }
+            
+            // Update score for captured piece
+            pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][fromSq];        
+            materialScore = Material::getMaterialScore(*this);
+
+            hashKey ^= ttable.pieceKeys[capturedPiece][toSq];
+        }        
     }
-
-    
 
     if(sideToMove == BitBoardEnum::White){
 
@@ -606,23 +629,6 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         }
     }
 
-    if(enPassant){
-        if(sideToMove == BitBoardEnum::White){
-            popBit(p,toSq-8);
-            popBit(All, toSq-8);
-            popBit(Black, toSq-8);
-            pieceSquareScore -= Material::pieceSquareScoreArray[p][toSq-8];
-
-            hashKey ^= ttable.pieceKeys[p][toSq-8];
-        } else {
-            popBit(P,toSq+8);
-            popBit(All, toSq+8);
-            popBit(White, toSq+8);
-            pieceSquareScore -= Material::pieceSquareScoreArray[P][toSq+8];
-            hashKey ^= ttable.pieceKeys[P][toSq+8];
-        }  
-        //std::cout << "En passant " << sqToNotation[fromSq] << " " << sqToNotation[toSq] << std::endl;
-    }    
     if(promotion != BitBoardEnum::All){        
         popBit(piece,toSq);
         hashKey ^= ttable.pieceKeys[piece][toSq];
@@ -634,7 +640,6 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     }
 
     //TODO Castline status overly complex
-    //TODO update hashKey
     //Update castling rights
     if(piece == K){
         if(castleWK){

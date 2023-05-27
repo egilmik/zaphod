@@ -115,7 +115,7 @@ TEST_F(TranspositionTableTest, capturingRookRemovesCastlingRightInIncrementalKey
     EXPECT_EQ(board.getHashKey(),board.generateHashKey());
 }
 
-TEST_F(TranspositionTableTest, unsureWhyThisFailed){
+TEST_F(TranspositionTableTest, enpassantGivesCorrectIncrementalHashKey){
     Board board;
     board.parseFen("rn1qkbnr/ppp1pppp/8/8/3pP3/5N1b/PPPP1PPP/RNBQKB1R b KQkq e3 0 4");
 

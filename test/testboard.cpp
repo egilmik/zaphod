@@ -26,3 +26,18 @@ TEST(BoardTest, rookTargetsSquaresAroundKing){
     EXPECT_TRUE(isAttacked);
 
 }
+
+TEST(BoardTest, fenparsingEnpassantNoSquare){
+    Board board;
+    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+    EXPECT_EQ(board.getEnPassantSq(), -1);
+}
+
+
+TEST(BoardTest, fenparsingEnpassantE3){
+    Board board;
+    board.parseFen("rn1qkbnr/ppp1pppp/8/8/3pP3/5N1b/PPPP1PPP/RNBQKB1R b KQkq e3 0 4");
+
+    EXPECT_EQ(board.getEnPassantSq(), 20);
+}
