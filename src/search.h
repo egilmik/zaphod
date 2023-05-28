@@ -12,6 +12,11 @@ struct Score {
     Move bestMove;
 };
 
+struct SortStruct {
+    int score;
+    Move move;
+};
+
 class Search {
     public:
         unsigned long long evaluatedNodes = 0;
