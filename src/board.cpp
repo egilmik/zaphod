@@ -526,10 +526,9 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
             
             // Update score for captured piece
             pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][fromSq];        
-            materialScore = Material::getMaterialScore(*this);
-
             hashKey ^= ttable.pieceKeys[capturedPiece][toSq];
-        }        
+        }   
+        materialScore = Material::getMaterialScore(*this);     
     }
 
     if(sideToMove == BitBoardEnum::White){
