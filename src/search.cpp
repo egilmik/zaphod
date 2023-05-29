@@ -16,8 +16,6 @@ Score Search::searchAlphaBeta(Board board, int depth)
     MoveGenerator::generateMoves(board,moveList);
     sortMoveList(board,moveList);
     int score = 0;
-    int currentBestScore = -100000;
-    BitBoard key = board.getHashKey();
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
         bool valid = board.makeMove(move);
@@ -28,23 +26,14 @@ Score Search::searchAlphaBeta(Board board, int depth)
                 bestMove.score = score;
                 bestMove.depth = depth;
                 bestMove.bestMove = move;
-                TranspositionEntry entry = {move,depth,score};
-                transpositionMap[key] = entry;
             }
 
-            if(score >= beta){            
-                TranspositionEntry entry = {move,depth,score};
-                transpositionMap[key] = entry;
-                return bestMove;
-            }
+            TranspositionEntry entry;
+            entry.depth = depth;
+            entry.score = score;
+            entry.type = TEType::exact;           
 
-            if(score > alpha){
-                alpha = score;
-                TranspositionEntry entry = {move,depth,score};
-                transpositionMap[key] = entry;
-            }
-
-            
+            transpositionMap[board.getHashKey()] = entry;           
         }
 
         board.revertLastMove();               
@@ -63,32 +52,61 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
     
     //if(depth == 0) return quinesence(board,-beta,-alpha,2);
     if(depth == 0) return evaluate(board);
+
+    int alphaOrginal = alpha;
     
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
-    sortMoveList(board,moveList);
+    //sortMoveList(board,moveList);
     int score = 0;
     BitBoard key = board.getHashKey();
+
+    std::unordered_map<BitBoard,TranspositionEntry>::iterator it = transpositionMap.find(key);
+    if(it != transpositionMap.end() && it->second.depth >= depth){
+        TEType entryType = it->second.type;
+        if(entryType == TEType::exact){
+            return it->second.score;
+        } else if(entryType == TEType::lower){
+            alpha = std::max(it->second.score,alpha);
+        } else if(entryType == TEType::upper){
+            beta = std::max(it->second.score,beta);
+        }
+
+        if (alpha >= beta){ 
+            return it->second.score;
+        }
+    }
+    
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
         bool valid = board.makeMove(move);
         if(valid){            
             score = -negaMax(board,-beta,-alpha,depth-1);
             if(score >= beta){            
-                TranspositionEntry entry = {move,depth,score};
-                transpositionMap[key] = entry;
                 return beta;
-            }
-    
+            }           
+
             if(score > alpha){
                 alpha = score;
-                TranspositionEntry entry = {move,depth,score};
-                transpositionMap[key] = entry;
-            }    
+            }
+            
         }
-        
-        board.revertLastMove();               
+        board.revertLastMove();
     }
+
+    TranspositionEntry entry;
+    entry.depth = depth;
+    entry.score = alpha;
+    if(alpha <= alphaOrginal){
+        entry.type = TEType::upper;
+    } else if(alpha >= beta){
+        entry.type = TEType::lower;
+    } else {
+        entry.type = TEType::exact;
+    }
+
+    transpositionMap[key] = entry;
+     
     return alpha;
 
 }
@@ -139,45 +157,21 @@ bool compare(SortStruct a, SortStruct b)
 
 void Search::sortMoveList(Board board, MoveList &list)
 {
-    BitBoard key = board.getHashKey();
-    std::unordered_map<BitBoard,TranspositionEntry>::iterator it = transpositionMap.find(key);
     SortStruct sortArray[list.counter];
+    for(int i = 0; i< list.counter; i++){
+        board.makeMove(list.moves[i]);
 
-    //Init sort list
-    for(int i = 0; i < list.counter; i++){
+        BitBoard key = board.getHashKey();
+        std::unordered_map<BitBoard,TranspositionEntry>::iterator it = transpositionMap.find(key);
         SortStruct entry;
-            entry.move = list.moves[i];
-            entry.score = -100000;
-            sortArray[i] = entry;
-    }
-
-    // Find best move in Transposition table
-    if(it != transpositionMap.end()){
-        Move bestMove = it->second.bestMove;
-        for(int i = 0; i< list.counter; i++){        
-            Move move = list.moves[i];
-            /*if((move.capture && bestMove.capture) &&
-                (move.castling && bestMove.castling) &&
-                (move.doublePawnPush && bestMove.doublePawnPush) &&
-                (move.enpassant && bestMove.enpassant) &&
-                (move.fromSq && bestMove.fromSq) &&
-                (move.piece && bestMove.piece) &&
-                (move.promotion && bestMove.promotion) &&
-                (move.toSq && bestMove.toSq)){
-                    sortArray[i].score = it->second.score;
-                    break;
-                }
-            */
-           if((move.fromSq && bestMove.fromSq) &&
-                (move.piece && bestMove.piece) &&
-                (move.toSq && bestMove.toSq)){
-                    sortArray[i].score = it->second.score;
-                    break;
-                }
+        entry.move = list.moves[i];
+        entry.score = -100000;
+        if(it != transpositionMap.end()){                
+            entry.score = it->second.score;
         }
+        sortArray[i] = entry;
+        board.revertLastMove();
     }
-
-    // Sort....
     std::sort(sortArray, sortArray+list.counter, compare);
     for(int i = 0; i< list.counter; i++){
         list.moves[i] = sortArray[i].move;

@@ -8,8 +8,11 @@
 #include "move.h"
 #include <iostream>
 
+enum TEType {exact, upper,lower};
+
 struct TranspositionEntry {
     Move bestMove;
+    TEType type;
     int depth;
     int score;
 };
