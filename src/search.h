@@ -22,7 +22,8 @@ class Search {
         unsigned long long evaluatedNodes = 0;
         unsigned long long evaluatedQuinesenceNodes = 0;
         unsigned long long ttHits = 0;
-        Score searchAlphaBeta(Board board,int depth);
+        Score search(Board board, int maxDepth);
+        Score searchAlphaBeta(Board board,int depth, int alpha, int beta);
         int negaMax(Board board, int alpha, int beta, int depthLeft);
         int quinesence(Board board, int alpha, int beta, int depth);
         void sortMoveList(Board board,MoveList &list);

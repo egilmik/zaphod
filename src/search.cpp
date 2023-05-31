@@ -3,15 +3,47 @@
 #include "material.h"
 #include <algorithm>
 
+Score Search::search(Board board, int maxDepth)
+{
+    Score bestScore;
+    int lowerBound = -10000000;
+    int upperBound = 10000000;
+    bool inIteration = true;
+    for(int i = 1; i <= 8; i+=1){
 
-Score Search::searchAlphaBeta(Board board, int depth)
+        while(inIteration){
+            Score score = searchAlphaBeta(board,i, lowerBound, upperBound);
+            if(score.score > upperBound){
+                std::cout << "Fail high, depth: " << i << std::endl;
+                upperBound += 50;
+            } else if( score.score < lowerBound){
+                lowerBound -= 50;
+                std::cout << "Fail low, depth: " << i << std::endl;
+            } else {
+                bestScore = score;
+                inIteration = false;
+            }
+
+        }
+        //
+        //if(i > 4){
+        //    lowerBound = bestScore.score-100;
+        //    upperBound = bestScore.score+100;
+        //}
+        inIteration = true;
+        std::cout << "Iteration done: " << i << std::endl;
+        std::cout << std::endl;
+    }
+    
+    return bestScore;
+}
+
+Score Search::searchAlphaBeta(Board board, int depth, int alpha, int beta)
 {
     bestMove.depth = 0;
     bestMove.score = -100000;
     evaluatedNodes = 0;
     ttHits = 0;
-    int alpha = -1000000000;
-    int beta = 1000000000;
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
     sortMoveList(board,moveList);

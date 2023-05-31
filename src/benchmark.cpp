@@ -12,16 +12,14 @@ int main(int, char**) {
     board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
     Search search;
 
-    for(int i = 2; i <= 8; i+=2){
-        auto start = std::chrono::high_resolution_clock::now();    
+    auto start = std::chrono::high_resolution_clock::now();    
 
-        Score move = search.searchAlphaBeta(board,i);
-        
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
-        std::cout << std::endl;
-    }
+    Score move = search.search(board,6);
+    
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
+    std::cout << std::endl;
 
     /*
     Search search;
