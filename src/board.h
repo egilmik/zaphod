@@ -110,8 +110,8 @@ class Board {
 
         BitBoard getKnightMask(int square);
         BitBoard getKingMask(int square);
-        BitBoard getRankMask(int square);
-        BitBoard getLineMask(int square);
+        static BitBoard getRankMask(int square);
+        static BitBoard getLineMask(int square);
 
         void parseFen(std::string fen);
         void printBoard();
@@ -126,6 +126,7 @@ class Board {
         bool checkBit(BitBoardEnum piece, int bitNr);
         int popLsb(BitBoard& board);
         int countSetBits(BitBoardEnum piece);
+        static int countSetBits(unsigned long long board);
         bool makeMove(Move move);
         bool makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush, bool castling, BitBoardEnum promotion);
         void revertLastMove();

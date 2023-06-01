@@ -438,6 +438,11 @@ int Board::countSetBits(BitBoardEnum piece)
     return __builtin_popcountll(bitBoardArray[piece]);
 }
 
+int Board::countSetBits(unsigned long long board)
+{
+    return __builtin_popcountll(board);
+}
+
 int Board::popLsb(BitBoard& board)
 {   
     int lsb = __builtin_ctzll(board);
