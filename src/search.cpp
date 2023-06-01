@@ -4,8 +4,7 @@
 #include <algorithm>
 
 Score Search::search(Board board, int maxDepth)
-{
-    Score bestScore;
+{    
     int lowerBound = -10000000;
     int upperBound = 10000000;
     bool inIteration = true;
@@ -20,22 +19,22 @@ Score Search::search(Board board, int maxDepth)
                 lowerBound -= 50;
                 std::cout << "Fail low, depth: " << i << std::endl;
             } else {
-                bestScore = score;
+                bestMove = score;
                 inIteration = false;
             }
 
         }
-        //
-        //if(i > 4){
-        //    lowerBound = bestScore.score-100;
-        //    upperBound = bestScore.score+100;
-        //}
+        
+        if(i > 4){
+            lowerBound = bestMove.score-200;
+            upperBound = bestMove.score+200;
+        }
         inIteration = true;
         std::cout << "Iteration done: " << i << std::endl;
         std::cout << std::endl;
     }
     
-    return bestScore;
+    return bestMove;
 }
 
 Score Search::searchAlphaBeta(Board board, int depth, int alpha, int beta)
@@ -58,6 +57,14 @@ Score Search::searchAlphaBeta(Board board, int depth, int alpha, int beta)
                 bestMove.score = score;
                 bestMove.depth = depth;
                 bestMove.bestMove = move;
+            }
+
+            if(score >= beta){            
+                break;
+            }           
+
+            if(score > alpha){
+                alpha = score;
             }
 
             TranspositionEntry entry;
@@ -126,18 +133,22 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
         board.revertLastMove();
     }
 
-    TranspositionEntry entry;
-    entry.depth = depth;
-    entry.score = alpha;
-    if(alpha <= alphaOrginal){
-        entry.type = TEType::upper;
-    } else if(alpha >= beta){
-        entry.type = TEType::lower;
-    } else {
-        entry.type = TEType::exact;
+    //Replace if depth is higher
+    it = transpositionMap.find(key);
+    if(it == transpositionMap.end() || it->second.depth < depth){
+        TranspositionEntry entry;
+        entry.depth = depth;
+        entry.score = alpha;
+        if(alpha <= alphaOrginal){
+            entry.type = TEType::upper;
+        } else if(alpha >= beta){
+            entry.type = TEType::lower;
+        } else {
+            entry.type = TEType::exact;
+        }
+        transpositionMap[key] = entry;
     }
-
-    transpositionMap[key] = entry;
+    
      
     return alpha;
 
@@ -189,21 +200,24 @@ bool compare(SortStruct a, SortStruct b)
 
 void Search::sortMoveList(Board board, MoveList &list)
 {
+    // Sort best move from last iteration first
     SortStruct sortArray[list.counter];
     for(int i = 0; i< list.counter; i++){
-        board.makeMove(list.moves[i]);
-
-        BitBoard key = board.getHashKey();
-        std::unordered_map<BitBoard,TranspositionEntry>::iterator it = transpositionMap.find(key);
         SortStruct entry;
         entry.move = list.moves[i];
-        entry.score = -100000;
-        if(it != transpositionMap.end()){                
-            entry.score = it->second.score;
+        if(equal(list.moves[i],bestMove.bestMove)){
+            entry.score = 10000;
+        } else if(entry.move.promotion) {
+            entry.score = 1000;
+        } else if(entry.move.capture){
+            entry.score = 100;
+        } else{
+            entry.score = -100;
         }
         sortArray[i] = entry;
-        board.revertLastMove();
     }
+    // MVV-LVA sorting
+
     std::sort(sortArray, sortArray+list.counter, compare);
     for(int i = 0; i< list.counter; i++){
         list.moves[i] = sortArray[i].move;
@@ -222,4 +236,10 @@ int Search::evaluate(Board &board)
                    
     //std::cout << score << std::endl;
     return score;
+}
+
+bool Search::equal(Move a, Move b)
+{
+    return (a.fromSq == b.fromSq &&
+            a.toSq == b.toSq);
 }

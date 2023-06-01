@@ -28,11 +28,11 @@ class Search {
         int quinesence(Board board, int alpha, int beta, int depth);
         void sortMoveList(Board board,MoveList &list);
         int evaluate(Board &board);
+        bool equal(Move a, Move b);
         
 
     private:
-        Score bestMove;
-        
+        Score bestMove;        
         std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
         
           

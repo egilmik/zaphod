@@ -9,12 +9,12 @@
 int main(int, char**) {
 
     Board board;    
-    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
+    board.parseFen("2rr3k/pp3pp1/1nnqbN1p/3pN3/2pP4/2P3Q1/PPB4P/R4RK1 w - -");
     Search search;
 
     auto start = std::chrono::high_resolution_clock::now();    
 
-    Score move = search.search(board,6);
+    Score move = search.search(board,8);
     
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
