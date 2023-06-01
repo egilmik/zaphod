@@ -9,7 +9,7 @@ Score Search::search(Board board, int maxDepth)
     int lowerBound = -10000000;
     int upperBound = 10000000;
     bool inIteration = true;
-    for(int i = 1; i <= 8; i+=1){
+    for(int i = 1; i <= maxDepth; i+=1){
 
         while(inIteration){
             Score score = searchAlphaBeta(board,i, lowerBound, upperBound);
