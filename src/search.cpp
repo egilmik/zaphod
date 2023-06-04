@@ -5,8 +5,8 @@
 
 Score Search::search(Board board, int maxDepth)
 {    
-    int lowerBound = -200;
-    int upperBound = 200;
+    int lowerBound = -20000;
+    int upperBound = 20000;
     bool inIteration = true;
     for(int i = 1; i <= maxDepth; i+=2){
         currentTargetDepth = i;
@@ -45,52 +45,6 @@ Score Search::search(Board board, int maxDepth)
     return bestMove;
 }
 
-Score Search::searchAlphaBeta(Board board, int depth, int alpha, int beta)
-{
-    bestMove.depth = 0;
-    bestMove.score = -100000;
-    evaluatedNodes = 0;
-    ttHits = 0;
-    MoveList moveList;
-    MoveGenerator::generateMoves(board,moveList);
-    sortMoveList(board,moveList);
-    int score = 0;
-    for(int i = 0; i < moveList.counter; i++){
-        Move move = moveList.moves[i];
-        bool valid = board.makeMove(move);
-
-        if(valid){            
-            score = -negaMax(board,-beta,-alpha,depth);            
-            if(score >= bestMove.score){
-                bestMove.score = score;
-                bestMove.depth = depth;
-                bestMove.bestMove = move;
-            }
-
-            if(score >= beta){    
-                int x = 0;        
-                break;
-            }           
-
-            if(score > alpha){
-                alpha = score;
-            }
-
-            TranspositionEntry entry;
-            entry.depth = depth;
-            entry.score = score;
-            entry.type = TEType::exact;           
-
-            transpositionMap[board.getHashKey()] = entry;           
-        }
-
-        board.revertLastMove();               
-    }
-
-    return bestMove;
-    
-}
-
 int Search::negaMax(Board board, int alpha, int beta, int depth)
 {
     
@@ -125,6 +79,8 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
     }
 
     Move alphaMove;
+
+    int validMoves = moveList.counter;
     
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
@@ -140,8 +96,14 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
                 alphaMove = move;
             }
             
+        } else {
+            validMoves--;
         }
         board.revertLastMove();
+    }
+
+    if(validMoves == 0 && board.isSquareAttacked(board.getSideToMove()+BitBoardEnum::K,board.getOtherSide())){
+        alpha = 3000;
     }
 
     //Replace if depth is higher

@@ -9,7 +9,7 @@
 int main(int, char**) {
 
     Board board;    
-    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    board.parseFen("r1bk3r/pppq1ppp/5n2/4N1N1/2Bp4/Bn6/P4PPP/4R1K1 w - - 1 1");
     Search search;
 
     auto start = std::chrono::high_resolution_clock::now();    

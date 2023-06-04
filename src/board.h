@@ -153,6 +153,7 @@ class Board {
         BitBoard getOwnBoard();
         void changeSideToMove();
         BitBoardEnum getSideToMove();
+        BitBoardEnum getOtherSide();
 
         void setEnPassantSq(int sq){enPassantSq = sq;};
         int getEnPassantSq(){return enPassantSq;};

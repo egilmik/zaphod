@@ -368,6 +368,14 @@ BitBoardEnum Board::getSideToMove()
     return sideToMove;
 }
 
+BitBoardEnum Board::getOtherSide()
+{
+    if(sideToMove == BitBoardEnum::White){
+        return BitBoardEnum::Black;
+    }
+    return BitBoardEnum::White;
+}
+
 void Board::parseFenPosition(char value, int &count)
 {
 
