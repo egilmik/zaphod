@@ -4,7 +4,7 @@
 #ifdef LINUX
 	#define BitBoard __UINT64_TYPE__
 #elif WIN32
-	#define BitBoard int64_t
+	#define BitBoard uint64_t
 #endif
 
 
