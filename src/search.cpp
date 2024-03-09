@@ -38,6 +38,10 @@ Score Search::search(Board board, int maxDepth)
         std::cout << "TT hits " << ttHits << std::endl;
         std::cout << "TT size " << transpositionMap.size() << std::endl;
         std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
+        for(int i = 0; i < currentTargetDepth; i++){
+            std::cout << Perft::getNotation(pvMoves[i]) << " ";
+        }
+        std::cout << std::endl;
         std::cout << "Iteration done: " << i << std::endl;
         std::cout << std::endl;
     }
@@ -94,6 +98,7 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
             if(score > alpha){
                 alpha = score;
                 alphaMove = move;
+                pvMoves[currentTargetDepth-depth] = move;
             }
             
         } else {

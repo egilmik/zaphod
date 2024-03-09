@@ -35,6 +35,7 @@ class Search {
         Score bestMove;        
         std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
         int currentTargetDepth;
+        Move pvMoves[50];
         
           
 };

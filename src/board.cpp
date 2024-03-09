@@ -5,7 +5,7 @@
 #include "material.h"
 
 static std::array<BitBoard,64> initSqToBitMapping(){
-    std::array<BitBoard,64> mapping;
+    std::array<BitBoard, 64> mapping{};
 
 
     for(int i = 0; i < 64; i++){
