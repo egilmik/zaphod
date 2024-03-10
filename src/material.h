@@ -2,6 +2,7 @@
 #define MATERIAL_H
 
 #include "board.h"
+#include <array>
 
 class Material {
 

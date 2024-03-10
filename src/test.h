@@ -7,7 +7,7 @@
 struct TestResult {
     std::string text;
     bool result;
-    long runTimeMilliseconds;
+    long long runTimeMilliseconds;
     int nps;
     unsigned long long actualNodes;
 };

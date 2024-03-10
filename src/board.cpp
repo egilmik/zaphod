@@ -444,19 +444,49 @@ bool Board::checkBit(BitBoardEnum piece, int bitNr)
 
 int Board::countSetBits(BitBoardEnum piece)
 {
-    return __builtin_popcountll(bitBoardArray[piece]);
+    #ifdef LINUX
+        return __builtin_popcountll(bitBoardArray[piece]);
+    #elif WIN32
+        return __popcnt64(bitBoardArray[piece]);
+    #endif
+    
 }
 
 int Board::countSetBits(unsigned long long board)
 {
-    return __builtin_popcountll(board);
+    #ifdef LINUX
+        return __builtin_popcountll(board);
+    #elif WIN32
+        return __popcnt64(board);
+    #endif
 }
 
 int Board::popLsb(BitBoard& board)
 {   
-    int lsb = __builtin_ctzll(board);
-    board &= board - 1;
-    return lsb;
+    #ifdef LINUX
+        int lsb = __builtin_ctzll(board);
+        board &= board - 1;
+        return lsb;
+    #elif WIN32
+        int lsb = _tzcnt_u64(board);
+        board &= board - 1;
+        return lsb;
+        /*
+        unsigned long index; // Note: unsigned long is used here as per MSVC documentation
+        // _BitScanForward64 returns 0 if x is 0.
+        if (_BitScanForward64(&index, board)) {
+            return (unsigned int)index;
+        }
+        else {
+            // Handle the case when x is 0, which has an undefined result for __builtin_ctzll.
+            // You can return 64 since a 64-bit value has 64 trailing zeros when it is 0.
+            // Or handle this case based on your application's requirements.
+            return 64;
+        }
+        */
+    #endif
+
+
 }
 
 bool Board::makeMove(Move move)

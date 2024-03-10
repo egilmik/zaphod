@@ -185,7 +185,7 @@ bool compare(SortStruct a, SortStruct b)
 void Search::sortMoveList(Board board, MoveList &list)
 {
     // Sort best move from last iteration first
-    SortStruct sortArray[list.counter];
+    SortStruct* sortArray = new SortStruct[list.counter];
     for(int i = 0; i< list.counter; i++){
         SortStruct entry;
         entry.move = list.moves[i];
