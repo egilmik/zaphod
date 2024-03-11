@@ -8,7 +8,7 @@ Score Search::search(Board board, int maxDepth)
     int lowerBound = -20000;
     int upperBound = 20000;
     bool inIteration = true;
-    for(int i = 1; i <= maxDepth; i+=2){
+    for(int i = 1; i <= maxDepth; i++){
         currentTargetDepth = i;
         int score = negaMax(board,lowerBound,upperBound,i);
         /*while(inIteration){
@@ -34,7 +34,7 @@ Score Search::search(Board board, int maxDepth)
         inIteration = true;
         */
 
-        std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << bestMove.score << " Depth: "<< bestMove.depth << std::endl;
+        std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << (double)bestMove.score/100.0 << " Depth: "<< bestMove.depth << std::endl;
         std::cout << "TT hits " << ttHits << std::endl;
         std::cout << "TT size " << transpositionMap.size() << std::endl;
         std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
@@ -48,6 +48,7 @@ Score Search::search(Board board, int maxDepth)
     
     return bestMove;
 }
+int score = 0;
 
 int Search::negaMax(Board board, int alpha, int beta, int depth)
 {
@@ -55,17 +56,19 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
     //if(depth == 0) return quinesence(board,-beta,-alpha,2);
     if(depth == 0) return evaluate(board);
 
-    int alphaOrginal = alpha;
+    //int alphaOrginal = alpha;
     
     MoveList moveList;
     MoveGenerator::generateMoves(board,moveList);
-    if(currentTargetDepth == depth){
+    /*if (currentTargetDepth == depth) {
         sortMoveList(board,moveList);
     }
-    
-    int score = 0;
-    BitBoard key = board.getHashKey();
 
+    */
+    
+    
+    BitBoard key = board.getHashKey();
+    /*
     std::unordered_map<BitBoard,TranspositionEntry>::iterator it = transpositionMap.find(key);
     if(it != transpositionMap.end() && it->second.depth >= depth){
         TEType entryType = it->second.type;
@@ -81,6 +84,7 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
             return it->second.score;
         }
     }
+    */
 
     Move alphaMove;
 
@@ -88,8 +92,7 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
     
     for(int i = 0; i < moveList.counter; i++){
         Move move = moveList.moves[i];
-        bool valid = board.makeMove(move);
-        if(valid){            
+        if(board.makeMove(move)){
             score = -negaMax(board,-beta,-alpha,depth-1);
             if(score >= beta){            
                 return beta;
@@ -110,7 +113,7 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
     if(validMoves == 0 && board.isSquareAttacked(board.getSideToMove()+BitBoardEnum::K,board.getOtherSide())){
         alpha = 3000;
     }
-
+    /*
     //Replace if depth is higher
     it = transpositionMap.find(key);
     if(it == transpositionMap.end() || it->second.depth < depth){
@@ -126,6 +129,7 @@ int Search::negaMax(Board board, int alpha, int beta, int depth)
         }
         transpositionMap[key] = entry;
     }
+    */
     
     if(depth == currentTargetDepth){
         bestMove.bestMove = alphaMove;

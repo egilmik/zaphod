@@ -59,7 +59,7 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
     }    
     
     int fromSq = board.popLsb(pawns);
-    while (fromSq != 64)
+    while (fromSq != 0)
     {        
         int toSq = fromSq+pawnIncrement;
         BitBoard fromSqBoard = board.sqBB[fromSq];

@@ -469,21 +469,10 @@ int Board::popLsb(BitBoard& board)
         return lsb;
     #elif WIN32
         int lsb = _tzcnt_u64(board);
+        // This is here because all other logic is depdent on getting 0 when there are no more set bits, while _tzcnt_u64 counts trailing zeros
+        if (lsb == 64) lsb = 0;
         board &= board - 1;
         return lsb;
-        /*
-        unsigned long index; // Note: unsigned long is used here as per MSVC documentation
-        // _BitScanForward64 returns 0 if x is 0.
-        if (_BitScanForward64(&index, board)) {
-            return (unsigned int)index;
-        }
-        else {
-            // Handle the case when x is 0, which has an undefined result for __builtin_ctzll.
-            // You can return 64 since a 64-bit value has 64 trailing zeros when it is 0.
-            // Or handle this case based on your application's requirements.
-            return 64;
-        }
-        */
     #endif
 
 

@@ -19,14 +19,14 @@ struct PerftResults {
 class Perft {
     public:
         static unsigned long long perft(Board board, int depth){
-            unsigned long long nrOfNodes = 0;
+            
             if(depth == 0){
                 return 0;
             }
 
             MoveList moveList;
             MoveGenerator::generateMoves(board,moveList);
-            nrOfNodes += moveList.counter;
+            unsigned long long nrOfNodes = moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 if(board.makeMove(moveList.moves[i])){
                     nrOfNodes += perft(board, depth-1);

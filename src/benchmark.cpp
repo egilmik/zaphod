@@ -14,7 +14,7 @@ int main(int, char**) {
 
     auto start = std::chrono::high_resolution_clock::now();    
 
-    Score move = search.search(board,9);
+    Score move = search.search(board,9 );
     
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
