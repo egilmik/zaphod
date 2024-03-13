@@ -8,16 +8,19 @@
 
 int main(int, char**) {
 
-    Board board;    
-    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    Board board;
+    board.parseFen("1R6/1brk2p1/4p2p/p1P1Pp2/P7/6P1/1P4P1/2R3K1 w - - 0 1"); //b8b7
+    //board.parseFen("4r1k1/p1qr1p2/2pb1Bp1/1p5p/3P1n1R/1B3P2/PP3PK1/2Q4R w - - 0 1"); //bm c1f4
+    //board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     Search search;
 
     auto start = std::chrono::high_resolution_clock::now();    
 
-    Score move = search.search(board,9 );
+    Score move = search.search(board,9);
     
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout << Perft::getNotation(move.bestMove) << " Score: " << (double)move.score / 100.0 << " Depth: " << move.depth << std::endl;
     std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
     std::cout << std::endl;
 

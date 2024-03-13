@@ -8,7 +8,7 @@ Score Search::search(Board board, int maxDepth)
     int lowerBound = -20000;
     int upperBound = 20000;
     bool inIteration = true;
-    currentTargetDepth = 9;
+    currentTargetDepth = maxDepth;
     int score = searchAlphaBeta(board, currentTargetDepth, lowerBound, upperBound, true);
 
     //for(int i = 1; i <= maxDepth; i++){
@@ -53,9 +53,7 @@ Score Search::search(Board board, int maxDepth)
     */
 
     //std::cout << "Score " << score << std::endl;
-
-    std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << (double)bestMove.score / 100.0 << " Depth: " << bestMove.depth << std::endl;
-    std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
+    //std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
     
     return bestMove;
 }
