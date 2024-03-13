@@ -8,9 +8,14 @@ Score Search::search(Board board, int maxDepth)
     int lowerBound = -20000;
     int upperBound = 20000;
     bool inIteration = true;
-    for(int i = 1; i <= maxDepth; i++){
-        currentTargetDepth = i;
-        int score = negaMax(board,lowerBound,upperBound,i);
+    currentTargetDepth = 9;
+    int score = searchAlphaBeta(board, currentTargetDepth, lowerBound, upperBound, true);
+
+    //for(int i = 1; i <= maxDepth; i++){
+    //    currentTargetDepth = i;
+        //int score = negaMax(board,lowerBound,upperBound,i);
+        
+            
         /*while(inIteration){
             
             Score score = searchAlphaBeta(board,i, lowerBound, upperBound);
@@ -32,26 +37,87 @@ Score Search::search(Board board, int maxDepth)
             upperBound = bestMove.score+200;
         }
         inIteration = true;
-        */
+        
 
         std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << (double)bestMove.score/100.0 << " Depth: "<< bestMove.depth << std::endl;
         std::cout << "TT hits " << ttHits << std::endl;
         std::cout << "TT size " << transpositionMap.size() << std::endl;
         std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
-        for(int i = 0; i < currentTargetDepth; i++){
-            std::cout << Perft::getNotation(pvMoves[i]) << " ";
-        }
+        //for(int i = 0; i < currentTargetDepth; i++){
+        //    std::cout << Perft::getNotation(pvMoves[i]) << " ";
+        //}
         std::cout << std::endl;
         std::cout << "Iteration done: " << i << std::endl;
         std::cout << std::endl;
     }
+    */
+
+    //std::cout << "Score " << score << std::endl;
+
+    std::cout << Perft::getNotation(bestMove.bestMove) << " Score: " << (double)bestMove.score / 100.0 << " Depth: " << bestMove.depth << std::endl;
+    std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
     
     return bestMove;
 }
-int score = 0;
+int Search::searchAlphaBeta(Board board, int depth, int alpha, int beta, bool maximizingPlayer)
+{
+    if (depth == 0) return evaluate(board);
+
+    MoveList moveList;
+    MoveGenerator::generateMoves(board, moveList);
+    int score = 0;
+
+    if (maximizingPlayer) {
+        score = -INFINITY;
+        for (int i = 0; i < moveList.counter; i++) {
+            Move move = moveList.moves[i];
+            if (board.makeMove(move)) {
+                score = searchAlphaBeta(board, depth - 1, alpha, beta, false);
+
+                if (score >= beta) {
+                    return beta;
+                }
+
+                if (score > alpha) {
+                    alpha = score;
+                    if (depth == currentTargetDepth) {
+                        bestMove.bestMove = move;
+                        bestMove.score = alpha;
+                        bestMove.depth = depth;
+                    }
+                }
+            }
+            board.revertLastMove();
+        }
+        return alpha;
+    } else {
+        score = INFINITY;
+        for (int i = 0; i < moveList.counter; i++) {
+            Move move = moveList.moves[i];
+            if (board.makeMove(move)) {
+                score = searchAlphaBeta(board, depth - 1, alpha, beta, true);
+                if (score <= alpha) {
+                    return alpha;
+                }
+
+                if (score < beta) {
+                    beta = score;
+                }
+            }
+            board.revertLastMove();
+        }
+
+        return beta;
+        
+    }   
+
+    return 0;
+}
+
 
 int Search::negaMax(Board board, int alpha, int beta, int depth)
 {
+    int score = 0;
     
     //if(depth == 0) return quinesence(board,-beta,-alpha,2);
     if(depth == 0) return evaluate(board);
@@ -217,10 +283,11 @@ int Search::evaluate(Board &board)
     evaluatedNodes++;
     int score = board.getPieceSquareScore();
     score += board.getMaterialScore();
-
+    /*
     if(board.getSideToMove() == BitBoardEnum::Black){
         return score*=-1;
     }
+    */
                    
     //std::cout << score << std::endl;
     return score;
