@@ -8,8 +8,12 @@ Score Search::search(Board board, int maxDepth)
     int lowerBound = -20000;
     int upperBound = 20000;
     bool inIteration = true;
-    currentTargetDepth = maxDepth;
-    int score = searchAlphaBeta(board, currentTargetDepth, lowerBound, upperBound, true);
+
+    for (int i = 1; i <= maxDepth; i++) {
+        currentTargetDepth = i;
+        int score = searchAlphaBeta(board, i, lowerBound, upperBound, true);
+    }
+    
 
     //for(int i = 1; i <= maxDepth; i++){
     //    currentTargetDepth = i;
@@ -53,7 +57,7 @@ Score Search::search(Board board, int maxDepth)
     */
 
     //std::cout << "Score " << score << std::endl;
-    //std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
+    std::cout << "Evaluated nodes: " << evaluatedNodes << std::endl;
     
     return bestMove;
 }
@@ -64,6 +68,16 @@ int Search::searchAlphaBeta(Board board, int depth, int alpha, int beta, bool ma
     MoveList moveList;
     MoveGenerator::generateMoves(board, moveList);
     int score = 0;
+
+    if (depth == currentTargetDepth) {
+        for (int i = 0; i < moveList.counter; i++){
+            if (moveList.moves[i].fromSq == bestMove.bestMove.fromSq && moveList.moves[i].toSq == bestMove.bestMove.toSq) {
+                Move moveZero = moveList.moves[0];
+                moveList.moves[0] = moveList.moves[i];
+                moveList.moves[i] = moveZero;
+            }
+        }
+    }
 
     if (maximizingPlayer) {
         score = -INFINITY;
