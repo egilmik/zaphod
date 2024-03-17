@@ -36,7 +36,7 @@ class Search {
         std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
         int currentTargetDepth;
         Move pvMoves[50];
-        
+        bool isBlackMaxPlayer = false;
           
 };
 #endif

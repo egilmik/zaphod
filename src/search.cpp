@@ -9,6 +9,10 @@ Score Search::search(Board board, int maxDepth)
     int upperBound = 20000;
     bool inIteration = true;
 
+    if (board.getSideToMove() == BitBoardEnum::Black) {
+        isBlackMaxPlayer = true;
+    }
+
     for (int i = 1; i <= maxDepth; i++) {
         currentTargetDepth = i;
         int score = searchAlphaBeta(board, i, lowerBound, upperBound, true);
@@ -295,11 +299,11 @@ int Search::evaluate(Board &board)
     evaluatedNodes++;
     int score = board.getPieceSquareScore();
     score += board.getMaterialScore();
-    /*
-    if(board.getSideToMove() == BitBoardEnum::Black){
+    
+    if(isBlackMaxPlayer){
         return score*=-1;
     }
-    */
+    
                    
     //std::cout << score << std::endl;
     return score;
