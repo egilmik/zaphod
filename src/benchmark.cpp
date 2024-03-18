@@ -6,84 +6,35 @@
 #include "search.h"
 #include <chrono>
 
+struct BenchmarkDefinition {
+    std::string text;
+    std::string fen;
+    std::string bestMove;
+};
+
 int main(int, char**) {
 
-    Board board;
-    board.parseFen("1R6/1brk2p1/4p2p/p1P1Pp2/P7/6P1/1P4P1/2R3K1 w - - 0 1"); //b8b7
-    //board.parseFen("4r1k1/p1qr1p2/2pb1Bp1/1p5p/3P1n1R/1B3P2/PP3PK1/2Q4R w - - 0 1"); //bm c1f4
-    //board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    Search search;
+    std::vector<BenchmarkDefinition> benchVector;
 
-    auto start = std::chrono::high_resolution_clock::now();    
+    benchVector.push_back({ "","1R6/1brk2p1/4p2p/p1P1Pp2/P7/6P1/1P4P1/2R3K1 w - - 0 1","b8b7" });
+    benchVector.push_back({ "","4r1k1/p1qr1p2/2pb1Bp1/1p5p/3P1n1R/1B3P2/PP3PK1/2Q4R w - - 0 1","c1f4" });
+    //benchVector.push_back({ "","r1b2rk1/ppq1bppp/2p1pn2/8/2NP4/2N1P3/PP2BPPP/2RQK2R w K - 0 1","b8b7" });
 
-    Score move = search.search(board,8);
-    
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    std::cout << Perft::getNotation(move.bestMove) << " Score: " << (double)move.score / 100.0 << " Depth: " << move.depth << std::endl;
-    std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
-    std::cout << std::endl;
+    for (BenchmarkDefinition def : benchVector) {
+        auto start = std::chrono::high_resolution_clock::now();
+        
+        Board board;
+        board.parseFen(def.fen);
+        Search search;        
+        Score move = search.search(board, 9);
 
-    /*
-    Search search;
-    for(int i = 0; i < 10; i++){
-        Move move = search.searchAlphaBeta(board,3);
-        if(move.fromSq == 0 && move.toSq == 0){
-            std::cout << "Check mate " << board.getSideToMove() << " lost" << std::endl;
-            break;
-        }
-        std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
-        board.makeMove(move);
-        //board.printBoard();
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        std::cout << Perft::getNotation(move.bestMove) << " Score: " << (double)move.score / 100.0 << " Depth: " << move.depth << std::endl;
+        std::cout << "Expected best move " << def.bestMove << std::endl;
+        std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
+        std::cout << std::endl;
+
     }
-    */
-    /*
-    Search search;
-    Board board;
-    board.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
-    
-    auto start = std::chrono::high_resolution_clock::now();    
-    Move move = search.searchAlphaBeta(board,9);
-    std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
-    */
-    /*
-    for(int i = 0; i < 6; i++){
-        Move move = search.searchAlphaBeta(board,4);
-        if(move.fromSq == 0 && move.toSq == 0){
-            std::cout << "Check mate " << board.getSideToMove() << " lost" << std::endl;
-            break;
-        }
-        std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
-        board.makeMove(move.fromSq,move.toSq,move.piece,move.capture,move.enpassant,move.doublePawnPush,move.castling,move.promotion);
-        //board.printBoard();
-    }
-    
 
-
-    std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
-    */
-    /*
-    Search search;
-    Move move = search.searchAlphaBeta(board,2);
-    std::cout << Perft::getNotation(move) << " " << move.capture << std::endl;
-    */
-
-    //UCI uci;
-    //uci.loop();
-
-    //unsigned long long nodes = Perft::perft(board,6);
-
-    //std::cout << "Perf nodes: " << nodes << " Seached nodes: " << search.evaluatedNodes;
-    //for(int i = 0; i< 64; i++){
-    //    board.printBoard(Board::kingMask[i],i);
-    //}
-    
-
-    //Perft::dperft(board,6);
-    /*
-    //Tested with qperft
-    int expected = 7+44+356+2482+21066+156403+1319736+10148801;
-
-    std::cout << "Actual: " << expected << " Expected: " << expected << std::endl;
-    */
 }
