@@ -26,7 +26,7 @@ int main(int, char**) {
         Board board;
         board.parseFen(def.fen);
         Search search;        
-        Score move = search.search(board, 7);
+        Score move = search.search(board, 9);
 
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
