@@ -485,17 +485,22 @@ bool Board::makeMove(Move move)
 
 bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool enPassant, bool doublePush,bool castling, BitBoardEnum promotion)
 {
+
+    MoveStruct *histMove = &moveHistory[historyPly];
+    
     const int size = 15*sizeof(bitBoardArray[0]);
-    std::memcpy(&bitBoardArrayCopy,&bitBoardArray,size);
-    sideToMoveCopy = sideToMove;
-    enPassantSqCopy = enPassantSq;
-    castleWKCopy = castleWK;
-    castleWQCopy= castleWQ;
-    castleBKCopy = castleBK;
-    castleBQCopy = castleBQ;
-    pieceSquareScoreCopy = pieceSquareScore;
-    materialScoreCopy = materialScore;
-    hashKeyCopy = hashKey;
+    std::memcpy(&histMove->bitBoardArrayCopy,&bitBoardArray,size);
+    histMove->sideToMoveCopy = sideToMove;
+    histMove->enPassantSqCopy = enPassantSq;
+    histMove->castleWKCopy = castleWK;
+    histMove->castleWQCopy= castleWQ;
+    histMove->castleBKCopy = castleBK;
+    histMove->castleBQCopy = castleBQ;
+    histMove->pieceSquareScoreCopy = pieceSquareScore;
+    histMove->materialScoreCopy = materialScore;
+    histMove->hashKeyCopy = hashKey;
+
+    historyPly++;
 
 
     BitBoardEnum attacker = BitBoardEnum::White;
@@ -768,17 +773,20 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
 
 void Board::revertLastMove()
 {
+    historyPly--;
+    MoveStruct *move = &moveHistory[historyPly];    
+
     int size = 15*sizeof(bitBoardArray[0]);
-    std::memcpy(&bitBoardArray,&bitBoardArrayCopy,size);
-    sideToMove = sideToMoveCopy;
-    enPassantSq = enPassantSqCopy;
-    castleWK = castleWKCopy;
-    castleWQ = castleWQCopy;
-    castleBK = castleBKCopy;
-    castleBQ = castleBQCopy;
-    pieceSquareScore = pieceSquareScoreCopy;
-    materialScore = materialScoreCopy;
-    hashKey = hashKeyCopy;
+    std::memcpy(&bitBoardArray,&move->bitBoardArrayCopy,size);
+    sideToMove = move->sideToMoveCopy;
+    enPassantSq = move->enPassantSqCopy;
+    castleWK = move->castleWKCopy;
+    castleWQ = move->castleWQCopy;
+    castleBK = move->castleBKCopy;
+    castleBQ = move->castleBQCopy;
+    pieceSquareScore = move->pieceSquareScoreCopy;
+    materialScore = move->materialScoreCopy;
+    hashKey = move->hashKeyCopy;
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)

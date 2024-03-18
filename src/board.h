@@ -7,6 +7,19 @@
 #include "move.h"
 #include "transpositiontable.h"
 
+struct MoveStruct {
+    BitBoard bitBoardArrayCopy[15];
+    BitBoardEnum sideToMoveCopy = BitBoardEnum::White;
+    int enPassantSqCopy = -1;
+    bool castleWKCopy = true;
+    bool castleWQCopy = true;
+    bool castleBKCopy = true;
+    bool castleBQCopy = true;
+    int materialScoreCopy = 0;
+    int pieceSquareScoreCopy = 0;
+    BitBoard hashKeyCopy = 0;
+};
+
 
 class Board {
 
@@ -173,6 +186,9 @@ class Board {
     private:
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
+
+        MoveStruct moveHistory[64];
+        int historyPly = 0;
         
         BitBoard bitBoardArrayCopy[15];
         BitBoardEnum sideToMoveCopy;

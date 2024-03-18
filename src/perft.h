@@ -18,7 +18,7 @@ struct PerftResults {
 
 class Perft {
     public:
-        static unsigned long long perft(Board board, int depth){
+        static unsigned long long perft(Board &board, int depth){
             
             if(depth == 0){
                 return 0;
