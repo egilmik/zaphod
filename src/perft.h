@@ -107,7 +107,7 @@ class Perft {
                 
             }
 
-            int actualPerformedMoves = moveList.counter;
+            int64_t actualPerformedMoves = moveList.counter;
             results.nodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
