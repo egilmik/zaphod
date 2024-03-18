@@ -190,17 +190,6 @@ class Board {
         MoveStruct moveHistory[64];
         int historyPly = 0;
         
-        BitBoard bitBoardArrayCopy[15];
-        BitBoardEnum sideToMoveCopy;
-        int enPassantSqCopy = noSq;
-        bool castleWKCopy = true;
-        bool castleWQCopy = true;
-        bool castleBKCopy = true;
-        bool castleBQCopy = true;
-        int materialScoreCopy = 0;
-        int pieceSquareScoreCopy = 0;
-        BitBoard hashKeyCopy = 0;
-        
         BitBoard bitBoardArray[15];
         BitBoardEnum sideToMove = White;
         int enPassantSq = noSq;
@@ -211,8 +200,6 @@ class Board {
         int pieceSquareScore = 0;
         int materialScore = 0;
         BitBoard hashKey = 0;
-
-        
         
 
         inline static const int fenToBitMapping[64] = { 56,57,58,59,60,61,62,63,
