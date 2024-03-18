@@ -25,8 +25,8 @@ TEST_F(PerftTest, BasicPawnMoves){
     //GTEST_SKIP();
     Board board;
     board.parseFen("4k3/8/8/8/8/5r2/PPPPP3/2K5 w - - 0 1");
-    int actual = Perft::perft(board,3);
-    int expected = 2473+223+13;
+    int64_t actual = Perft::perft(board,3);
+    int64_t expected = 2473+223+13;
 
     EXPECT_EQ(actual,expected);
 }
