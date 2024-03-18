@@ -3,7 +3,7 @@
 #include "material.h"
 #include <algorithm>
 
-Score Search::search(Board board, int maxDepth)
+Score Search::search(Board &board, int maxDepth)
 {    
     int lowerBound = -20000;
     int upperBound = 20000;
@@ -24,7 +24,7 @@ Score Search::search(Board board, int maxDepth)
     
     return bestMove;
 }
-int Search::searchAlphaBeta(Board board, int depth, int alpha, int beta, bool maximizingPlayer)
+int Search::searchAlphaBeta(Board &board, int depth, int alpha, int beta, bool maximizingPlayer)
 {
     if (depth == 0) return evaluate(board);
 
@@ -50,6 +50,7 @@ int Search::searchAlphaBeta(Board board, int depth, int alpha, int beta, bool ma
                 score = searchAlphaBeta(board, depth - 1, alpha, beta, false);
 
                 if (score >= beta) {
+                    board.revertLastMove();
                     return beta;
                 }
 
@@ -72,6 +73,7 @@ int Search::searchAlphaBeta(Board board, int depth, int alpha, int beta, bool ma
             if (board.makeMove(move)) {
                 score = searchAlphaBeta(board, depth - 1, alpha, beta, true);
                 if (score <= alpha) {
+                    board.revertLastMove();
                     return alpha;
                 }
 
