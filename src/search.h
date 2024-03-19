@@ -23,8 +23,8 @@ class Search {
         unsigned long long evaluatedQuinesenceNodes = 0;
         unsigned long long ttHits = 0;
         Score search(Board &board, int maxDepth);
-        int searchAlphaBeta(Board &board,int depth, int alpha, int beta, bool maximizingPlayer);
-        int quinesence(Board board, int alpha, int beta, int depth);
+        int negamax(Board &board, int depth, int alpha, int beta);
+        int quinesence(Board &board, int alpha, int beta, int depth);
         void sortMoveList(Board board,MoveList &list);
         int evaluate(Board &board);
         bool equal(Move a, Move b);

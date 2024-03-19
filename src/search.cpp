@@ -15,7 +15,7 @@ Score Search::search(Board &board, int maxDepth)
 
     for (int i = 1; i <= maxDepth; i++) {
         currentTargetDepth = i;
-        int score = searchAlphaBeta(board, i, lowerBound, upperBound, true);
+        int score = negamax(board, i, lowerBound, upperBound);
     }
     
 
@@ -24,7 +24,8 @@ Score Search::search(Board &board, int maxDepth)
     
     return bestMove;
 }
-int Search::searchAlphaBeta(Board &board, int depth, int alpha, int beta, bool maximizingPlayer)
+
+int Search::negamax(Board& board, int depth, int alpha, int beta)
 {
     if (depth == 0) return evaluate(board);
 
@@ -33,7 +34,7 @@ int Search::searchAlphaBeta(Board &board, int depth, int alpha, int beta, bool m
     int score = 0;
 
     if (depth == currentTargetDepth) {
-        for (int i = 0; i < moveList.counter; i++){
+        for (int i = 0; i < moveList.counter; i++) {
             if (moveList.moves[i].fromSq == bestMove.bestMove.fromSq && moveList.moves[i].toSq == bestMove.bestMove.toSq) {
                 Move moveZero = moveList.moves[0];
                 moveList.moves[0] = moveList.moves[i];
@@ -41,57 +42,41 @@ int Search::searchAlphaBeta(Board &board, int depth, int alpha, int beta, bool m
             }
         }
     }
+    int validMoves = moveList.counter;
 
-    if (maximizingPlayer) {
-        score = -INFINITY;
-        for (int i = 0; i < moveList.counter; i++) {
-            Move move = moveList.moves[i];
-            if (board.makeMove(move)) {
-                score = searchAlphaBeta(board, depth - 1, alpha, beta, false);
+    for (int i = 0; i < moveList.counter; i++) {
+        Move move = moveList.moves[i];
+        if (board.makeMove(move)) {
+            score = -negamax(board, depth - 1, -beta, -alpha);
+            if (score >= beta) {
+                board.revertLastMove();
+                return beta;
+            }
 
-                if (score >= beta) {
-                    board.revertLastMove();
-                    return beta;
-                }
-
-                if (score > alpha) {
-                    alpha = score;
-                    if (depth == currentTargetDepth) {
-                        bestMove.bestMove = move;
-                        bestMove.score = alpha;
-                        bestMove.depth = depth;
-                    }
+            if (score > alpha) {
+                alpha = score;
+                if (depth == currentTargetDepth) {
+                    bestMove.bestMove = move;
+                    bestMove.score = alpha;
+                    bestMove.depth = depth;
                 }
             }
-            board.revertLastMove();
+
         }
-        return alpha;
-    } else {
-        score = INFINITY;
-        for (int i = 0; i < moveList.counter; i++) {
-            Move move = moveList.moves[i];
-            if (board.makeMove(move)) {
-                score = searchAlphaBeta(board, depth - 1, alpha, beta, true);
-                if (score <= alpha) {
-                    board.revertLastMove();
-                    return alpha;
-                }
-
-                if (score < beta) {
-                    beta = score;
-                }
-            }
-            board.revertLastMove();
+        else {
+            validMoves--;
         }
+        board.revertLastMove();
+    }
 
-        return beta;
-        
-    }   
+    if (validMoves == 0 && board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
+        alpha = 3000;
+    }
 
-    return 0;
+    return alpha;
 }
 
-int Search::quinesence(Board board, int alpha, int beta,int depth)
+int Search::quinesence(Board &board, int alpha, int beta,int depth)
 {
     if(depth == 0) return evaluate(board);
     
@@ -166,13 +151,10 @@ int Search::evaluate(Board &board)
     evaluatedNodes++;
     int score = board.getPieceSquareScore();
     score += board.getMaterialScore();
-    
-    if(isBlackMaxPlayer){
-        return score*=-1;
+
+    if (board.getSideToMove() == BitBoardEnum::Black) {
+        return score *= -1;
     }
-    
-                   
-    //std::cout << score << std::endl;
     return score;
 }
 
