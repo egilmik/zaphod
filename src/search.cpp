@@ -33,15 +33,39 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     MoveGenerator::generateMoves(board, moveList);
     int score = 0;
 
-    if (depth == currentTargetDepth) {
+    int alphaOrginal = alpha;
+    Move alphaMove;
+    BitBoard key = board.getHashKey();
+
+    std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
+    /*if (it != transpositionMap.end() && it->second.depth >= depth) {
+        TEType entryType = it->second.type;
+        if (entryType == TEType::exact) {
+            return it->second.score;
+        }
+        else if (entryType == TEType::lower) {
+            alpha = std::max(it->second.score, alpha);
+        }
+        else if (entryType == TEType::upper) {
+            beta = std::max(it->second.score, beta);
+        }
+
+        if (alpha >= beta) {
+            return it->second.score;
+        }
+    }
+    */
+
+    if(it != transpositionMap.end() && it->second.type == TEType::exact){
         for (int i = 0; i < moveList.counter; i++) {
-            if (moveList.moves[i].fromSq == bestMove.bestMove.fromSq && moveList.moves[i].toSq == bestMove.bestMove.toSq) {
+            if (moveList.moves[i].fromSq == it->second.bestMove.fromSq && moveList.moves[i].toSq == it->second.bestMove.toSq) {
                 Move moveZero = moveList.moves[0];
                 moveList.moves[0] = moveList.moves[i];
                 moveList.moves[i] = moveZero;
             }
         }
     }
+    
     int validMoves = moveList.counter;
 
     for (int i = 0; i < moveList.counter; i++) {
@@ -55,6 +79,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
             if (score > alpha) {
                 alpha = score;
+                alphaMove = move;
                 if (depth == currentTargetDepth) {
                     bestMove.bestMove = move;
                     bestMove.score = alpha;
@@ -71,6 +96,26 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
     if (validMoves == 0 && board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
         alpha = 3000;
+    }
+
+    //Replace if depth is higher
+    it = transpositionMap.find(key);
+    if (it == transpositionMap.end() || it->second.depth <= depth) {
+        
+        if (alpha <= alphaOrginal) {
+            //entry.type = TEType::upper;
+        }
+        else if (alpha >= beta) {
+            //entry.type = TEType::lower;
+        }
+        else {
+            TranspositionEntry entry;
+            entry.depth = depth;
+            entry.score = alpha;
+            entry.bestMove = alphaMove;
+            entry.type = TEType::exact;
+            transpositionMap[key] = entry;
+        }
     }
 
     return alpha;
