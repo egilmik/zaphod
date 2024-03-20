@@ -25,9 +25,9 @@ class Search {
         Score search(Board &board, int maxDepth);
         int negamax(Board &board, int depth, int alpha, int beta);
         int quinesence(Board &board, int alpha, int beta, int depth);
-        void sortMoveList(Board board,MoveList &list);
+        void sortMoveList(Board &board,MoveList &list);
         int evaluate(Board &board);
-        bool equal(Move a, Move b);
+        bool equal(Move &a, Move &b);
         
 
     private:
@@ -35,7 +35,7 @@ class Search {
         std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
         int currentTargetDepth;
         Move pvMoves[50];
-        bool isBlackMaxPlayer = false;
+        int maxQuiesenceDepth = 0;
           
 };
 #endif
