@@ -28,6 +28,7 @@ class Search {
         void sortMoveList(Board &board,MoveList &list);
         int evaluate(Board &board);
         bool equal(Move &a, Move &b);
+        MoveList reconstructPV(Board& board, int depth);
         
 
     private:

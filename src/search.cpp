@@ -83,6 +83,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     return alpha;
 }
 
+
+
 int Search::quinesence(Board &board, int alpha, int beta,int depth)
 {
 
@@ -180,4 +182,24 @@ bool Search::equal(Move &a, Move &b)
 {
     return (a.fromSq == b.fromSq &&
             a.toSq == b.toSq);
+}
+
+MoveList Search::reconstructPV(Board& board, int depth)
+{
+    MoveList list;
+
+    for (int i = 0; i < depth; i++) {
+        BitBoard key = board.getHashKey();
+        std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
+        if (it != transpositionMap.end()) {
+            board.makeMove(it->second.bestMove);
+            list.moves[list.counter++] = it->second.bestMove;
+        }
+        else {
+            return list;
+        }
+
+    }
+
+    return list;
 }

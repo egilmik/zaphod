@@ -17,9 +17,9 @@ int main(int, char**) {
     std::vector<BenchmarkDefinition> benchVector;
 
     //https://www.chessprogramming.org/CCR_One_Hour_Test
-    benchVector.push_back({ "CCR01","rn1qkb1r/pp2pppp/5n2/3p1b2/3P4/2N1P3/PP3PPP/R1BQKBNR w KQkq - 0 1", "Qb3" });
-    benchVector.push_back({ "CCR02","rn1qkb1r/pp2pppp/5n2/3p1b2/3P4/1QN1P3/PP3PPP/R1B1KBNR b KQkq - 1 1", "Bc8" });
-    benchVector.push_back({ "CCR03","r1bqk2r/ppp2ppp/2n5/4P3/2Bp2n1/5N1P/PP1N1PP1/R2Q1RK1 b kq - 1 10", "Nh6" });
+    //benchVector.push_back({ "CCR01","rn1qkb1r/pp2pppp/5n2/3p1b2/3P4/2N1P3/PP3PPP/R1BQKBNR w KQkq - 0 1", "Qb3" });
+    //benchVector.push_back({ "CCR02","rn1qkb1r/pp2pppp/5n2/3p1b2/3P4/1QN1P3/PP3PPP/R1B1KBNR b KQkq - 1 1", "Bc8" });
+    //benchVector.push_back({ "CCR03","r1bqk2r/ppp2ppp/2n5/4P3/2Bp2n1/5N1P/PP1N1PP1/R2Q1RK1 b kq - 1 10", "Nh6" });
 
 
     benchVector.push_back({ "","1R6/1brk2p1/4p2p/p1P1Pp2/P7/6P1/1P4P1/2R3K1 w - - 0 1","b8b7" });
@@ -35,7 +35,17 @@ int main(int, char**) {
         Board board;
         board.parseFen(def.fen);
         Search search;        
-        Score move = search.search(board, 7);
+        Score move = search.search(board, 11);
+
+        MoveList pvList = search.reconstructPV(board,7);
+
+        std::cout << "PV ";
+        for (int i = 0; i < pvList.counter; i++) {
+            std::cout << Perft::getNotation(pvList.moves[i]) << " ";
+        }
+
+        std::cout << std::endl;
+        
 
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
