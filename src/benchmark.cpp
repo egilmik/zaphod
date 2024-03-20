@@ -34,10 +34,11 @@ int main(int, char**) {
         std::cout << def.text << " " << def.fen << std::endl;
         Board board;
         board.parseFen(def.fen);
+        int depth = 9;
         Search search;        
-        Score move = search.search(board, 11);
+        Score move = search.search(board, depth);
 
-        MoveList pvList = search.reconstructPV(board,7);
+        MoveList pvList = search.reconstructPV(board,depth);
 
         std::cout << "PV ";
         for (int i = 0; i < pvList.counter; i++) {
