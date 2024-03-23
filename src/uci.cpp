@@ -117,14 +117,15 @@ void UCI::setPosition(std::istringstream &is)
 void UCI::startSearch(std::istringstream &is)
 {
     Score move;
-    move = search.search(motherBoard,6);
+    Search newSearch;
+    move = newSearch.search(motherBoard,5);
     std::string bestMove = Perft::getNotation(move.bestMove);
     std::cout << "bestmove " << bestMove << std::endl;
 }
 
 void UCI::sendID()
 {
-    std::cout << "id name Zaphod 0.3-beta" << std::endl;
+    std::cout << "id name Zaphod 0.4-beta" << std::endl;
     std::cout << "id author Egil Tennfjord Mikalsen" << std::endl;
     std::cout << "uciok" << std::endl;
 }

@@ -189,6 +189,7 @@ void Board::parseFen(std::string fen){
     materialScore = Material::getMaterialScore(*this);
     pieceSquareScore = Material::getPieceSquareScore(*this);
     hashKey = generateHashKey();
+    historyPly = 0;
 }
 
 BitBoard Board::generateHashKey(){

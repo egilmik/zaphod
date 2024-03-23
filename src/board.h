@@ -187,7 +187,7 @@ class Board {
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
 
-        MoveStruct moveHistory[64];
+        MoveStruct moveHistory[128];
         int historyPly = 0;
         
         BitBoard bitBoardArray[15];

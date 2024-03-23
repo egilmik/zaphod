@@ -20,9 +20,9 @@ Score Search::search(Board &board, int maxDepth)
 
 int Search::negamax(Board& board, int depth, int alpha, int beta)
 {
-    //if (depth == 0) return quinesence(board, -beta, -alpha,1);
+    if (depth == 0) return quinesence(board, alpha, beta,1);
 
-    if (depth == 0) return evaluate(board);
+    //if (depth == 0) return evaluate(board);
 
     MoveList moveList;
     MoveGenerator::generateMoves(board, moveList);
@@ -96,7 +96,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
         alpha = standPat;
     }
 
-    if (depth > 5) {
+    if (depth > 50) {
         return standPat;
     }
 
