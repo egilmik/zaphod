@@ -28,7 +28,7 @@ class Search {
         Score search(Board &board, int maxDepth);
         int negamax(Board &board, int depth, int alpha, int beta);
         int quinesence(Board &board, int alpha, int beta, int depth);
-        void sortMoveList(Board &board,MoveList &list);
+        void sortMoveList(Board &board,MoveList &list, TranspositionEntry &ttEntry);
         int evaluate(Board &board);
         bool equal(Move &a, Move &b);
         MoveList reconstructPV(Board& board, int depth);

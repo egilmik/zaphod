@@ -52,7 +52,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     int alphaOrginal = alpha;
     Move alphaMove{};
     
-    sortMoveList(board, moveList);
+    sortMoveList(board, moveList,it->second);
     
     int validMoves = moveList.counter;
 
@@ -87,7 +87,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     }
 
     //Replace if depth is higher
-    it = transpositionMap.find(key);
     if (it == transpositionMap.end() || it->second.depth < depth) {
         TranspositionEntry entry;
         entry.depth = depth;
@@ -104,23 +103,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         }
         transpositionMap[key] = entry;
     }
-    /*
-
-    if (alpha > alphaOrginal) {
-
-        BitBoard key = board.getHashKey();
-        std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
-        
-        if (it == transpositionMap.end() || it->second.depth < depth) {
-            TranspositionEntry entry;
-            entry.depth = depth;
-            entry.score = alpha;
-            entry.bestMove = alphaMove;
-            entry.type = TEType::exact;
-            transpositionMap[key] = entry;
-        } 
-    }
-    */
 
     return alpha;
 }
@@ -180,16 +162,14 @@ bool compare(SortStruct a, SortStruct b)
     return a.score > b.score;
 }
 
-void Search::sortMoveList(Board &board, MoveList &list)
+void Search::sortMoveList(Board &board, MoveList &list, TranspositionEntry& ttEntry)
 {
-    BitBoard key = board.getHashKey();
-    std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
 
     SortStruct sortArray[256];
     for(int i = 0; i< list.counter; i++){
         SortStruct entry;
         entry.move = list.moves[i];
-        if(it != transpositionMap.end() && equal(list.moves[i],it->second.bestMove)){
+        if(equal(list.moves[i], ttEntry.bestMove)){
             entry.score = 10000;
         } else if(entry.move.promotion != BitBoardEnum::All) {
             entry.score = 1000;
