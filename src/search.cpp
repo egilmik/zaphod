@@ -22,7 +22,28 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 {
     if (depth == 0) return quinesence(board, alpha, beta,1);
 
-    //if (depth == 0) return evaluate(board);
+    BitBoard key = board.getHashKey();
+
+    std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
+    if (it != transpositionMap.end() && it->second.depth >= depth) {
+        TEType entryType = it->second.type;
+        if (entryType == TEType::exact) {
+            exactHit++;
+            return it->second.score;
+        }
+        else if (entryType == TEType::lower) {
+            lowerBoundHit++;
+            alpha = std::max(it->second.score, alpha);
+        }
+        else if (entryType == TEType::upper) {
+            upperBoundHit++;
+            beta = std::max(it->second.score, beta);
+        }
+
+        if (alpha >= beta) {
+            return it->second.score;
+        }
+    }
 
     MoveList moveList;
     MoveGenerator::generateMoves(board, moveList);
@@ -65,6 +86,26 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         alpha = 3000;
     }
 
+    //Replace if depth is higher
+    it = transpositionMap.find(key);
+    if (it == transpositionMap.end() || it->second.depth < depth) {
+        TranspositionEntry entry;
+        entry.depth = depth;
+        entry.score = alpha;
+        if (alpha <= alphaOrginal) {
+            entry.type = TEType::upper;
+        }
+        else if (alpha >= beta) {
+            entry.type = TEType::lower;
+        }
+        else {
+            entry.type = TEType::exact;
+            entry.bestMove = alphaMove;
+        }
+        transpositionMap[key] = entry;
+    }
+    /*
+
     if (alpha > alphaOrginal) {
 
         BitBoard key = board.getHashKey();
@@ -79,6 +120,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
             transpositionMap[key] = entry;
         } 
     }
+    */
 
     return alpha;
 }

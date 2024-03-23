@@ -21,6 +21,9 @@ class Search {
     public:
         unsigned long long evaluatedNodes = 0;
         unsigned long long evaluatedQuinesenceNodes = 0;
+        int64_t lowerBoundHit = 0;
+        int64_t upperBoundHit = 0;
+        int64_t exactHit = 0;
         unsigned long long ttHits = 0;
         Score search(Board &board, int maxDepth);
         int negamax(Board &board, int depth, int alpha, int beta);

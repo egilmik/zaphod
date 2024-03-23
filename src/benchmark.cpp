@@ -30,7 +30,7 @@ int main(int, char**) {
         std::cout << def.text << " " << def.fen << std::endl;
         Board board;
         board.parseFen(def.fen);
-        int depth = 9;
+        int depth = 7;
         Search search;        
         Score move = search.search(board, depth);
 
@@ -49,8 +49,9 @@ int main(int, char**) {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         int nps = (double)search.evaluatedNodes / ((double)duration.count() / (double)1000);
         std::cout << status << " Score: " << (double)move.score / 100.0 << " Depth: ";
-        std::cout << move.depth << " NPS: " << nps << " Nodes: " << search.evaluatedNodes << "Playtime " << (duration.count()) << " ms" << std::endl;
+        std::cout << move.depth << " NPS: " << nps << " Nodes: " << search.evaluatedNodes << " Playtime " << (duration.count()) << " ms" << std::endl;
         std::cout << "Best move " << Perft::getNotation(move.bestMove)  << " Expected best move " << def.bestMove << std::endl;
+        std::cout << "TT stats " << " Upper bound hit: " << search.upperBoundHit << " Lower bound hit " << search.lowerBoundHit << " Exact hit " << search.exactHit << std::endl;
         std::cout << "PV ";
         for (int i = 0; i < pvList.counter; i++) {
             std::cout << Perft::getNotation(pvList.moves[i]) << " ";
