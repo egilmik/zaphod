@@ -63,6 +63,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
             score = -negamax(board, depth - 1, -beta, -alpha);
             if (score >= beta) {
                 board.revertLastMove();
+                if (it == transpositionMap.end() || it->second.depth < depth) {
+                    transpositionMap[key] = { move, TEType::lower, depth, beta };
+                }
+                
                 return beta;
             }
 
@@ -85,24 +89,23 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
     if (validMoves == 0 && board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
         alpha = 3000;
+
+        if (board.getSideToMove() == BitBoardEnum::Black) {
+            alpha *= -1;
+        }
     }
 
     //Replace if depth is higher
     if (it == transpositionMap.end() || it->second.depth < depth) {
-        TranspositionEntry entry;
-        entry.depth = depth;
-        entry.score = alpha;
         if (alpha <= alphaOrginal) {
-            entry.type = TEType::upper;
+            transpositionMap[key] = { alphaMove, TEType::upper, depth, alpha };
         }
         else if (alpha >= beta) {
-            entry.type = TEType::lower;
+            transpositionMap[key] = { alphaMove, TEType::lower, depth, alpha };
         }
         else {
-            entry.type = TEType::exact;
-            entry.bestMove = alphaMove;
+            transpositionMap[key] = { alphaMove, TEType::exact, depth, alpha};
         }
-        transpositionMap[key] = entry;
     }
 
     return alpha;
