@@ -20,8 +20,7 @@ Score Search::search(Board &board, int maxDepth)
 
 int Search::negamax(Board& board, int depth, int alpha, int beta)
 {
-    if (depth == 0) return quinesence(board, alpha, beta,1);
-
+    if (depth == 0) return quinesence(board, alpha, beta, 1);
     BitBoard key = board.getHashKey();
 
     std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
@@ -45,6 +44,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         }
     }
 
+    
+
     MoveList moveList;
     MoveGenerator::generateMoves(board, moveList);
     int score = 0;
@@ -52,7 +53,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     int alphaOrginal = alpha;
     Move alphaMove{};
     
-    sortMoveList(board, moveList,it->second);
+    sortMoveList(board, moveList);
     
     int validMoves = moveList.counter;
 
@@ -162,14 +163,15 @@ bool compare(SortStruct a, SortStruct b)
     return a.score > b.score;
 }
 
-void Search::sortMoveList(Board &board, MoveList &list, TranspositionEntry& ttEntry)
+void Search::sortMoveList(Board &board, MoveList &list)
 {
-
+    
+    std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(board.getHashKey());
     SortStruct sortArray[256];
     for(int i = 0; i< list.counter; i++){
         SortStruct entry;
         entry.move = list.moves[i];
-        if(equal(list.moves[i], ttEntry.bestMove)){
+        if(it != transpositionMap.end() && equal(list.moves[i], it->second.bestMove)){
             entry.score = 10000;
         } else if(entry.move.promotion != BitBoardEnum::All) {
             entry.score = 1000;
