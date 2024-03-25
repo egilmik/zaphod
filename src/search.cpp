@@ -2,16 +2,25 @@
 #include "perft.h"
 #include "material.h"
 #include <algorithm>
+#include <chrono>
 
-Score Search::search(Board &board, int maxDepth)
+Score Search::search(Board &board, int maxDepth, int maxTime)
 {    
+    maxSearchTime = maxTime;
+    startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();;
     int lowerBound = -20000;
     int upperBound = 20000;
+    stopSearch = false;
     bool inIteration = true;
 
     for (int i = 1; i <= maxDepth; i++) {
         currentTargetDepth = i;
         int score = negamax(board, i, lowerBound, upperBound);
+        if (stopSearch) {
+            break;
+        }
+        std::cout << "info depth " << i << " score cp " << score << " pv " << Perft::getNotation(bestMove.bestMove) << std::endl;
+        currentFinishedDepth = i;
     }
  
     
@@ -22,6 +31,13 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 {
     if (depth == 0) return quinesence(board, alpha, beta, 1);
     BitBoard key = board.getHashKey();
+
+
+    // Check if max search time has been exhausted
+    // Returns beta to prevent things going to shit
+    if (evaluatedNodes % 1000 && isSearchStopped()) {
+        return beta;
+    }
 
     std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
     if (it != transpositionMap.end() && it->second.depth >= depth) {
@@ -117,6 +133,13 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
 {
 
     int standPat = evaluate(board);
+
+    // Check if max search time has been exhausted
+    // Returns beta to prevent things going to shit
+    if (evaluatedNodes % 1000 && isSearchStopped()) {
+        return beta;
+    }
+
     
     if (standPat >= beta) {
         return beta;
@@ -205,6 +228,7 @@ int Search::evaluate(Board &board)
     return score;
 }
 
+
 bool Search::equal(Move &a, Move &b)
 {
     return (a.fromSq == b.fromSq &&
@@ -229,4 +253,15 @@ MoveList Search::reconstructPV(Board& board, int depth)
     }
 
     return list;
+}
+
+bool Search::isSearchStopped()
+{
+    auto end = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    auto diff = end - startTime;
+    if (diff > maxSearchTime) {
+        stopSearch = true;
+    }
+    return stopSearch;
 }

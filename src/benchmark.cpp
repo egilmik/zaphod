@@ -34,9 +34,9 @@ int main(int, char**) {
         std::cout << def.text << " " << def.fen << std::endl;
         Board board;
         board.parseFen(def.fen);
-        int depth = 7;
+        int depth = 15;
         Search search;        
-        Score move = search.search(board, depth);
+        Score move = search.search(board, depth,60000);
 
         MoveList pvList = search.reconstructPV(board,depth);
 
