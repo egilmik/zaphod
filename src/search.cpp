@@ -19,7 +19,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         if (stopSearch) {
             break;
         }
-        std::cout << "info depth " << i << " score cp " << score << " pv " << Perft::getNotation(bestMove.bestMove) << std::endl;
+        //std::cout << "info depth " << i << " score cp " << score << " pv " << Perft::getNotation(bestMove.bestMove) << std::endl;
         currentFinishedDepth = i;
     }
  
@@ -147,7 +147,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
         alpha = standPat;
     }
 
-    if (depth > 50) {
+    if (depth > 20) {
         return standPat;
     }
 
@@ -202,9 +202,16 @@ void Search::sortMoveList(Board &board, MoveList &list)
         } else if(entry.move.promotion != BitBoardEnum::All) {
             entry.score = 1000;
         } else if(entry.move.capture){
-            entry.score = 100;
+            BitBoardEnum capturedPiece = board.getPieceOnSquare(entry.move.toSq);
+            BitBoardEnum attacker = entry.move.piece;
+            if (entry.move.enpassant) {
+                capturedPiece = P;
+            }
+            int Mvv = Material::getMaterialScore(capturedPiece);
+            int lva = Material::getMaterialScore(attacker);
+            entry.score = 100 + (Mvv - lva)/100;
         } else{
-            entry.score = -100;
+            entry.score = 0;
         }
         sortArray[i] = entry;
     }

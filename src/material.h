@@ -51,6 +51,12 @@ class Material {
       return score;
     }
 
+    static int getMaterialScore(BitBoardEnum piece) {        
+        return pieceMaterialScoreArray[piece];
+    }
+
+    inline static const std::array<int, 14> pieceMaterialScoreArray = { 0,500,320,330,900,2000,100,0,500,320,330,900,2000,100 };
+
       inline static const std::array<std::array<int,64>,14> pieceSquareScoreArray = {{
             // Empty white
             {-5,0,0,0,0,0,0,-5,
