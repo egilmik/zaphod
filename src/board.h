@@ -6,6 +6,7 @@
 #include "bitboard.h"
 #include "move.h"
 #include "transpositiontable.h"
+#include <array>
 
 struct MoveStruct {
     BitBoard bitBoardArrayCopy[15];
@@ -40,6 +41,7 @@ class Board {
         static constexpr BitBoard Rank7Mask = Rank1Mask << (8 * 6);
         static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
 
+        // Converst a square to unit64 with the appropriate bits set.
         static constexpr BitBoard sqBB[64] = {1,
                                         2,  
                                         4,
@@ -120,6 +122,47 @@ class Board {
                                             "a8","b8","c8","d8","e8","f8","g8","h8"
                                         };
 
+
+        std::array<std::array<BitBoard, 4096>, 64> magicMovesRook{{}};
+        std::array<BitBoard, 64> magicNumberRook{};
+        std::array<BitBoard, 64> magicNumberShiftsRook{};
+        std::array<BitBoard, 64> rookMask{};
+
+        void initMagicRook();
+
+        BitBoard getRookAttacks(BitBoard occlusion, int square, BitBoard friendlyPieces) {
+            BitBoard bbBlockers = occlusion & rookMask[square];
+
+            int databaseIndex = (int)((bbBlockers * magicNumberRook[square]) >> magicNumberShiftsRook[square]);
+
+            BitBoard bbMoveSquares = magicMovesRook[square][databaseIndex] & ~friendlyPieces;
+
+            return bbMoveSquares;
+        };
+
+        /*
+        struct Magic {
+            BitBoard mask;
+            BitBoard magic;
+        };
+
+        static const std::array<std::array<BitBoard,4096>,64> mRookAttacks;
+
+        Magic mRookTable[64];
+
+        static const std::array<BitBoard, 64> rookMask;
+
+        BitBoard getRookAttacks(BitBoard occlusion, int square) {
+            //Reduce the occlusion map with the mask
+            occlusion &= mRookTable[square].mask;
+            //Multiply with magic number
+            occlusion *= mRookTable[square].magic;
+            //bitshift to get the top 9 bits
+            occlusion >>= 64 - 9;
+            return mRookAttacks[square][occlusion];
+        };
+
+        */
 
         BitBoard getKnightMask(int square);
         BitBoard getKingMask(int square);
