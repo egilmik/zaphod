@@ -123,22 +123,28 @@ class Board {
                                         };
 
 
-        std::array<std::array<BitBoard, 4096>, 64> magicMovesRook{{}};
+        
+        std::array<std::array<BitBoard, 4096>, 64>* magicMovesRook;
         std::array<BitBoard, 64> magicNumberRook{};
         std::array<BitBoard, 64> magicNumberShiftsRook{};
         std::array<BitBoard, 64> rookMask{};
+        
 
+        void initRookMask();
         void initMagicRook();
-
+        
         BitBoard getRookAttacks(BitBoard occlusion, int square, BitBoard friendlyPieces) {
             BitBoard bbBlockers = occlusion & rookMask[square];
 
             int databaseIndex = (int)((bbBlockers * magicNumberRook[square]) >> magicNumberShiftsRook[square]);
 
-            BitBoard bbMoveSquares = magicMovesRook[square][databaseIndex] & ~friendlyPieces;
+            BitBoard bbMoveSquares = (*magicMovesRook)[square][databaseIndex] & ~friendlyPieces;
 
             return bbMoveSquares;
         };
+
+
+        
 
         /*
         struct Magic {

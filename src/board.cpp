@@ -32,22 +32,29 @@ static std::array<BitBoard,64> initInvertedSqToBitMapping(){
     return mapping;
 }
 
+void Board::initRookMask() {
+    BitBoard edges = Rank1Mask | Rank8Mask | FileAMask | FileHMask;
 
-// Inspired by http://web.archive.org/web/20160314001240/http://www.afewmorelines.com/understanding-magic-bitboards-in-chess-programming/
-void Board::initMagicRook() {
-    std::array<std::array<BitBoard, 4096>, 64> occupancyVariation{};
-    std::array<std::array<BitBoard, 4096>, 64> occupancyAttackSet{};
-
-    BitBoard mask = 0;
-
-    for (int index = 0; index <= 63; index++)
+    for (BitBoard index = 0; index < 64; index++)
     {
-        mask = 0;
-        for (int i = index + 8; i <= 55; i += 8) mask |= (1L << i);
-        for (int i = index - 8; i >= 8; i -= 8) mask |= (1L << i);
-        for (int i = index + 1; i % 8 != 7 && i % 8 != 0; i++) mask |= (1L << i);
-        for (int i = index - 1; i % 8 != 7 && i % 8 != 0 && i >= 0; i--) mask |= (1L << i);
-        rookMask[index] = mask;
+        BitBoard mask = 0;
+
+        for (int i = index + 8; i < 56; i += 8) {
+            setBit(mask, i);
+        }
+        for (int i = index - 8; i > 7; i -= 8) {
+            setBit(mask, i);
+        }
+
+        for (int i = index + 1; i % 8 != 7 && i % 8 != 0; i++) {
+            setBit(mask, i);
+        }
+
+        for (int i = index - 1; i % 8 != 7 && i % 8 != 0; i--) {
+            setBit(mask, i);
+        }
+
+        rookMask[index] = mask & ~edges;
 
         /*
         mask = 0;
@@ -58,116 +65,81 @@ void Board::initMagicRook() {
         occupancyMaskBishop[bitRef] = mask;
         */
     }
+}
 
-    int j = 0;
 
-    for (int index = 0; index < 64; index++) {
-        BitBoard mask = rookMask[index];
+// Inspired by http://web.archive.org/web/20160314001240/http://www.afewmorelines.com/understanding-magic-bitboards-in-chess-programming/
+void Board::initMagicRook() {
+    magicMovesRook = new std::array<std::array<BitBoard, 4096>, 64>();
 
-        int setBits = Board::countSetBits(mask);
+    std::array<BitBoard, 4096> occupancy{};
+    std::array<BitBoard, 4096> attackSet{};
 
-        for (int i = 0; i < setBits; i++) {
-
-            for (j = index + 8; j <= 55 && (occupancyVariation[index][i] & (1L << j)) == 0; j += 8);
-            if (j >= 0 && j <= 63) occupancyAttackSet[index][i] |= (1L << j);
-            for (j = index - 8; j >= 8 && (occupancyVariation[index][i] & (1L << j)) == 0; j -= 8);
-            if (j >= 0 && j <= 63) occupancyAttackSet[index][i] |= (1L << j);
-            for (j = index + 1; j % 8 != 7 && j % 8 != 0 && (occupancyVariation[index][i] & (1L << j)) == 0; j++);
-            if (j >= 0 && j <= 63) occupancyAttackSet[index][i] |= (1L << j);
-            for (j = index - 1; j % 8 != 7 && j % 8 != 0 && j >= 0 && (occupancyVariation[index][i] & (1L << j)) == 0; j--);
-            if (j >= 0 && j <= 63) occupancyAttackSet[index][i] |= (1L << j);
-
-        }
-    }
-
-    int i, variationCount;
 
     std::mt19937_64 rng(std::random_device{}());
-
-    // Distribution in range [0, UINT64_MAX]
     std::uniform_int_distribution<uint64_t> distribution(0, UINT64_MAX);
 
-    // Generate a random uint64_t number
-    uint64_t random_number = distribution(rng);
+    for (int square = 0; square < 64; square++) {
 
-    BitBoard magicNumber = 0;
-    int index;
-    BitBoard attackSet;
 
-    for (int index = 0; index < 64; index++)
-    {
-        int bitCount = Board::countSetBits(rookMask[index]);
-        variationCount = (int)(1L << bitCount);
-        bool fail;
-        std::array<BitBoard, 64> usedBy{};
-        
+        //Carry-Ripler to enumerate all subsets of mask
+        BitBoard mask = rookMask[square];
+
+        BitBoard origin = 0;
+        setBit(origin, square);
+
+        int size = 0;
+        BitBoard n = 0;
+        do {
+            occupancy[size] = n;
+            
+
+            BitBoard moves = southOccludedMoves(origin, ~n);
+            moves |= northOccludedMoves(origin, ~n);
+            moves |= westOccludedMoves(origin, ~n);
+            moves |= eastOccludedMoves(origin, ~n);
+
+            attackSet[size] = moves;
+
+            //TODO generate attackset
+            n = (n - mask) & mask;
+            size++;
+        } while (n);
+
+        BitBoard magicNumber = 0;
         int attempts = 0;
+
+        std::array<BitBoard, 4096> usedBy{};
+        bool fail = false;
+
+        BitBoard cap = 65535;
 
         do
         {
-            magicNumber = distribution(rng) & distribution(rng) & distribution(rng); // generate a random number with not many bits set
-            for (int j = 0; j < variationCount; j++) usedBy[j] = 0;
+            magicNumber = (distribution(rng) & cap) & (distribution(rng) & cap) & (distribution(rng) & cap); // generate a random number with not many bits set
+            for (int j = 0; j < size; j++) usedBy[j] = 0;
             attempts++;
 
-            for (int i = 0, fail = false; i < variationCount && !fail; i++)
+            uint64_t index = 0;
+
+            for (int i = 0, fail = false; i < size && !fail; i++)
             {
-                index = (int)((occupancyVariation[index][i] * magicNumber) >> (64 - bitCount));
+
+                index = ((occupancy[i] & rookMask[square]) * magicNumber) >> (64 - 12);
 
                 // fail if this index is used by an attack set that is incorrect for this occupancy variation
-                fail = usedBy[index] != 0 && usedBy[index] != occupancyAttackSet[index][i];
+                fail = usedBy[index] != 0 && usedBy[index] != occupancy[i];
 
-                usedBy[index] = attackSet;
+                usedBy[index] = occupancy[i];
             }
         } while (fail);
-            magicNumberRook[index] = magicNumber;
-            magicNumberShiftsRook[index] = (64 - bitCount);
+        magicNumberRook[square] = magicNumber;
+        magicNumberShiftsRook[square] = (64 - 52);
+
     }
 
 
-    for (int index = 0; index <= 63; index++)
-    {
 
-        int bitCount = Board::countSetBits(rookMask[index]);
-        int variations = (int)(1L << bitCount);
-
-        for (i = 0; i < variations; i++)
-        {
-            BitBoard validMoves = 0;
-            //if (isRook)
-            //{
-                int magicIndex = (int)((occupancyVariation[index][i] * magicNumberRook[index]) >> magicNumberShiftsRook[index]);
-
-                for (int j = index + 8; j <= 63; j += 8) { validMoves |= (1L << j); if ((occupancyVariation[index][i] & (1L << j)) != 0) break; }
-                for (int j = index - 8; j >= 0; j -= 8) { validMoves |= (1L << j); if ((occupancyVariation[index][i] & (1L << j)) != 0) break; }
-                for (int j = index + 1; j % 8 != 0; j++) { validMoves |= (1L << j); if ((occupancyVariation[index][i] & (1L << j)) != 0) break; }
-                for (int j = index - 1; j % 8 != 7 && j >= 0; j--) { validMoves |= (1L << j); if ((occupancyVariation[index][i] & (1L << j)) != 0) break; }
-
-                magicMovesRook[index][magicIndex] = validMoves;
-            //}
-            /*
-            else
-            {
-                magicIndex = (int)((occupancyVariation[bitRef][i] * magicNumberBishop[bitRef]) >> > magicNumberShiftsBishop[bitRef]);
-
-                for (j = bitRef + 9; j % 8 != 0 && j <= 63; j += 9) { validMoves |= (1L << j); if ((occupancyVariation[bitRef][i] & (1L << j)) != 0) break; }
-                for (j = bitRef - 9; j % 8 != 7 && j >= 0; j -= 9) { validMoves |= (1L << j); if ((occupancyVariation[bitRef][i] & (1L << j)) != 0) break; }
-                for (j = bitRef + 7; j % 8 != 7 && j <= 63; j += 7) {
-                    validMoves |= (1L << j);
-                    if ((occupancyVariation[bitRef][i] & (1L << j)) != 0)
-                        break;
-                }
-                for (j = bitRef - 7; j % 8 != 0 && j >= 0; j -= 7) {
-                    validMoves |= (1L << j);
-                    if ((occupancyVariation[bitRef][i] & (1L << j)) != 0)
-                        break;
-                }
-
-                magicMovesBishop[bitRef][magicIndex] = validMoves;
-            }
-            */
-
-        }
-    }
 }
 
 static std::array<BitBoard,64> initKingMask(){
@@ -245,7 +217,8 @@ Board::Board(){
     }
 
     ttable.initKeys();
-    //initMagicRook();
+    initRookMask();
+    initMagicRook();
 }
 
 
