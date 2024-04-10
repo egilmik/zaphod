@@ -50,11 +50,11 @@ void Board::initRookMask() {
             setBit(mask, i);
         }
 
-        for (int i = index - 1; i % 8 != 7 && i % 8 != 0; i--) {
+        for (int i = index - 1; i % 8 != 7 && i % 8 != 0 && i >=0 ; i--) {
             setBit(mask, i);
         }
 
-        rookMask[index] = mask & ~edges;
+        rookMask[index] = mask;// &~edges;
 
         /*
         mask = 0;
@@ -113,28 +113,49 @@ void Board::initMagicRook() {
         bool fail = false;
 
         BitBoard cap = 65535;
+        uint32_t magicShift = 52;
+
+        int maxIndex = 0;
 
         do
         {
-            magicNumber = (distribution(rng) & cap) & (distribution(rng) & cap) & (distribution(rng) & cap); // generate a random number with not many bits set
-            for (int j = 0; j < size; j++) usedBy[j] = 0;
+            // Make sure 
+            //for (magicNumber = 0; countSetBits((rookMask[square] * magicNumber) >> magicShift) < 6; )
+            magicNumber = 0;
+            while (magicNumber == 0) {
+                magicNumber = distribution(rng) & distribution(rng) & distribution(rng) & distribution(rng); // generate a random number with not many bits set
+            }
+            
+            for (int j = 0; j < size; j++) (*magicMovesRook)[square][j] = 0;
             attempts++;
 
             uint64_t index = 0;
+            fail = false;
 
-            for (int i = 0, fail = false; i < size && !fail; i++)
+
+
+            for (int i = 0; i < size && !fail ; i++)
             {
 
-                index = ((occupancy[i] & rookMask[square]) * magicNumber) >> (64 - 12);
+                BitBoard mask = (occupancy[i] & rookMask[square]);
+
+                index = (mask * magicNumber) >> magicShift;
 
                 // fail if this index is used by an attack set that is incorrect for this occupancy variation
-                fail = usedBy[index] != 0 && usedBy[index] != occupancy[i];
+                fail = (*magicMovesRook)[square][index] != 0 && (*magicMovesRook)[square][index] != attackSet[i];
+                if (fail) {
+                    if (maxIndex < i) {
+                        maxIndex = i;
+                        std::cout << maxIndex << std::endl;
+                    }
+                }
 
-                usedBy[index] = occupancy[i];
+                (*magicMovesRook)[square][index] = attackSet[i];
             }
         } while (fail);
         magicNumberRook[square] = magicNumber;
-        magicNumberShiftsRook[square] = (64 - 52);
+        std::cout << square << " : " << magicNumber << std::endl;
+        magicNumberShiftsRook[square] = magicShift;
 
     }
 
@@ -1023,11 +1044,13 @@ void Board::printBoard(BitBoard board)
         
     }
     
-    for(int i = 63;i >= 0; i--){
-        if((i+1)%8== 0){
-            std::cout << std::endl;
+    for (int i = 7; i >= 0; i--) {
+        int startSquare = 8 * i;
+        for (int x = 0; x < 8; x++) {
+            std::cout << printBoard[startSquare + x] << " ";
         }
-        std::cout << printBoard[i] << " ";
+
+        std::cout << std::endl;
     }
 
     std::cout << std::endl;
@@ -1049,11 +1072,14 @@ void Board::printBoard(BitBoard board, int origin)
         }
     }
 
-    for(int i = 63;i >= 0; i--){
-        if((i+1)%8== 0){
-            std::cout << std::endl;
+    for (int i = 7; i >= 0; i--) {
+        int startSquare = 8 * i;
+        for (int x = 0; x < 8; x++) {
+            std::cout << printBoard[startSquare + x] << " ";
         }
-        std::cout << printBoard[i] << " ";
+
+        std::cout << std::endl;
+
     }
 
     std::cout << std::endl;

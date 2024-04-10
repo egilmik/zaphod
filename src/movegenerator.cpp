@@ -199,17 +199,56 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
         moves |= board.westOccludedMoves(rookBoard, emptySquares);
         moves |= board.eastOccludedMoves(rookBoard, emptySquares);
 
+
+        int index = ((board.getBitboard(All) & board.rookMask[fromSq]) * board.magicNumberRook[fromSq]) >> 52;
+
+        uint64_t magic = ((board.getBitboard(All) & board.rookMask[fromSq]) * board.magicNumberRook[fromSq]) >> board.magicNumberShiftsRook[fromSq];
+        BitBoard magicBoard = (*board.magicMovesRook)[fromSq][magic];
+
+        if (board.countSetBits(magicBoard) > 0) {
+            int x = 0;
+        }
+
         int toSq = 0;
+
+        MoveList old;
+        MoveList magicList;
+
+        while (magicBoard != 0) {
+            toSq = board.popLsb(magicBoard);
+            if (board.checkBit(emptySquares, toSq)) {
+                magicList.moves[magicList.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
+                
+            }
+            else if (board.checkBit(enemyBoard, toSq)) {
+                magicList.moves[magicList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
+                
+            }
+        }
         
+
         while(moves != 0){
             toSq = board.popLsb(moves);
             if(board.checkBit(emptySquares,toSq)){
                 moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece};
+                old.moves[old.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
             } else if(board.checkBit(enemyBoard,toSq)){
                 moveList.moves[moveList.counter++] = {fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece};
+                old.moves[old.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
             }
 
             
+        }
+
+        if (magicList.counter != old.counter) {
+            board.printBoard();
+            board.printBoard(board.rookMask[fromSq], fromSq);
+
+            uint64_t magic = ((board.getBitboard(All) & board.rookMask[fromSq]) * board.magicNumberRook[fromSq]) >> board.magicNumberShiftsRook[fromSq];
+            BitBoard magicBoard = (*board.magicMovesRook)[fromSq][magic];
+            board.printBoard(magicBoard, fromSq);
+
+            int x = 0;
         }
         
     }
