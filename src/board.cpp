@@ -82,6 +82,8 @@ void Board::initMagicRook() {
     for (int square = 0; square < 64; square++) {
 
 
+        std::array<BitBoard, 4096> epoch{};
+
         //Carry-Ripler to enumerate all subsets of mask
         BitBoard mask = rookMask[square];
 
@@ -126,7 +128,7 @@ void Board::initMagicRook() {
                 magicNumber = distribution(rng) & distribution(rng) & distribution(rng) & distribution(rng); // generate a random number with not many bits set
             }
             
-            for (int j = 0; j < size; j++) (*magicMovesRook)[square][j] = 0;
+            //for (int j = 0; j < size; j++) (*magicMovesRook)[square][j] = 0;
             attempts++;
 
             uint64_t index = 0;
@@ -141,20 +143,19 @@ void Board::initMagicRook() {
 
                 index = (mask * magicNumber) >> magicShift;
 
-                // fail if this index is used by an attack set that is incorrect for this occupancy variation
-                fail = (*magicMovesRook)[square][index] != 0 && (*magicMovesRook)[square][index] != attackSet[i];
-                if (fail) {
-                    if (maxIndex < i) {
-                        maxIndex = i;
-                        std::cout << maxIndex << std::endl;
-                    }
+                if (epoch[index] < attempts) {
+                    epoch[index] = attempts;
+                    (*magicMovesRook)[square][index] = attackSet[i];
+                }
+                else if ((*magicMovesRook)[square][index] != attackSet[i]) {
+                    fail = true;
                 }
 
-                (*magicMovesRook)[square][index] = attackSet[i];
+
+                
             }
         } while (fail);
         magicNumberRook[square] = magicNumber;
-        std::cout << square << " : " << magicNumber << std::endl;
         magicNumberShiftsRook[square] = magicShift;
 
     }

@@ -191,6 +191,7 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
     int fromSq = 0;
     while(rooks != 0){
         fromSq = board.popLsb(rooks);
+        /*
         BitBoard rookBoard = 0;
         board.setBit(rookBoard,fromSq);
 
@@ -198,35 +199,31 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
         moves |= board.northOccludedMoves(rookBoard, emptySquares);
         moves |= board.westOccludedMoves(rookBoard, emptySquares);
         moves |= board.eastOccludedMoves(rookBoard, emptySquares);
-
+        */
 
         int index = ((board.getBitboard(All) & board.rookMask[fromSq]) * board.magicNumberRook[fromSq]) >> 52;
 
         uint64_t magic = ((board.getBitboard(All) & board.rookMask[fromSq]) * board.magicNumberRook[fromSq]) >> board.magicNumberShiftsRook[fromSq];
         BitBoard magicBoard = (*board.magicMovesRook)[fromSq][magic];
 
-        if (board.countSetBits(magicBoard) > 0) {
-            int x = 0;
-        }
-
         int toSq = 0;
 
-        MoveList old;
-        MoveList magicList;
+        //MoveList old;
+        //MoveList magicList;
 
         while (magicBoard != 0) {
             toSq = board.popLsb(magicBoard);
             if (board.checkBit(emptySquares, toSq)) {
-                magicList.moves[magicList.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
+                moveList.moves[moveList.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
                 
             }
             else if (board.checkBit(enemyBoard, toSq)) {
-                magicList.moves[magicList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
+                moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
                 
             }
         }
         
-
+        /*
         while(moves != 0){
             toSq = board.popLsb(moves);
             if(board.checkBit(emptySquares,toSq)){
@@ -239,6 +236,7 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
 
             
         }
+        
 
         if (magicList.counter != old.counter) {
             board.printBoard();
@@ -250,6 +248,7 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
 
             int x = 0;
         }
+        */
         
     }
 }
