@@ -949,10 +949,18 @@ bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker
 
     if((kingMask[popLsb(king)] & targetSquares) != 0) return true;
 
-    if((southOccludedMoves(queenRooks, empty) & targetSquares) != 0) return true;
-    if((westOccludedMoves(queenRooks, empty) & targetSquares) != 0) return true;
-    if((eastOccludedMoves(queenRooks, empty) & targetSquares) != 0) return true;
-    if((northOccludedMoves(queenRooks, empty) & targetSquares) != 0) return true;
+    int queenRookSquare = 0;
+    while (queenRooks != 0) {
+        queenRookSquare = popLsb(queenRooks);
+
+
+        uint64_t magic = ((getBitboard(All) & rookMask[queenRookSquare]) * magicNumberRook[queenRookSquare]) >> magicNumberShiftsRook[queenRookSquare];
+        BitBoard magicBoard = (*magicMovesRook)[queenRookSquare][magic];
+        if ((magicBoard & targetSquares) != 0) {
+            return true;
+        }
+    }
+
     if((northEastOccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
     if((northWestccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
     if((southEastOccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
