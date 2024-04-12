@@ -125,50 +125,27 @@ class Board {
 
         
         std::array<std::array<BitBoard, 4096>, 64>* magicMovesRook;
+        std::array<std::array<BitBoard, 4096>, 64>* magicMovesBishop;
         std::array<BitBoard, 64> magicNumberRook{};
+        std::array<BitBoard, 64> magicNumberBishop{};
+        std::array<BitBoard, 64> magicNumberShiftsBishop{};
         std::array<BitBoard, 64> magicNumberShiftsRook{};
         std::array<BitBoard, 64> rookMask{};
+        std::array<BitBoard, 64> bishopMask{};
 
         
-        void initRookMask();
-        void initMagicRook();
-        
-        BitBoard getRookAttacks(BitBoard occlusion, int square, BitBoard friendlyPieces) {
-            BitBoard bbBlockers = occlusion & rookMask[square];
+        void initMagicMasks();
+        void initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* magicMoves, std::array<BitBoard, 64>& moveMask, std::array<BitBoard, 64>& magicNumber, std::array<BitBoard, 64>& magicShift);
 
-            int databaseIndex = (int)((bbBlockers * magicNumberRook[square]) >> magicNumberShiftsRook[square]);
+        BitBoard getRookMagics(int fromSq) {
+            uint64_t magic = ((getBitboard(All) & rookMask[fromSq]) * magicNumberRook[fromSq]) >> magicNumberShiftsRook[fromSq];
+            return (*magicMovesRook)[fromSq][magic];
+        }
 
-            BitBoard bbMoveSquares = (*magicMovesRook)[square][databaseIndex] & ~friendlyPieces;
-
-            return bbMoveSquares;
-        };
-
-
-        
-
-        /*
-        struct Magic {
-            BitBoard mask;
-            BitBoard magic;
-        };
-
-        static const std::array<std::array<BitBoard,4096>,64> mRookAttacks;
-
-        Magic mRookTable[64];
-
-        static const std::array<BitBoard, 64> rookMask;
-
-        BitBoard getRookAttacks(BitBoard occlusion, int square) {
-            //Reduce the occlusion map with the mask
-            occlusion &= mRookTable[square].mask;
-            //Multiply with magic number
-            occlusion *= mRookTable[square].magic;
-            //bitshift to get the top 9 bits
-            occlusion >>= 64 - 9;
-            return mRookAttacks[square][occlusion];
-        };
-
-        */
+        BitBoard getBishopMagics(int fromSq) {
+            uint64_t magic = ((getBitboard(All) & bishopMask[fromSq]) * magicNumberBishop[fromSq]) >> magicNumberShiftsBishop[fromSq];
+            return (*magicMovesBishop)[fromSq][magic];
+        }
 
         BitBoard getKnightMask(int square);
         BitBoard getKingMask(int square);

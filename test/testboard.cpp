@@ -45,7 +45,7 @@ TEST(BoardTest, fenparsingEnpassantE3){
 TEST(BoardTest, rookOccupancyAtSquareA1) {
 
     Board board;
-    board.initRookMask();
+    board.initMagicMasks();
     
     //Edges are removed, so this should remove an empty bitboard
     EXPECT_EQ(board.rookMask[0], 0);
@@ -53,7 +53,7 @@ TEST(BoardTest, rookOccupancyAtSquareA1) {
 
 TEST(BoardTest, rookOccupancyMask) {
     Board board;
-    board.initRookMask();
+    board.initMagicMasks();
 
     BitBoard tempMask = 0;
     /*
