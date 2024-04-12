@@ -130,21 +130,10 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
 
 void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList)
 {
-    BitBoard knights;
-
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece;    
-    BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::N + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
-
-
-    if(sideToMove == BitBoardEnum::White){
-        knights = board.getBitboard(BitBoardEnum::N);
-        movedPiece = BitBoardEnum::N;
-    } else {
-        knights = board.getBitboard(BitBoardEnum::n);
-        movedPiece = BitBoardEnum::n;
-    }
+    BitBoard knights = board.getBitboard(movedPiece);
 
     
     int fromSq = 0;
@@ -172,15 +161,13 @@ void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList)
 
 void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
 {
-    BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
-    BitBoard emptySquares = ~allPieces;
-    BitBoardEnum movedPiece;
-    BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
+    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::R + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard ownBoard = board.getOwnBoard();
-    BitBoard rooks;
+    BitBoard rooks = board.getBitboard(movedPiece);
+    
 
-    if(sideToMove == BitBoardEnum::White){
+    if(board.getSideToMove() == BitBoardEnum::White){
         rooks = board.getBitboard(BitBoardEnum::R);
         movedPiece = BitBoardEnum::R;
     } else {
@@ -212,19 +199,10 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
 
 void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
 {
-    BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece;
-    BitBoard emptySquares = ~allPieces;
+    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
+    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::B + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard bishops = 0;
-
-    if(board.getSideToMove() == BitBoardEnum::White){
-        bishops = board.getBitboard(BitBoardEnum::B);
-        movedPiece = BitBoardEnum::B;
-    } else {
-        bishops = board.getBitboard(BitBoardEnum::b);
-        movedPiece = BitBoardEnum::b;
-    }
+    BitBoard bishops = board.getBitboard(movedPiece);
 
     int fromSq = 0;
     while(bishops != 0){
@@ -251,20 +229,10 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
 
 void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
 {
-    BitBoardEnum movedPiece;
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::Q + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard ownBoard = board.getOwnBoard();
-    BitBoard queens;
-
-    if(sideToMove == BitBoardEnum::White){
-        queens = board.getBitboard(BitBoardEnum::Q);
-        movedPiece = BitBoardEnum::Q;
-    } else {
-        queens = board.getBitboard(BitBoardEnum::q);
-        movedPiece = BitBoardEnum::q;
-    }
+    BitBoard queens = board.getBitboard(movedPiece);
 
     int fromSq = 0;
     while(queens != 0){
@@ -292,21 +260,12 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
 
 void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
 {
-    BitBoard king;
-
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece;    
-    BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard emptySquares = ~allPieces;
+    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
-
-
-    if(sideToMove == BitBoardEnum::White){
-        king = board.getBitboard(BitBoardEnum::K);
-        movedPiece = BitBoardEnum::K;
-    } else {
-        king = board.getBitboard(BitBoardEnum::k);
-        movedPiece = BitBoardEnum::k;
-    }
+    BitBoard king = board.getBitboard(movedPiece);
+    BitBoardEnum sideToMove = board.getSideToMove();
 
     int fromSq = board.popLsb(king);
     BitBoard kingMove = board.getKingMask(fromSq);  
