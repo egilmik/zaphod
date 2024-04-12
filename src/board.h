@@ -128,8 +128,8 @@ class Board {
         std::array<BitBoard, 64> magicNumberRook{};
         std::array<BitBoard, 64> magicNumberShiftsRook{};
         std::array<BitBoard, 64> rookMask{};
-        
 
+        
         void initRookMask();
         void initMagicRook();
         
@@ -196,7 +196,7 @@ class Board {
         BitBoardEnum getPieceOnSquare(int sq);
 
 
-        
+        bool checkSnipers(int sq,BitBoardEnum color);
         BitBoard southOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard northOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard eastOccludedMoves(BitBoard pieces, BitBoard empty);

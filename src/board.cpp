@@ -54,7 +54,7 @@ void Board::initRookMask() {
             setBit(mask, i);
         }
 
-        rookMask[index] = mask;// &~edges;
+		rookMask[index] = mask;// &~edges;
 
         /*
         mask = 0;
@@ -360,6 +360,36 @@ BitBoard Board::generateHashKey(){
 }
 
 
+
+bool Board::checkSnipers(int sq, BitBoardEnum color)
+{
+    BitBoard snipers = 0;
+
+    //
+    uint64_t magic = ((getBitboard(All) & rookMask[sq]) * magicNumberRook[sq]) >> magicNumberShiftsRook[sq];
+    BitBoard magicBoard = (*magicMovesRook)[sq][magic] & bitBoardArray[Q+color] & bitBoardArray[R+color];
+
+
+    // For bishop
+    //uint64_t magic = ((getBitboard(All) & rookMask[sq]) * magicNumberRook[sq]) >> magicNumberShiftsRook[sq];
+    //BitBoard magicBoard = (*magicMovesRook)[sq][magic];
+
+    BitBoard bishopsBoard = 0;
+    setBit(bishopsBoard, sq);
+
+    BitBoard moves = northEastOccludedMoves(bishopsBoard, ~bitBoardArray[All]);
+    moves |= northWestccludedMoves(bishopsBoard, ~bitBoardArray[All]);
+    moves |= southEastOccludedMoves(bishopsBoard, ~bitBoardArray[All]);
+    moves |= southWestOccludedMoves(bishopsBoard, ~bitBoardArray[All]);
+    moves &= bitBoardArray[Q + color] & bitBoardArray[B + color];
+
+    if ((moves == 0) && (magicBoard == 0)) {
+        return false;
+    }
+
+    return true;
+
+}
 
 BitBoard Board::southOccludedMoves(BitBoard pieces, BitBoard empty)
 {
@@ -896,13 +926,13 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
         }
     }
 
-    
-    
+
+
     if(isSquareAttacked(bitBoardArray[K+sideToMove], attacker)){
         return false;
     }
-        
 
+        
     changeSideToMove();
     return true;
 }

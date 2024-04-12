@@ -201,8 +201,6 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
         moves |= board.eastOccludedMoves(rookBoard, emptySquares);
         */
 
-        int index = ((board.getBitboard(All) & board.rookMask[fromSq]) * board.magicNumberRook[fromSq]) >> 52;
-
         uint64_t magic = ((board.getBitboard(All) & board.rookMask[fromSq]) * board.magicNumberRook[fromSq]) >> board.magicNumberShiftsRook[fromSq];
         BitBoard magicBoard = (*board.magicMovesRook)[fromSq][magic];
 
