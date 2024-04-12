@@ -55,9 +55,8 @@ void Board::initMagicMasks() {
 
 		rookMask[index] = mask;
 
-        
         mask = 0;
-        for (int i = index + 9; i % 8 != 7 && i % 8 != 0 && i <= 55; i += 9) {
+        for (int i = index + 9; i % 8 != 7 && i % 8 != 0 && i < 56; i += 9) {
             setBit(mask, i);
         }
         for (int i = index - 9; i % 8 != 7 && i % 8 != 0 && i >= 8; i -= 9) {
@@ -69,7 +68,7 @@ void Board::initMagicMasks() {
         for (int i = index - 7; i % 8 != 7 && i % 8 != 0 && i >= 8; i -= 7) {
             setBit(mask, i);
         }
-        bishopMask[index] = mask;        
+        bishopMask[index] = mask;
     }
 }
 

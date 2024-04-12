@@ -215,12 +215,10 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece;
     BitBoard emptySquares = ~allPieces;
-    BitBoardEnum sideToMove = board.getSideToMove();
     BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard ownBoard = board.getOwnBoard();
-    BitBoard bishops;
+    BitBoard bishops = 0;
 
-    if(sideToMove == BitBoardEnum::White){
+    if(board.getSideToMove() == BitBoardEnum::White){
         bishops = board.getBitboard(BitBoardEnum::B);
         movedPiece = BitBoardEnum::B;
     } else {
@@ -231,23 +229,21 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
     int fromSq = 0;
     while(bishops != 0){
         fromSq = board.popLsb(bishops);
-        BitBoard bishopsBoard = 0;
-        board.setBit(bishopsBoard,fromSq);
+        BitBoard moves = board.getBishopMagics(fromSq);
 
-        BitBoard moves = board.northEastOccludedMoves(bishopsBoard, emptySquares);
-        moves |= board.northWestccludedMoves(bishopsBoard, emptySquares);
-        moves |= board.southEastOccludedMoves(bishopsBoard, emptySquares);
-        moves |= board.southWestOccludedMoves(bishopsBoard, emptySquares);
+        BitBoard captures = moves & enemyBoard;
+        BitBoard silentMoves = moves & emptySquares;
 
         int toSq = 0;
         
-        while(moves != 0){
-            toSq = board.popLsb(moves);
-            if(board.checkBit(emptySquares,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece};
-            } else if(board.checkBit(enemyBoard,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece};
-            }
+        while(silentMoves != 0){
+            toSq = board.popLsb(silentMoves);
+            moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece};
+        }
+
+        while (captures!= 0) {
+            toSq = board.popLsb(captures);
+            moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
         }
         
     }
@@ -273,25 +269,22 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
     int fromSq = 0;
     while(queens != 0){
         fromSq = board.popLsb(queens);
-        BitBoard queenBoard = board.sqBB[fromSq];
-        BitBoard moves = board.southOccludedMoves(queenBoard, emptySquares);
-        moves |= board.northOccludedMoves(queenBoard, emptySquares);
-        moves |= board.westOccludedMoves(queenBoard, emptySquares);
-        moves |= board.eastOccludedMoves(queenBoard, emptySquares);
-        moves |= board.northEastOccludedMoves(queenBoard, emptySquares);
-        moves |= board.northWestccludedMoves(queenBoard, emptySquares);
-        moves |= board.southEastOccludedMoves(queenBoard, emptySquares);
-        moves |= board.southWestOccludedMoves(queenBoard, emptySquares);
+
+        BitBoard moves = (board.getBishopMagics(fromSq) | board.getRookMagics(fromSq));
+
+        BitBoard captures = moves & enemyBoard;
+        BitBoard silentMoves = moves & emptySquares;
 
         int toSq = 0;
-        
-        while(moves != 0){
-            toSq = board.popLsb(moves);
-            if(board.checkBit(emptySquares,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece};
-            } else if(board.checkBit(enemyBoard,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece};
-            }
+
+        while (silentMoves != 0) {
+            toSq = board.popLsb(silentMoves);
+            moveList.moves[moveList.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
+        }
+
+        while (captures != 0) {
+            toSq = board.popLsb(captures);
+            moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
         }
         
     }
