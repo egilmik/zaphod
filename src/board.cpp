@@ -945,8 +945,8 @@ bool Board::makeMove(int fromSq, int toSq,BitBoardEnum piece, bool capture,bool 
     if(isSquareAttacked(bitBoardArray[K+sideToMove], attacker)){
         return false;
     }
+    
 
-        
     changeSideToMove();
     return true;
 }
@@ -972,7 +972,7 @@ void Board::revertLastMove()
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
 {
     BitBoard empty = ~bitBoardArray[All];
-    BitBoard queenRooks = bitBoardArray[Q+attacker] | bitBoardArray[R+attacker];;
+    BitBoard queenRooks = bitBoardArray[Q+attacker] | bitBoardArray[R+attacker];
     BitBoard queenBishops = bitBoardArray[Q+attacker] | bitBoardArray[B+attacker];
     BitBoard knights = bitBoardArray[N+attacker];
     BitBoard king = bitBoardArray[K+attacker];;
@@ -1005,10 +1005,15 @@ bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker
         }
     }
 
-    if((northEastOccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
-    if((northWestccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
-    if((southEastOccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
-    if((southWestOccludedMoves(queenBishops, empty) & targetSquares) != 0) return true;
+    int queenBishopSquare = 0;
+    while (queenBishops != 0) {
+        queenBishopSquare = popLsb(queenBishops);
+        BitBoard magicBoard = getBishopMagics(queenBishopSquare);
+
+        if ((magicBoard & targetSquares) != 0) {
+            return true;
+        }
+    }
 
     return false;
 }
