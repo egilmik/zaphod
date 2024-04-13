@@ -841,10 +841,8 @@ bool Board::makeMove(Move move) {
     }
 
     if(move.promotion != BitBoardEnum::All){        
-        popBit(move.piece,move.toSq);
         hashKey ^= ttable.pieceKeys[move.piece][move.toSq];
         pieceSquareScore -= Material::pieceSquareScoreArray[move.piece][move.toSq];
-        setBit(move.promotion,move.toSq);
         hashKey ^= ttable.pieceKeys[move.promotion][move.toSq];
         pieceSquareScore += Material::pieceSquareScoreArray[move.promotion][move.toSq];
         materialScore = Material::getMaterialScore(*this);
