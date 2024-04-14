@@ -976,12 +976,13 @@ bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker
         if(((southEastOne(bitBoardArray[P]) | southWestOne(bitBoardArray[P])) & targetSquares) != 0) return true; 
     }
 
-
+    
     int knightSquare = 0;
     while(knights != 0){
         knightSquare = popLsb(knights);
         if((knightmask[knightSquare] & targetSquares) != 0) return true;
     }
+    
 
     if((kingMask[popLsb(king)] & targetSquares) != 0) return true;
 
