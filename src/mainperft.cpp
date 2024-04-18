@@ -5,11 +5,14 @@
 #include "test.h"
 #include <chrono>
 
+int64_t Perft::invalidMoves = 0;
+
 int main(int, char**) {
 
     std::cout << "Starting Perft" << std::endl;
 
     std::vector<TestDefinition> testVector;
+    
     testVector.push_back({4,197281 + 8902 + 400 + 20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",true});
     testVector.push_back({3,97862+2039+48, "Position 2 - chessprogramming.org", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ",true});
     testVector.push_back({5,4865609+197281+8902+400+20," Position 1  - chess programming Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",true});

@@ -16,8 +16,14 @@ struct PerftResults {
     unsigned long long checkmate = 0;
 };
 
+
+
 class Perft {
     public:
+
+        static int64_t invalidMoves;
+
+
         static unsigned long long perft(Board &board, int depth){
             
             if(depth == 0){
@@ -32,6 +38,7 @@ class Perft {
                     nrOfNodes += perft(board, depth-1);
                 } else {
                     nrOfNodes--;
+                    invalidMoves++;
                 }
 
                 board.revertLastMove();               

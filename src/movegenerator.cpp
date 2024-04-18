@@ -13,12 +13,11 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
     generatePawnMoves(board,moveList);
 }
 
-void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
+void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList)
 {
-    BitBoard pawns;
-
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece;
+    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::P + board.getSideToMove());
+    BitBoard pawns = board.getBitboard(movedPiece);
     BitBoardEnum sideToMove = board.getSideToMove();
     BitBoard enemyBoard = board.getEnemyBoard();
 
@@ -27,103 +26,121 @@ void MoveGenerator::generatePawnMoves(Board &board, MoveList &moveList)
     int pawnCaptureLeftIncrement = 7;
     int pawnCaptureRightIncrement = 9;
     int enPassantIncrement = -8;
-    BitBoard doublePushRank = board.Rank2Mask;
+    BitBoard doublePushRank = board.Rank3Mask;
     BitBoard promotionRank = board.Rank8Mask;
 
-
-    BitBoardEnum queenPromo = BitBoardEnum::Q;
-    BitBoardEnum bishopPromo = BitBoardEnum::B;
-    BitBoardEnum knightPromo = BitBoardEnum::N;
-    BitBoardEnum rookPromo = BitBoardEnum::R;
-
-
-    if(sideToMove == BitBoardEnum::White){
-        pawns = board.getBitboard(BitBoardEnum::P);
-        movedPiece = BitBoardEnum::P;
-    } else {
-        pawns = board.getBitboard(BitBoardEnum::p);
-        movedPiece = BitBoardEnum::p;
-
+    if (sideToMove == BitBoardEnum::Black) {
         pawnDoubleIncrement = -16;
         pawnIncrement = -8;
         pawnCaptureLeftIncrement = -7;
         pawnCaptureRightIncrement = -9;
-        
-        doublePushRank = board.Rank7Mask;
+        doublePushRank = board.Rank6Mask;
         promotionRank = board.Rank1Mask;
+    }
 
-        queenPromo = BitBoardEnum::q;
-        bishopPromo = BitBoardEnum::b;
-        knightPromo = BitBoardEnum::n;
-        rookPromo = BitBoardEnum::r;
-    }    
-    
-    int fromSq = board.popLsb(pawns);
-    while (fromSq != 0)
-    {        
-        int toSq = fromSq+pawnIncrement;
-        BitBoard fromSqBoard = board.sqBB[fromSq];
+    BitBoardEnum queenPromo = static_cast<BitBoardEnum>(BitBoardEnum::Q + board.getSideToMove());
+    BitBoardEnum bishopPromo = static_cast<BitBoardEnum>(BitBoardEnum::B + board.getSideToMove());
+    BitBoardEnum knightPromo = static_cast<BitBoardEnum>(BitBoardEnum::N + board.getSideToMove());
+    BitBoardEnum rookPromo = static_cast<BitBoardEnum>(BitBoardEnum::R + board.getSideToMove());
 
-        if((board.sqBB[toSq] & allPieces) == 0){            
-            if((board.sqBB[toSq] & promotionRank) != 0){
-                moveList.moves[moveList.counter++] = {fromSq,toSq,false,queenPromo,false,false,false,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,false,rookPromo,false,false,false,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,false,knightPromo,false,false,false,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,false,bishopPromo,false,false,false,movedPiece};
-            } else {
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false, BitBoardEnum::All,false, false,false,movedPiece};
-            }
-            
-        }
-        
-        if((fromSqBoard & doublePushRank) != 0){
-            //Two squares forward from starting position
-            toSq =fromSq+pawnDoubleIncrement;
+    BitBoard singlePush = 0;
+    BitBoard doublePush = 0;
+    BitBoard promotions = 0;
+    BitBoard nwAttacks = 0;
+    BitBoard neAttacks = 0;
+    BitBoard promoNWAttacks = 0;
+    BitBoard promoNEAttacks = 0;
 
-            if((board.sqBB[toSq] & allPieces) == 0 && (board.sqBB[fromSq+pawnIncrement] & allPieces) == 0){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,true,false,false,movedPiece};
-            }
-        }
 
-        //Capture
-        
-        BitBoard attack = 0;   
+    if (board.getSideToMove() == White) {
+        singlePush = (pawns << 8) & ~allPieces;
+        doublePush = ((singlePush & doublePushRank) << 8) & ~allPieces;
 
-        if(sideToMove == BitBoardEnum::White){
-            attack = enemyBoard & (board.southEastOne(fromSqBoard) | board.southWestOne(fromSqBoard));
-        } else {            
-            attack = enemyBoard & (board.northEastOne(fromSqBoard) | board.northWestOne(fromSqBoard));
-        }
+        neAttacks = ((pawns & ~board.FileHMask) << 7) & enemyBoard;
+        nwAttacks = ((pawns & ~board.FileAMask) << 9) & enemyBoard;
+    }
+    else {
+        singlePush = (pawns >> 8) & ~allPieces;
+        doublePush = ((singlePush & doublePushRank) >> 8) & ~allPieces;
+        neAttacks = ((pawns & ~board.FileAMask) >> 7) & enemyBoard;
+        nwAttacks = ((pawns & ~board.FileHMask) >> 9) & enemyBoard;
+    }
 
-        while(attack != 0){
-            toSq = board.popLsb(attack);
+    promotions = (singlePush & promotionRank);
+    singlePush &= ~promotionRank;
+    promoNEAttacks = (neAttacks & promotionRank);
+    promoNWAttacks = (nwAttacks & promotionRank);
+    neAttacks &= ~promotionRank;
+    nwAttacks &= ~promotionRank;
 
-            if((board.sqBB[toSq] & promotionRank) != 0){
-                moveList.moves[moveList.counter++] = {fromSq,toSq,true,queenPromo,false,false,false,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,true,rookPromo,false,false,false,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,true,knightPromo,false,false,false,movedPiece};
-                moveList.moves[moveList.counter++] = {fromSq,toSq,true,bishopPromo,false,false,false,movedPiece};
-            } else {
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,BitBoardEnum::All,false,false,false,movedPiece};
-            }
-        }
+    //Single push
+    int square = 0;
+    while (singlePush) {
+        square = board.popLsb(singlePush);
+        moveList.moves[moveList.counter++] = { square - pawnIncrement,square, false, BitBoardEnum::All,false, false,false,movedPiece };
+    }
 
-        if(board.getEnPassantSq() != Board::noSq){
+    while (doublePush) {
+        square = board.popLsb(doublePush);
+        moveList.moves[moveList.counter++] = { square - pawnDoubleIncrement,square, false, BitBoardEnum::All,true, false,false,movedPiece };
+    }
+
+    while (promotions) {
+        square = board.popLsb(promotions);
+        moveList.moves[moveList.counter++] = { square - pawnIncrement,square,false,queenPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnIncrement,square,false,rookPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnIncrement,square,false,knightPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnIncrement,square,false,bishopPromo,false,false,false,movedPiece };
+    }
+
+    while (nwAttacks) {
+        square = board.popLsb(nwAttacks);
+        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square, true,BitBoardEnum::All,false,false,false,movedPiece };
+    }
+
+    while (neAttacks) {
+        square = board.popLsb(neAttacks);
+        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square, true,BitBoardEnum::All,false,false,false,movedPiece };
+    }
+
+    while (promoNEAttacks) {
+        square = board.popLsb(promoNEAttacks);
+        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square,true,queenPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square,true,rookPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square,true,knightPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square,true,bishopPromo,false,false,false,movedPiece };
+    }
+
+    while (promoNWAttacks) {
+        square = board.popLsb(promoNWAttacks);
+        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square,true,queenPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square,true,rookPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square,true,knightPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square,true,bishopPromo,false,false,false,movedPiece };
+    }
+
+    if (board.getEnPassantSq() != Board::noSq) {
+        int fromSq = board.popLsb(pawns);
+        while (fromSq != 0)
+        {
+            int toSq = fromSq + pawnIncrement;
+            BitBoard fromSqBoard = board.sqBB[fromSq];
             BitBoard attack = 0;
 
-            if(sideToMove == BitBoardEnum::White){
+            if (sideToMove == BitBoardEnum::White) {
                 attack = board.sqBB[board.getEnPassantSq()] & (board.southEastOne(fromSqBoard) | board.southWestOne(fromSqBoard));
-            } else {            
+            }
+            else {
                 attack = board.sqBB[board.getEnPassantSq()] & (board.northEastOne(fromSqBoard) | board.northWestOne(fromSqBoard));
             }
 
-            while(attack != 0){
+            while (attack != 0) {
                 toSq = board.popLsb(attack);
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,BitBoardEnum::All,false,true, false,movedPiece};
+                moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false,true, false,movedPiece };
             }
-        }
 
-        fromSq = board.popLsb(pawns);
+            fromSq = board.popLsb(pawns);
+        }
     }
 }
 
@@ -261,7 +278,6 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
 void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
 {
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
-    BitBoard emptySquares = ~allPieces;
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
     BitBoard king = board.getBitboard(movedPiece);
@@ -270,8 +286,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
     int fromSq = board.popLsb(king);
     BitBoard kingMove = board.getKingMask(fromSq);
 
-    BitBoard enemyKnightAttacks = 0;
-    /*
+
     //Here we can remove at least knight moves
     BitBoard enemyKnights = board.getBitboard(static_cast<BitBoardEnum>(BitBoardEnum::N + board.getOtherSide()));
     int knightSquare = 0;
@@ -283,7 +298,6 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
 
     kingMove &= ~enemyKnightAttacks;
 
-    */
     
     
     

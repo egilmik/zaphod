@@ -18,6 +18,7 @@ TestResult Test::standardTest(TestDefinition definition)
 {
     Board board;
     board.parseFen(definition.fen);
+    Perft::invalidMoves = 0;
     auto start = std::chrono::high_resolution_clock::now();    
     unsigned long long nrOfNodes = Perft::perft(board,definition.depth);
     
@@ -26,6 +27,7 @@ TestResult Test::standardTest(TestDefinition definition)
     int nps = (double)nrOfNodes/((double)duration.count()/(double)1000);
 
     bool expected = (nrOfNodes == definition.expectedNodes);
+    std::cout << "Invalid moves" << Perft::invalidMoves << std::endl;
 
     return {definition.text, expected, duration.count(),nps, nrOfNodes};
 }
