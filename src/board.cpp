@@ -678,8 +678,10 @@ bool Board::makeMove(Move move) {
 
 
     BitBoardEnum attacker = BitBoardEnum::White;
+    int enpassantModifier = -8;
     if(sideToMove == White){
         attacker = Black;
+        enpassantModifier = 8;
     }
     
 
@@ -701,21 +703,12 @@ bool Board::makeMove(Move move) {
 
 
     if(move.capture){
-        if(move.enpassant){
-            if(sideToMove == BitBoardEnum::White){
-                popBit(p,move.toSq-8);
-                popBit(All, move.toSq-8);
-                popBit(Black, move.toSq-8);
-                pieceSquareScore -= Material::pieceSquareScoreArray[p][move.toSq-8];
-
-                hashKey ^= ttable.pieceKeys[p][move.toSq-8];
-            } else {
-                popBit(P, move.toSq+8);
-                popBit(All, move.toSq+8);
-                popBit(White, move.toSq+8);
-                pieceSquareScore -= Material::pieceSquareScoreArray[P][move.toSq+8];
-                hashKey ^= ttable.pieceKeys[P][move.toSq+8];
-            }
+        if(move.enpassant){ 
+            popBit(static_cast<BitBoardEnum>(attacker+P),move.toSq-enpassantModifier);
+            popBit(All, move.toSq-enpassantModifier);
+            popBit(attacker, move.toSq-enpassantModifier);
+            pieceSquareScore -= Material::pieceSquareScoreArray[attacker+P][move.toSq-enpassantModifier];
+            hashKey ^= ttable.pieceKeys[attacker+P][move.toSq-enpassantModifier];
         } else {       
             bitBoardArray[attacker] &= ~sqBB[move.toSq];
             BitBoardEnum capturedPiece = All;
