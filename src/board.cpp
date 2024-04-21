@@ -736,21 +736,22 @@ bool Board::makeMove(Move move) {
         materialScore = Material::getMaterialScore(*this);     
     }
 
-    if(sideToMove == BitBoardEnum::White){
-
-        if(move.doublePawnPush){
-            // Remove the previous enpassantSquare
-            if(enPassantSq != noSq){
-                hashKey ^= ttable.enPassantKeys[enPassantSq];
-            }
-            enPassantSq = move.toSq-8;            
+    if (move.doublePawnPush) {
+        // Remove the previous enpassantSquare
+        if (enPassantSq != noSq) {
             hashKey ^= ttable.enPassantKeys[enPassantSq];
-        } else {
-            if(enPassantSq != noSq){
-                hashKey ^= ttable.enPassantKeys[enPassantSq];
-            }
-            enPassantSq = noSq;
         }
+        enPassantSq = move.toSq - enpassantModifier;
+        hashKey ^= ttable.enPassantKeys[enPassantSq];
+    }
+    else {
+        if (enPassantSq != noSq) {
+            hashKey ^= ttable.enPassantKeys[enPassantSq];
+        }
+        enPassantSq = noSq;
+    }
+
+    if(sideToMove == BitBoardEnum::White){
 
         if(move.castling){
             if(move.toSq == 2){
@@ -785,20 +786,6 @@ bool Board::makeMove(Move move) {
         }
 
     } else {
-
-        if(move.doublePawnPush){
-            // Remove the previous enpassantSquare
-            if(enPassantSq != noSq){
-                hashKey ^= ttable.enPassantKeys[enPassantSq];
-            }
-            enPassantSq = move.toSq + 8;
-            hashKey ^= ttable.enPassantKeys[enPassantSq];
-        } else {
-            if(enPassantSq != noSq){
-                hashKey ^= ttable.enPassantKeys[enPassantSq];
-            }
-            enPassantSq = noSq;
-        }
 
         if(move.castling){
             if(move.toSq == 58) {
