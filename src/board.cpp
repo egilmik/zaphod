@@ -648,11 +648,10 @@ int Board::popLsb(BitBoard& board)
         board &= board - 1;
         return lsb;
     #elif WIN32
-        int lsb = _tzcnt_u64(board);
-        // This is here because all other logic is depdent on getting 0 when there are no more set bits, while _tzcnt_u64 counts trailing zeros
-        if (lsb == 64) lsb = 0;
+        unsigned long idx = 0;
+        _BitScanForward64(&idx, board);
         board &= board - 1;
-        return lsb;
+        return idx;
     #endif
 
 

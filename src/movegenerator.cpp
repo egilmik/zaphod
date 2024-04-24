@@ -120,9 +120,10 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList)
     }
 
     if (board.getEnPassantSq() != Board::noSq) {
-        int fromSq = board.popLsb(pawns);
-        while (fromSq != 0)
+        
+        while (pawns)
         {
+            int fromSq = board.popLsb(pawns);
             int toSq = fromSq + pawnIncrement;
             BitBoard fromSqBoard = board.sqBB[fromSq];
             BitBoard attack = 0;
@@ -139,7 +140,6 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList)
                 moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false,true, false,movedPiece };
             }
 
-            fromSq = board.popLsb(pawns);
         }
     }
 }
@@ -154,7 +154,7 @@ void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList)
 
     
     int fromSq = 0;
-    while (knights!= 0)
+    while (knights)
     {
         fromSq = board.popLsb(knights);
         BitBoard knightMoves = board.getKnightMask(fromSq);
@@ -193,14 +193,14 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList)
     }
 
     int fromSq = 0;
-    while(rooks != 0){
+    while(rooks){
         fromSq = board.popLsb(rooks);
 
         
         BitBoard magicBoard = board.getRookMagics(fromSq);
         int toSq = 0;
 
-        while (magicBoard != 0) {
+        while (magicBoard) {
             toSq = board.popLsb(magicBoard);
             if (board.checkBit(emptySquares, toSq)) {
                 moveList.moves[moveList.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
@@ -222,7 +222,7 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
     BitBoard bishops = board.getBitboard(movedPiece);
 
     int fromSq = 0;
-    while(bishops != 0){
+    while(bishops){
         fromSq = board.popLsb(bishops);
         BitBoard moves = board.getBishopMagics(fromSq);
 
@@ -231,7 +231,7 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList)
 
         int toSq = 0;
         
-        while(silentMoves != 0){
+        while(silentMoves){
             toSq = board.popLsb(silentMoves);
             moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece};
         }
@@ -252,7 +252,7 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
     BitBoard queens = board.getBitboard(movedPiece);
 
     int fromSq = 0;
-    while(queens != 0){
+    while(queens){
         fromSq = board.popLsb(queens);
 
         BitBoard moves = (board.getBishopMagics(fromSq) | board.getRookMagics(fromSq));
@@ -262,12 +262,12 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList)
 
         int toSq = 0;
 
-        while (silentMoves != 0) {
+        while (silentMoves) {
             toSq = board.popLsb(silentMoves);
             moveList.moves[moveList.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
         }
 
-        while (captures != 0) {
+        while (captures) {
             toSq = board.popLsb(captures);
             moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
         }
@@ -302,7 +302,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
     
     
     int toSq = 0;
-    while(kingMove != 0){
+    while(kingMove){
         toSq = board.popLsb(kingMove);
 
 
