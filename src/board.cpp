@@ -698,10 +698,10 @@ bool Board::makeMove(Move move) {
     historyPly++;
 
 
-    BitBoardEnum attacker = BitBoardEnum::White;
+    BitBoardEnum otherSide = BitBoardEnum::White;
     int enpassantModifier = -8;
     if(sideToMove == White){
-        attacker = Black;
+        otherSide = Black;
         enpassantModifier = 8;
     }
     
@@ -709,14 +709,14 @@ bool Board::makeMove(Move move) {
     if (move.capture) {
         if (move.enpassant) {
             BitBoardEnum capturedPiece = mailBoxBoard[move.toSq - enpassantModifier];
-            removePiece(move.toSq - enpassantModifier, attacker);
-            pieceSquareScore -= Material::pieceSquareScoreArray[attacker + P][move.toSq - enpassantModifier];
-            hashKey ^= ttable.pieceKeys[attacker + P][move.toSq - enpassantModifier];
+            removePiece(move.toSq - enpassantModifier, otherSide);
+            pieceSquareScore -= Material::pieceSquareScoreArray[otherSide + P][move.toSq - enpassantModifier];
+            hashKey ^= ttable.pieceKeys[otherSide + P][move.toSq - enpassantModifier];
         }
         else {
 
             BitBoardEnum capturedPiece = mailBoxBoard[move.toSq];
-            removePiece(move.toSq, attacker);
+            removePiece(move.toSq, otherSide);
 
             // Update score for captured piece
             pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][move.fromSq];
@@ -903,7 +903,7 @@ bool Board::makeMove(Move move) {
 
 
 
-    if(isSquareAttacked(bitBoardArray[K+sideToMove], attacker)){
+    if(isSquareAttacked(bitBoardArray[K+sideToMove], otherSide)){
         return false;
     }
     
