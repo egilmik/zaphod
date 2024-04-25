@@ -293,6 +293,23 @@ void Board::clearBoard()
     castleBQ = false;
 }
 
+void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
+{
+    mailBoxBoard[sq] = piece;
+    bitBoardArray[All] |= sqBB[sq];
+    bitBoardArray[piece] |= sqBB[sq];
+    bitBoardArray[color] |= sqBB[sq];
+}
+
+void Board::removePiece(int sq, BitBoardEnum color)
+{
+    bitBoardArray[All] &= ~sqBB[sq];
+    bitBoardArray[color] &= ~sqBB[sq];
+    bitBoardArray[mailBoxBoard[sq]] &= ~sqBB[sq];
+    mailBoxBoard[sq] = All;
+
+}
+
 void Board::parseFen(std::string fen){
     clearBoard();
     int count = 0;
@@ -569,13 +586,16 @@ void Board::parseFenPosition(char value, int &count)
     } else { 
 
         if (fenToEnumBoardMap.find(value) != fenToEnumBoardMap.end()){
-            setBit(fenToEnumBoardMap.at(value),bitNr);
-            setBit(BitBoardEnum::All, bitNr);
-            if(islower(value)){
-                setBit(BitBoardEnum::Black, bitNr);
-            } else {
-                setBit(BitBoardEnum::White, bitNr);
+            BitBoardEnum color;
+            if (islower(value)) {
+                color = Black;
             }
+            else {
+                color = White;
+            }
+            
+            addPiece(bitNr, fenToEnumBoardMap.at(value), color);
+            
             count++;
         } else if(value == '/'){
 
@@ -661,8 +681,10 @@ bool Board::makeMove(Move move) {
 
     MoveStruct *histMove = &moveHistory[historyPly];
     
-    const int size = 15*sizeof(bitBoardArray[0]);
+    int size = 15*sizeof(bitBoardArray[0]);
     std::memcpy(&histMove->bitBoardArrayCopy,&bitBoardArray,size);
+    size = 64 * sizeof(mailBoxBoard[0]);
+    std::memcpy(&histMove->mailBox, &mailBoxBoard, size);
     histMove->sideToMoveCopy = sideToMove;
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleWKCopy = castleWK;
@@ -684,13 +706,28 @@ bool Board::makeMove(Move move) {
     }
     
 
+    if (move.capture) {
+        if (move.enpassant) {
+            BitBoardEnum capturedPiece = mailBoxBoard[move.toSq - enpassantModifier];
+            removePiece(move.toSq - enpassantModifier, attacker);
+            pieceSquareScore -= Material::pieceSquareScoreArray[attacker + P][move.toSq - enpassantModifier];
+            hashKey ^= ttable.pieceKeys[attacker + P][move.toSq - enpassantModifier];
+        }
+        else {
+
+            BitBoardEnum capturedPiece = mailBoxBoard[move.toSq];
+            removePiece(move.toSq, attacker);
+
+            // Update score for captured piece
+            pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][move.fromSq];
+            hashKey ^= ttable.pieceKeys[capturedPiece][move.toSq];
+        }
+        materialScore = Material::getMaterialScore(*this);
+    }
+
     // Pop and set bits in piece and all board
-    bitBoardArray[All] &= ~sqBB[move.fromSq];
-    bitBoardArray[All] |= sqBB[move.toSq];
-    bitBoardArray[move.piece] &= ~sqBB[move.fromSq];
-    bitBoardArray[move.piece] |= sqBB[move.toSq];
-    bitBoardArray[sideToMove] &= ~sqBB[move.fromSq];
-    bitBoardArray[sideToMove] |= sqBB[move.toSq];
+    addPiece(move.toSq, move.piece, sideToMove);
+    removePiece(move.fromSq, sideToMove);
 
     hashKey ^= ttable.pieceKeys[move.piece][move.fromSq];
     hashKey ^= ttable.pieceKeys[move.piece][move.toSq];
@@ -701,39 +738,7 @@ bool Board::makeMove(Move move) {
     pieceSquareScore += Material::pieceSquareScoreArray[move.piece][move.toSq];
 
 
-    if(move.capture){
-        if(move.enpassant){ 
-            popBit(static_cast<BitBoardEnum>(attacker+P),move.toSq-enpassantModifier);
-            popBit(All, move.toSq-enpassantModifier);
-            popBit(attacker, move.toSq-enpassantModifier);
-            pieceSquareScore -= Material::pieceSquareScoreArray[attacker+P][move.toSq-enpassantModifier];
-            hashKey ^= ttable.pieceKeys[attacker+P][move.toSq-enpassantModifier];
-        } else {       
-            bitBoardArray[attacker] &= ~sqBB[move.toSq];
-            BitBoardEnum capturedPiece = All;
-            if((bitBoardArray[P+attacker] & sqBB[move.toSq]) != 0){
-                bitBoardArray[P+attacker] &= ~sqBB[move.toSq];
-                capturedPiece = static_cast<BitBoardEnum>(P+attacker);
-            } else if((bitBoardArray[N+attacker] & sqBB[move.toSq]) != 0){
-                bitBoardArray[N+attacker] &= ~sqBB[move.toSq];
-                capturedPiece = static_cast<BitBoardEnum>(N+attacker);
-            } else if((bitBoardArray[B+attacker] & sqBB[move.toSq]) != 0){
-                bitBoardArray[B+attacker] &= ~sqBB[move.toSq];
-                capturedPiece = static_cast<BitBoardEnum>(B+attacker);
-            } else if((bitBoardArray[R+attacker] & sqBB[move.toSq]) != 0){
-                bitBoardArray[R+attacker] &= ~sqBB[move.toSq];
-                capturedPiece = static_cast<BitBoardEnum>(R+attacker);
-            } else if((bitBoardArray[Q+attacker] & sqBB[move.toSq]) != 0){
-                bitBoardArray[Q+attacker] &= ~sqBB[move.toSq];
-                capturedPiece = static_cast<BitBoardEnum>(Q+attacker);
-            }
-            
-            // Update score for captured piece
-            pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][move.fromSq];        
-            hashKey ^= ttable.pieceKeys[capturedPiece][move.toSq];
-        }   
-        materialScore = Material::getMaterialScore(*this);     
-    }
+    
 
     if (move.doublePawnPush) {
         // Remove the previous enpassantSquare
@@ -754,12 +759,8 @@ bool Board::makeMove(Move move) {
 
         if(move.castling){
             if(move.toSq == 2){
-                popBit(BitBoardEnum::All,0);
-                popBit(BitBoardEnum::White,0);
-                popBit(BitBoardEnum::R, 0);
-                setBit(BitBoardEnum::All,3);
-                setBit(BitBoardEnum::White,3);
-                setBit(BitBoardEnum::R,3);
+                removePiece(0,White);
+                addPiece(3, R, White);
 
                 hashKey ^= ttable.pieceKeys[R][0];
                 hashKey ^= ttable.pieceKeys[R][3];
@@ -769,12 +770,9 @@ bool Board::makeMove(Move move) {
                 pieceSquareScore += Material::pieceSquareScoreArray[R][3];
 
             } else {
-                popBit(BitBoardEnum::All,7);
-                popBit(BitBoardEnum::White,7);
-                popBit(BitBoardEnum::R, 7);
-                setBit(BitBoardEnum::All,5);
-                setBit(BitBoardEnum::White,5);
-                setBit(BitBoardEnum::R,5);
+                removePiece(7, White);
+                addPiece(5, R, White);
+                
                 // Upadet score for rook
                 pieceSquareScore -= Material::pieceSquareScoreArray[R][7];
                 pieceSquareScore += Material::pieceSquareScoreArray[R][5];
@@ -788,12 +786,8 @@ bool Board::makeMove(Move move) {
 
         if(move.castling){
             if(move.toSq == 58) {
-                popBit(BitBoardEnum::All,56);
-                popBit(BitBoardEnum::Black,56);
-                popBit(BitBoardEnum::r, 56);
-                setBit(BitBoardEnum::All,59);
-                setBit(BitBoardEnum::Black,59);
-                setBit(BitBoardEnum::r,59);
+                removePiece(56, Black);
+                addPiece(59, r, White);
 
                 hashKey ^= ttable.pieceKeys[r][56];
                 hashKey ^= ttable.pieceKeys[r][59];
@@ -802,13 +796,9 @@ bool Board::makeMove(Move move) {
                 pieceSquareScore -= Material::pieceSquareScoreArray[R][56];
                 pieceSquareScore += Material::pieceSquareScoreArray[R][59];
             } else {
-                popBit(BitBoardEnum::All,63);
-                popBit(BitBoardEnum::Black,63);
-                popBit(BitBoardEnum::r, 63);
-                setBit(BitBoardEnum::All,61);
-                setBit(BitBoardEnum::Black,61);
-                setBit(BitBoardEnum::r,61);
-
+                removePiece(63, Black);
+                addPiece(61, r, White);
+                
                 hashKey ^= ttable.pieceKeys[r][63];
                 hashKey ^= ttable.pieceKeys[r][61];
 
@@ -929,6 +919,8 @@ void Board::revertLastMove()
 
     int size = 15*sizeof(bitBoardArray[0]);
     std::memcpy(&bitBoardArray,&move->bitBoardArrayCopy,size);
+    size = 64 * sizeof(mailBoxBoard[0]);
+    std::memcpy(mailBoxBoard, &move->mailBox, size);
     sideToMove = move->sideToMoveCopy;
     enPassantSq = move->enPassantSqCopy;
     castleWK = move->castleWKCopy;

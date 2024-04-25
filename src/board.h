@@ -10,6 +10,7 @@
 
 struct MoveStruct {
     BitBoard bitBoardArrayCopy[15];
+    BitBoardEnum mailBox[64];
     BitBoardEnum sideToMoveCopy = BitBoardEnum::White;
     int enPassantSqCopy = -1;
     bool castleWKCopy = true;
@@ -152,6 +153,9 @@ class Board {
         static BitBoard getRankMask(int square);
         static BitBoard getLineMask(int square);
 
+        void addPiece(int sq, BitBoardEnum piece, BitBoardEnum color);
+        void removePiece(int sq, BitBoardEnum color);
+
         void parseFen(std::string fen);
         void printBoard();
         void printBoard(BitBoard board);
@@ -216,6 +220,7 @@ class Board {
         MoveStruct moveHistory[128];
         int historyPly = 0;
         
+        BitBoardEnum mailBoxBoard[64];
         BitBoard bitBoardArray[15];
         BitBoardEnum sideToMove = White;
         int enPassantSq = noSq;
