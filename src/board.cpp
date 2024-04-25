@@ -681,10 +681,10 @@ bool Board::makeMove(Move move) {
 
     MoveStruct *histMove = &moveHistory[historyPly];
     
-    int size = 15*sizeof(bitBoardArray[0]);
-    std::memcpy(&histMove->bitBoardArrayCopy,&bitBoardArray,size);
-    size = 64 * sizeof(mailBoxBoard[0]);
-    std::memcpy(&histMove->mailBox, &mailBoxBoard, size);
+    int sizeBB = 15*sizeof(bitBoardArray[0]);
+    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
+    std::memcpy(&histMove->bitBoardArrayCopy,&bitBoardArray,sizeBB);    
+    std::memcpy(&histMove->mailBox, &mailBoxBoard, sizeMB);
     histMove->sideToMoveCopy = sideToMove;
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleWKCopy = castleWK;
@@ -917,10 +917,10 @@ void Board::revertLastMove()
     historyPly--;
     MoveStruct *move = &moveHistory[historyPly];    
 
-    int size = 15*sizeof(bitBoardArray[0]);
-    std::memcpy(&bitBoardArray,&move->bitBoardArrayCopy,size);
-    size = 64 * sizeof(mailBoxBoard[0]);
-    std::memcpy(mailBoxBoard, &move->mailBox, size);
+    int sizeBB = 15*sizeof(bitBoardArray[0]);
+    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
+    std::memcpy(&bitBoardArray,&move->bitBoardArrayCopy,sizeBB);
+    std::memcpy(&mailBoxBoard, &move->mailBox, sizeMB);
     sideToMove = move->sideToMoveCopy;
     enPassantSq = move->enPassantSqCopy;
     castleWK = move->castleWKCopy;
