@@ -34,7 +34,7 @@ static std::array<BitBoard,64> initInvertedSqToBitMapping(){
 
 void Board::initMagicMasks() {
 
-    for (BitBoard index = 0; index < 64; index++)
+    for (int index = 0; index < 64; index++)
     {
         BitBoard mask = 0;
 
