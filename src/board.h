@@ -176,7 +176,7 @@ class Board {
         BitBoardEnum getPieceOnSquare(int sq);
 
 
-        bool checkSnipers(int sq,BitBoardEnum color);
+        bool Board::checkSnipers(int kingSquare, BitBoardEnum attackerColor);
         BitBoard southOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard northOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard eastOccludedMoves(BitBoard pieces, BitBoard empty);

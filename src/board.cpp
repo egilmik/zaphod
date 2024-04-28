@@ -392,33 +392,28 @@ BitBoard Board::generateHashKey(){
 
 
 
-bool Board::checkSnipers(int sq, BitBoardEnum color)
+bool Board::checkSnipers(int kingSquare, BitBoardEnum attackerColor)
 {
     BitBoard snipers = 0;
 
-    //
-    uint64_t magic = ((getBitboard(All) & rookMask[sq]) * magicNumberRook[sq]) >> magicNumberShiftsRook[sq];
-    BitBoard magicBoard = (*magicMovesRook)[sq][magic] & bitBoardArray[Q+color] & bitBoardArray[R+color];
+    // Rook and Queen
+    uint64_t magic = (rookMask[kingSquare] * magicNumberRook[kingSquare]) >> magicNumberShiftsRook[kingSquare];
+    BitBoard boardQR = (*magicMovesRook)[kingSquare][magic] & (bitBoardArray[Q+attackerColor] | bitBoardArray[R+attackerColor]);
 
 
-    // For bishop
-    //uint64_t magic = ((getBitboard(All) & rookMask[sq]) * magicNumberRook[sq]) >> magicNumberShiftsRook[sq];
-    //BitBoard magicBoard = (*magicMovesRook)[sq][magic];
+    // For bishop and queen
+    magic = (bishopMask[kingSquare] * magicNumberBishop[kingSquare]) >> magicNumberShiftsBishop[kingSquare];
+    BitBoard boardQB = (*magicMovesBishop)[kingSquare][magic] & (bitBoardArray[Q + attackerColor] | bitBoardArray[B + attackerColor]);
 
-    BitBoard bishopsBoard = 0;
-    setBit(bishopsBoard, sq);
-
-    BitBoard moves = northEastOccludedMoves(bishopsBoard, ~bitBoardArray[All]);
-    moves |= northWestccludedMoves(bishopsBoard, ~bitBoardArray[All]);
-    moves |= southEastOccludedMoves(bishopsBoard, ~bitBoardArray[All]);
-    moves |= southWestOccludedMoves(bishopsBoard, ~bitBoardArray[All]);
+    /*
+    BitBoard moves = northEastOccludedMoves(sqBB[sq], ~bitBoardArray[All]);
+    moves |= northWestccludedMoves(sqBB[sq], ~bitBoardArray[All]);
+    moves |= southEastOccludedMoves(sqBB[sq], ~bitBoardArray[All]);
+    moves |= southWestOccludedMoves(sqBB[sq], ~bitBoardArray[All]);
     moves &= bitBoardArray[Q + color] & bitBoardArray[B + color];
+    */
 
-    if ((moves == 0) && (magicBoard == 0)) {
-        return false;
-    }
-
-    return true;
+    return (boardQB | boardQR) != 0;
 
 }
 
