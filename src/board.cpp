@@ -79,6 +79,16 @@ void Board::initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* 
 
     std::array<BitBoard, 4096> occupancy{};
     std::array<BitBoard, 4096> attackSet{};
+    std::array<BitBoard, 64> rookMagicStart{};
+    rookMagicStart = {36028901172019232,18023263326183424,9007886516619266,9011666154947074,20266206980212740,720716884428980258,36591749136842762,
+                        72058438544916736,4512396831887616,87995558404098,77691493766660352,43980738003072,141905786570768,5070964808253464,
+                        158331834466817,36046389746115600,18014948267425810,1161964163179221504,36187135351458048,905223662575027232,564049532749824,1152922604185714824,
+                        4611690429363523712,1136895090327875,162199957477007408,2326566877011968,283674136285312,17596481282050,4611967802776485890,
+                        9228157116357810178,72620546142109953,2269396831600704,16176948004534616096,18014948401094658,578730145377027072,1130323724206096,
+                        35253225816384,1100049563664,282024736719113,70369318797440,36169681609981952,576478387977061376,1125934270777856,8933599101186,
+                        3458768911900622980,562952369471489,1892640084159697024,9223377268704411649,18019896352849992,35529043353620,9223654062125482144,281543700516880,
+                        1153488857203737088,70918533808256,549761319456,71470405386816,72568052678690,162129623093625601,106108274348042,577595586010711297,
+                        4908928026778026497,71571402166274,2305852114812862980,5915373099352450 };
 
 
     std::mt19937_64 rng(std::random_device{}());
@@ -122,7 +132,11 @@ void Board::initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* 
             size++;
         } while (n);
 
-        BitBoard magicNumber = 0;
+        //Generate first magic or use already known from array
+        BitBoard magicNumber = distribution(rng) & distribution(rng) & distribution(rng) & distribution(rng);;
+        if (isRook) {
+            magicNumber = rookMagicStart[square];
+        }
         int attempts = 0;
 
         bool fail = false;
@@ -131,10 +145,8 @@ void Board::initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* 
 
         do
         {
-            // Make sure 
-            //for (magicNumber = 0; countSetBits((rookMask[square] * magicNumber) >> magicShift) < 6; )
-            magicNumber = 0;
-            while (magicNumber == 0) {
+            // First time we might already know the magic from the array
+            if (attempts > 0) {
                 magicNumber = distribution(rng) & distribution(rng) & distribution(rng) & distribution(rng); // generate a random number with not many bits set
             }
             
@@ -166,7 +178,7 @@ void Board::initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* 
             }
         } while (fail);
         magicNumberArray[square] = magicNumber;
-        std::cout << magicNumber << std::endl;
+        //std::cout << magicNumber << std::endl;
         magicShiftArray[square] = magicShift;
 
     }
