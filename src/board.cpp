@@ -392,17 +392,17 @@ BitBoard Board::generateHashKey(){
 
 
 
-bool Board::checkSnipers(int kingSquare, BitBoardEnum attackerColor)
+BitBoard Board::getSnipers(int kingSquare, BitBoardEnum attackerColor)
 {
     BitBoard snipers = 0;
 
     // Rook and Queen
-    uint64_t magic = (rookMask[kingSquare] * magicNumberRook[kingSquare]) >> magicNumberShiftsRook[kingSquare];
+    uint64_t magic = ((rookMask[kingSquare] & bitBoardArray[attackerColor]) * magicNumberRook[kingSquare]) >> magicNumberShiftsRook[kingSquare];
     BitBoard boardQR = (*magicMovesRook)[kingSquare][magic] & (bitBoardArray[Q+attackerColor] | bitBoardArray[R+attackerColor]);
 
 
     // For bishop and queen
-    magic = (bishopMask[kingSquare] * magicNumberBishop[kingSquare]) >> magicNumberShiftsBishop[kingSquare];
+    magic = ((bishopMask[kingSquare] & bitBoardArray[attackerColor]) * magicNumberBishop[kingSquare]) >> magicNumberShiftsBishop[kingSquare];
     BitBoard boardQB = (*magicMovesBishop)[kingSquare][magic] & (bitBoardArray[Q + attackerColor] | bitBoardArray[B + attackerColor]);
 
     /*
@@ -413,7 +413,7 @@ bool Board::checkSnipers(int kingSquare, BitBoardEnum attackerColor)
     moves &= bitBoardArray[Q + color] & bitBoardArray[B + color];
     */
 
-    return (boardQB | boardQR) != 0;
+    return (boardQB | boardQR);
 
 }
 

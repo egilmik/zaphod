@@ -80,14 +80,14 @@ TEST(BoardTest, rookOccupancyMask) {
 TEST(BoardTest, OneBlackBishopSniperPinnedPawn) {
     Board board;
     board.parseFen("rnbqk1nr/pppp1ppp/8/4p3/1b2P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1");
-    bool hasSnipers = board.checkSnipers(4, Black); // King square
-    EXPECT_TRUE(hasSnipers);
+    BitBoard hasSnipers = board.getSnipers(4, Black); // King square
+    EXPECT_TRUE(hasSnipers > 0);
 }
 
 
 TEST(BoardTest, NoSniper) {
     Board board;
     board.parseFen("rnbqk1nr/pppp1ppp/8/2b1p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1");
-    bool hasSnipers = board.checkSnipers(4, Black); // King square
-    EXPECT_FALSE(hasSnipers);
+    BitBoard hasSnipers = board.getSnipers(4, Black); // King square
+    EXPECT_TRUE(hasSnipers == 0);
 }
