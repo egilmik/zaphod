@@ -166,6 +166,7 @@ void Board::initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* 
             }
         } while (fail);
         magicNumberArray[square] = magicNumber;
+        std::cout << magicNumber << std::endl;
         magicShiftArray[square] = magicShift;
 
     }

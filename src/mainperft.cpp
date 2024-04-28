@@ -1,11 +1,6 @@
-#include <iostream>
-#include "board.h"
-#include "movegenerator.h"
-#include "perft.h"
+#include <iostream>"
 #include "test.h"
-#include <chrono>
 
-int64_t Perft::invalidMoves = 0;
 
 int main(int, char**) {
 
