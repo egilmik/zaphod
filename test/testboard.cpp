@@ -81,7 +81,16 @@ TEST(BoardTest, OneBlackBishopSniperPinnedPawn) {
     Board board;
     board.parseFen("rnbqk1nr/pppp1ppp/8/4p3/1b2P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1");
     BitBoard hasSnipers = board.getSnipers(4, Black); // King square
-    EXPECT_TRUE(hasSnipers > 0);
+    ;
+    EXPECT_TRUE(board.countSetBits(hasSnipers) == 1);
+}
+
+TEST(BoardTest, OneBlackBishopAndQueenSniper) {
+    Board board;
+    board.parseFen("rnb1k1nr/ppppqp1p/6p1/8/1bN1P3/8/PPPP1PPP/RNBQKB1R w KQkq - 0 1");
+    BitBoard hasSnipers = board.getSnipers(4, Black); // King square
+    ;
+    EXPECT_TRUE(board.countSetBits(hasSnipers) == 2);
 }
 
 
