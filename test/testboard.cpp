@@ -100,3 +100,22 @@ TEST(BoardTest, NoSniper) {
     BitBoard hasSnipers = board.getSnipers(4, Black); // King square
     EXPECT_TRUE(hasSnipers == 0);
 }
+
+TEST(BoardTest, SquareBetweenSameRank) {
+    Board board;
+    BitBoard between = board.sqBetween[8][24];
+    BitBoard testBoard = 0;
+    board.setBit(testBoard, 16);
+    EXPECT_EQ(between, testBoard);
+}
+
+TEST(BoardTest, SquareBetweenDiagonal) {
+    Board board;
+    BitBoard between = board.sqBetween[8][53];
+    BitBoard testBoard = 0;
+    board.setBit(testBoard, 17);
+    board.setBit(testBoard, 26);
+    board.setBit(testBoard, 35);
+    board.setBit(testBoard, 44);
+    EXPECT_EQ(between, testBoard);
+}

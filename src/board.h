@@ -42,6 +42,8 @@ class Board {
         static constexpr BitBoard Rank7Mask = Rank1Mask << (8 * 6);
         static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
 
+        static constexpr std::array<BitBoard, 8> rankArray = { Rank1Mask,Rank2Mask,Rank3Mask,Rank4Mask,Rank5Mask,Rank6Mask,Rank7Mask,Rank8Mask};
+
         // Converst a square to unit64 with the appropriate bits set.
         static constexpr BitBoard sqBB[64] = {1,
                                         2,  
@@ -110,6 +112,9 @@ class Board {
                                     };
         static const std::array<BitBoard,64> knightmask;
         static const std::array<BitBoard,64> kingMask;
+        std::array<std::array<BitBoard, 64>, 64> sqBetween{};
+
+        void initSqBetween();
 
         static const int noSq = -1;
         

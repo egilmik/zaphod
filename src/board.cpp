@@ -32,6 +32,34 @@ static std::array<BitBoard,64> initInvertedSqToBitMapping(){
     return mapping;
 }
 
+void Board::initSqBetween(){
+
+    for (int sq1 = 0; sq1 < 64; sq1++) {
+        for (int sq2 = 0; sq2 < 64; sq2++) {
+            BitBoard squares = sqBB[sq1] | sqBB[sq2];
+
+
+            //Following code is from https://www.chessprogramming.org/Square_Attacked_By#cite_note-5
+            const BitBoard m1 = BitBoard(-1);
+            const BitBoard a2a7 = BitBoard(0x0001010101010100);
+            const BitBoard b2g7 = BitBoard(0x0040201008040200);
+            const BitBoard h1b7 = BitBoard(0x0002040810204080); /* Thanks Dustin, g2b7 did not work for c1-a3 */
+            BitBoard btwn, line, rank, file;
+
+            btwn = (m1 << sq1) ^ (m1 << sq2);
+            file = (sq2 & 7) - (sq1 & 7);
+            rank = ((sq2 | 7) - sq1) >> 3;
+            line = ((file & 7) - 1) & a2a7; /* a2a7 if same file */
+            line += 2 * (((rank & 7) - 1) >> 58); /* b1g1 if same rank */
+            line += (((rank - file) & 15) - 1) & b2g7; /* b2g7 if same diagonal */
+            line += (((rank + file) & 15) - 1) & h1b7; /* h1b7 if same antidiag */
+            line *= btwn & -btwn; /* mul acts like shift by smaller square */
+            sqBetween[sq1][sq2] =  line & btwn;   /* return the bits on that line in-between */                              
+
+        }
+    }
+}
+
 void Board::initMagicMasks() {
 
     for (int index = 0; index < 64; index++)
@@ -252,7 +280,6 @@ static std::array<BitBoard,64> initKnightMask()
 
 }
 
-
 const std::array<BitBoard,64> Board::kingMask = initKingMask();
 const std::array<BitBoard,64> Board::knightmask = initKnightMask();
 
@@ -267,7 +294,7 @@ Board::Board(){
     magicMovesBishop = new std::array<std::array<BitBoard, 4096>, 64>();
     initMagics(true, magicMovesRook, rookMask, magicNumberRook, magicNumberShiftsRook);
     initMagics(false, magicMovesBishop, bishopMask, magicNumberBishop, magicNumberShiftsBishop);
-
+    initSqBetween();
 }
 
 
@@ -417,14 +444,6 @@ BitBoard Board::getSnipers(int kingSquare, BitBoardEnum attackerColor)
     // For bishop and queen
     magic = ((bishopMask[kingSquare] & bitBoardArray[attackerColor]) * magicNumberBishop[kingSquare]) >> magicNumberShiftsBishop[kingSquare];
     BitBoard boardQB = (*magicMovesBishop)[kingSquare][magic] & (bitBoardArray[Q + attackerColor] | bitBoardArray[B + attackerColor]);
-
-    /*
-    BitBoard moves = northEastOccludedMoves(sqBB[sq], ~bitBoardArray[All]);
-    moves |= northWestccludedMoves(sqBB[sq], ~bitBoardArray[All]);
-    moves |= southEastOccludedMoves(sqBB[sq], ~bitBoardArray[All]);
-    moves |= southWestOccludedMoves(sqBB[sq], ~bitBoardArray[All]);
-    moves &= bitBoardArray[Q + color] & bitBoardArray[B + color];
-    */
 
     return (boardQB | boardQR);
 
