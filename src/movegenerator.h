@@ -15,7 +15,7 @@ class MoveGenerator {
         void static generateKnightMoves(Board &board, MoveList &moveList, BitBoard pinned);
         void static generateRookMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare);
         void static generateBishopMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
-        void static generateQueenMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare);
+        void static generateQueenMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
         void static generateKingMoves(Board &board, MoveList &moveList);
 
 

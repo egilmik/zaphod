@@ -47,7 +47,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
         generateKnightMoves(board, moveList, pinned);
         generateRookMoves(board, moveList, checkers, kingSquare);
         generateBishopMoves(board, moveList, checkers, kingSquare,pinned,snipers);
-        generateQueenMoves(board, moveList, checkers, kingSquare);
+        generateQueenMoves(board, moveList, checkers, kingSquare, pinned,snipers);
         //Pawns last, to prevent promotions to move twice
         generatePawnMoves(board, moveList);
     }
@@ -327,18 +327,19 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoa
     }
 }
 
-void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare)
+void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::Q + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
     BitBoard queens = board.getBitboard(movedPiece);
 
-    BitBoard inBetween = 0;
+    // Inbetween king and checker
+    BitBoard inBetweenKChecker = 0;
     BitBoard checks = checkers;
 
     while (checks) {
-        inBetween |= board.sqBetween[kingSquare][board.popLsb(checks)];
+        inBetweenKChecker |= board.sqBetween[kingSquare][board.popLsb(checks)];
     }
 
     int fromSq = 0;
@@ -347,9 +348,24 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoar
 
         BitBoard moves = (board.getBishopMagics(fromSq) | board.getRookMagics(fromSq));
 
-        if ((checkers | inBetween) > 0) {
-            moves &= (inBetween | checkers);
+        if ((checkers | inBetweenKChecker) > 0) {
+            moves &= (inBetweenKChecker | checkers);
         }
+
+
+        // We are pinned
+        if ((pinned & board.sqBB[fromSq]) > 0) {
+            BitBoard sniperCopy = snipers;
+            while (sniperCopy) {
+                int sniperSquare = board.popLsb(sniperCopy);
+                BitBoard inBetween = board.sqBetween[kingSquare][sniperSquare] & board.sqBB[fromSq];
+                if (inBetween > 0) {
+                    inBetween = board.sqBetween[kingSquare][sniperSquare] | board.sqBB[sniperSquare];
+                    moves &= inBetween;
+                }
+            }
+        }
+
 
         BitBoard captures = moves & enemyBoard;
         BitBoard silentMoves = moves & emptySquares;
