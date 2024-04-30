@@ -18,7 +18,12 @@ TestResult Test::standardTest(TestDefinition definition)
 {
     Board board;
     board.parseFen(definition.fen);
-    Perft::invalidMoves = 0;
+    Perft::invalidPMove = 0;
+    Perft::invalidBMove = 0;
+    Perft::invalidRMove = 0;
+    Perft::invalidQMove = 0;
+    Perft::invalidNMove = 0;
+    Perft::invalidKMove = 0;
     auto start = std::chrono::high_resolution_clock::now();    
     unsigned long long nrOfNodes = Perft::perft(board,definition.depth);
     
@@ -27,7 +32,12 @@ TestResult Test::standardTest(TestDefinition definition)
     int nps = (double)nrOfNodes/((double)duration.count()/(double)1000);
 
     bool expected = (nrOfNodes == definition.expectedNodes);
-    std::cout << "Invalid moves" << Perft::invalidMoves << std::endl;
+    std::cout << "Invalid moves Pawn: " << Perft::invalidPMove << std::endl;
+    std::cout << "Invalid moves Queen: " << Perft::invalidQMove << std::endl;
+    std::cout << "Invalid moves Bishop: " << Perft::invalidBMove << std::endl;
+    std::cout << "Invalid moves Rook: " << Perft::invalidRMove << std::endl;
+    std::cout << "Invalid moves Knight: " << Perft::invalidNMove << std::endl;
+    std::cout << "Invalid moves King: " << Perft::invalidKMove << std::endl;
 
     return {definition.text, expected, duration.count(),nps, nrOfNodes};
 }

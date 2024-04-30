@@ -21,7 +21,12 @@ struct PerftResults {
 class Perft {
     public:
 
-        static int64_t invalidMoves;
+        static int64_t invalidPMove;
+        static int64_t invalidBMove;
+        static int64_t invalidQMove;
+        static int64_t invalidKMove;
+        static int64_t invalidNMove;
+        static int64_t invalidRMove;
 
 
         static unsigned long long perft(Board &board, int depth){
@@ -38,7 +43,21 @@ class Perft {
                     nrOfNodes += perft(board, depth-1);
                 } else {
                     nrOfNodes--;
-                    invalidMoves++;
+                    BitBoardEnum pcs = moveList.moves[i].piece;
+                    if(pcs == P || pcs == p) invalidPMove++;
+                    if (pcs == B || pcs == b) {
+                        //board.printBoard();
+                        invalidBMove++;
+                    }
+                    if (pcs == R || pcs == r) {
+                        board.printBoard();
+                        invalidRMove++;
+                    }
+                    if (pcs == Q || pcs == q) invalidQMove++;
+                    if (pcs == K || pcs == k) invalidKMove++;
+                    if (pcs == N || pcs == n) {
+                        invalidNMove++;
+                    }
                 }
 
                 board.revertLastMove();               

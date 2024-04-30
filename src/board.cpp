@@ -929,7 +929,10 @@ bool Board::makeMove(Move move) {
     }
 
 
-
+    if (move.piece == B + sideToMove || move.piece == R + sideToMove) {
+        changeSideToMove();
+        return true;
+    }
     if(isSquareAttacked(bitBoardArray[K+sideToMove], otherSide)){
         return false;
     }
@@ -965,7 +968,7 @@ bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker
     BitBoard queenRooks = bitBoardArray[Q+attacker] | bitBoardArray[R+attacker];
     BitBoard queenBishops = bitBoardArray[Q+attacker] | bitBoardArray[B+attacker];
     BitBoard knights = bitBoardArray[N+attacker];
-    BitBoard king = bitBoardArray[K+attacker];;
+    BitBoard king = bitBoardArray[K+attacker];
 
     if(attacker == BitBoardEnum::Black){
         if(((northWestOne(bitBoardArray[p]) | northEastOne(bitBoardArray[p])) & targetSquares) != 0) return true;         
