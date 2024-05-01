@@ -59,6 +59,7 @@ class Perft {
                     if (pcs == Q || pcs == q) invalidQMove++;
                     if (pcs == K || pcs == k) invalidKMove++;
                     if (pcs == N || pcs == n) {
+                        board.printBoard();
                         invalidNMove++;
                     }
                 }

@@ -44,7 +44,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
 
 
     if (board.countSetBits(checkers) < 2) {
-        generateKnightMoves(board, moveList, pinned);
+        generateKnightMoves(board, moveList, checkers, kingSquare, pinned, snipers);
         generateRookMoves(board, moveList, checkers, kingSquare);
         generateBishopMoves(board, moveList, checkers, kingSquare,pinned,snipers);
         generateQueenMoves(board, moveList, checkers, kingSquare, pinned,snipers);
@@ -252,7 +252,7 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
 }
 
 
-void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoard pinned)
+void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::N + board.getSideToMove());
@@ -260,12 +260,23 @@ void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoa
     BitBoard knights = board.getBitboard(movedPiece) & ~pinned;
 
 
+    BitBoard inBetween = 0;
+    BitBoard checks = checkers;
+
+    while (checks) {
+        inBetween |= board.sqBetween[kingSquare][board.popLsb(checks)];
+    }
+
     
     int fromSq = 0;
     while (knights)
     {
         fromSq = board.popLsb(knights);
         BitBoard knightMoves = board.getKnightMask(fromSq);
+
+        if ((checkers | inBetween) > 0) {
+            knightMoves &= (inBetween | checkers);
+        }
 
         int toSq = 0;
 
