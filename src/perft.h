@@ -44,7 +44,10 @@ class Perft {
                 } else {
                     nrOfNodes--;
                     BitBoardEnum pcs = moveList.moves[i].piece;
-                    if(pcs == P || pcs == p) invalidPMove++;
+                    if (pcs == P || pcs == p) {
+                        board.printBoard();
+                        invalidPMove++;
+                    }
                     if (pcs == B || pcs == b) {
                         //board.printBoard();
                         invalidBMove++;

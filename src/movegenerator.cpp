@@ -49,18 +49,27 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
         generateBishopMoves(board, moveList, checkers, kingSquare,pinned,snipers);
         generateQueenMoves(board, moveList, checkers, kingSquare, pinned,snipers);
         //Pawns last, to prevent promotions to move twice
-        generatePawnMoves(board, moveList);
+        generatePawnMoves(board, moveList,checkers,kingSquare,pinned,snipers);
     }
     generateKingMoves(board, moveList);
 }
 
-void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList)
+void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::P + board.getSideToMove());
     BitBoard pawns = board.getBitboard(movedPiece);
     BitBoardEnum sideToMove = board.getSideToMove();
     BitBoard enemyBoard = board.getEnemyBoard();
+
+    BitBoard pinnedPawn = pawns & pinned;
+    pawns &= ~pinnedPawn;
+
+    if (pinnedPawn > 0) {
+        //board.printBoard(pawns);
+        //board.printBoard(pinnedPawn);
+        int x = 0;
+    }
 
     int pawnIncrement = 8;
     int pawnDoubleIncrement = 16;
@@ -92,20 +101,61 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList)
     BitBoard promoNWAttacks = 0;
     BitBoard promoNEAttacks = 0;
 
+    //Checking pinned pieces individually
+    BitBoard pinnedPawnSinglePush = 0;
+    BitBoard pinnedDoublePush = 0;
+    BitBoard pinnedNEAttack = 0;
+    BitBoard pinnedNWAttack = 0;
+
+    BitBoard pinnedCopy = pinned;
+    int pinnedSquare = board.popLsb(pinnedCopy);
 
     if (board.getSideToMove() == White) {
-        singlePush = (pawns << 8) & ~allPieces;
+        singlePush = (pawns << 8) & ~allPieces;        
         doublePush = ((singlePush & doublePushRank) << 8) & ~allPieces;
-
         neAttacks = ((pawns & ~board.FileHMask) << 7) & enemyBoard;
         nwAttacks = ((pawns & ~board.FileAMask) << 9) & enemyBoard;
+
+        pinnedPawnSinglePush = (pinnedPawn << 8) & ~allPieces;
+        pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) << 8) & ~allPieces;
+        pinnedNEAttack = ((pinnedPawn & ~board.FileHMask) << 7) & enemyBoard;
+        pinnedNWAttack = ((pinnedPawn & ~board.FileAMask) << 9) & enemyBoard;
     }
     else {
         singlePush = (pawns >> 8) & ~allPieces;
         doublePush = ((singlePush & doublePushRank) >> 8) & ~allPieces;
         neAttacks = ((pawns & ~board.FileAMask) >> 7) & enemyBoard;
         nwAttacks = ((pawns & ~board.FileHMask) >> 9) & enemyBoard;
+
+        pinnedPawnSinglePush = (pinnedPawn >> 8) & ~allPieces;
+        pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) >> 8) & ~allPieces;
+        pinnedNEAttack = ((pinnedPawn & ~board.FileAMask) >> 7) & enemyBoard;
+        pinnedNWAttack = ((pinnedPawn & ~board.FileHMask) >> 9) & enemyBoard;
     }
+
+    pinnedPawnSinglePush = makeLegalMoves(board, pinnedPawnSinglePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
+    pinnedDoublePush = makeLegalMoves(board, pinnedDoublePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
+    pinnedNEAttack = makeLegalMoves(board, pinnedNEAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
+    pinnedNWAttack = makeLegalMoves(board, pinnedNWAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
+
+    singlePush |= pinnedPawnSinglePush;
+    doublePush |= pinnedDoublePush;
+    neAttacks |= pinnedNEAttack;
+    nwAttacks |= pinnedNWAttack;
+
+    //If in check, only consider moves that capture checker or obstruct the check
+    BitBoard inBetween = 0;
+    BitBoard checks = checkers;
+    while (checks) {
+        inBetween |= board.sqBetween[kingSquare][board.popLsb(checks)];
+    }
+    if ((checkers | inBetween) > 0) {
+        singlePush &= (inBetween | checkers);
+        doublePush &= (inBetween | checkers);
+        neAttacks &= (inBetween | checkers);
+        nwAttacks &= (inBetween | checkers);
+    }
+
 
     promotions = (singlePush & promotionRank);
     singlePush &= ~promotionRank;
@@ -177,8 +227,24 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList)
             }
 
             while (attack != 0) {
+
                 toSq = board.popLsb(attack);
-                moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false,true, false,movedPiece };
+                BitBoard checkers = 0;
+                BitBoard all = board.getBitboard(All);
+                //Removing current attacking pawn and enpassant pawn from board to perform check check
+                BitBoard toBeRemoved = (board.sqBB[fromSq] | board.sqBB[board.getEnPassantSq()- pawnIncrement]);
+
+                all &= ~toBeRemoved;
+                
+                
+                uint64_t magic = ((all & board.rookMask[kingSquare]) * board.magicNumberRook[kingSquare]) >> board.magicNumberShiftsRook[kingSquare];
+                checkers |= (*board.magicMovesRook)[kingSquare][magic] & (board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(R + board.getOtherSide()));
+                magic = ((all & board.bishopMask[kingSquare]) * board.magicNumberBishop[kingSquare]) >> board.magicNumberShiftsBishop[kingSquare];
+                checkers |= (*board.magicMovesBishop)[kingSquare][magic] & (board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(B + board.getOtherSide()));
+
+                if(checkers == 0){
+                    moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false,true, false,movedPiece };
+                }
             }
 
         }
@@ -269,13 +335,7 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList, BitBoard
     }
 }
 
-void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
-{
-    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::B + board.getSideToMove());
-    BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard bishops = board.getBitboard(movedPiece);
-
+BitBoard MoveGenerator::makeLegalMoves(Board &board, BitBoard moves, BitBoard pinned, BitBoard checkers, BitBoard snipers, int fromSq, int kingSquare) {
     // Inbetween king and checker
     BitBoard inBetweenKChecker = 0;
     BitBoard checks = checkers;
@@ -284,28 +344,39 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoa
         inBetweenKChecker |= board.sqBetween[kingSquare][board.popLsb(checks)];
     }
 
+    if ((checkers | inBetweenKChecker) > 0) {
+        moves &= (inBetweenKChecker | checkers);
+    }
+
+
+    // We are pinned
+    if ((pinned & board.sqBB[fromSq]) > 0) {
+        BitBoard sniperCopy = snipers;
+        while (sniperCopy) {
+            int sniperSquare = board.popLsb(sniperCopy);
+            BitBoard inBetween = board.sqBetween[kingSquare][sniperSquare] & board.sqBB[fromSq];
+            if (inBetween > 0) {
+                inBetween = board.sqBetween[kingSquare][sniperSquare] | board.sqBB[sniperSquare];
+                moves &= inBetween;
+            }
+        }
+    }
+    return moves;
+}
+
+void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
+{
+    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
+    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::B + board.getSideToMove());
+    BitBoard enemyBoard = board.getEnemyBoard();
+    BitBoard bishops = board.getBitboard(movedPiece);
+
     int fromSq = 0;
     while(bishops){
         fromSq = board.popLsb(bishops);
         BitBoard moves = board.getBishopMagics(fromSq);
 
-        if ((checkers | inBetweenKChecker) > 0) {
-            moves &= (inBetweenKChecker | checkers);
-        }
-
-
-        // We are pinned
-        if ((pinned & board.sqBB[fromSq]) > 0) {
-            BitBoard sniperCopy = snipers;
-            while (sniperCopy) {
-                int sniperSquare = board.popLsb(sniperCopy);
-                BitBoard inBetween = board.sqBetween[kingSquare][sniperSquare] & board.sqBB[fromSq];
-                if (inBetween > 0) {
-                    inBetween = board.sqBetween[kingSquare][sniperSquare] | board.sqBB[sniperSquare];
-                    moves &= inBetween;
-                }
-            }
-        }
+        moves = makeLegalMoves(board, moves, pinned, checkers, snipers, fromSq, kingSquare);
 
         BitBoard captures = moves & enemyBoard;
         BitBoard silentMoves = moves & emptySquares;
