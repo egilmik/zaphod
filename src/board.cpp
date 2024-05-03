@@ -929,13 +929,12 @@ bool Board::makeMove(Move move) {
     }
 
 
-    if (move.piece == B + sideToMove || move.piece == R + sideToMove) {
-        changeSideToMove();
-        return true;
+    if (move.piece == K + sideToMove || move.piece == k + sideToMove) {
+        if (isSquareAttacked(bitBoardArray[K + sideToMove], otherSide)) {
+            return false;
+        }
     }
-    if(isSquareAttacked(bitBoardArray[K+sideToMove], otherSide)){
-        return false;
-    }
+    
     
 
     changeSideToMove();

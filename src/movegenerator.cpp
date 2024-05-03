@@ -51,7 +51,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
         //Pawns last, to prevent promotions to move twice
         generatePawnMoves(board, moveList,checkers,kingSquare,pinned,snipers);
     }
-    generateKingMoves(board, moveList);
+    generateKingMoves(board, moveList, checkers, kingSquare, pinned, snipers);
 }
 
 void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
@@ -467,7 +467,7 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoar
     }
 }
 
-void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
+void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board.getSideToMove());
@@ -479,6 +479,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
     BitBoard kingMove = board.getKingMask(fromSq);
 
 
+    
     //Here we can remove at least knight moves
     BitBoard enemyKnights = board.getBitboard(static_cast<BitBoardEnum>(BitBoardEnum::N + board.getOtherSide()));
     int knightSquare = 0;
@@ -489,9 +490,28 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList)
     }
 
     kingMove &= ~enemyKnightAttacks;
+    
+    BitBoard all = board.getBitboard(All) & ~board.getBitboard(K + board.getSideToMove());
 
+    BitBoard attacks = 0;
+    BitBoard enemyRooks = board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(R + board.getOtherSide());
+    BitBoard enemyBishops = board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(B + board.getOtherSide());
+
+    while (enemyRooks) {
+        int square = board.popLsb(enemyRooks);
+        uint64_t magic = ((all & board.rookMask[square]) * board.magicNumberRook[square]) >> board.magicNumberShiftsRook[square];
+        attacks |= (*board.magicMovesRook)[square][magic];
+    }
+
+    while (enemyBishops) {
+        int square = board.popLsb(enemyBishops);
+        uint64_t magic = ((all & board.bishopMask[square]) * board.magicNumberBishop[square]) >> board.magicNumberShiftsBishop[square];
+        attacks |= (*board.magicMovesBishop)[square][magic];
+
+    }
     
-    
+
+    kingMove &= ~attacks;
     
     int toSq = 0;
     while(kingMove){
