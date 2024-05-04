@@ -288,6 +288,10 @@ Board::Board(){
         bitBoardArray[i] = 0;
     }
 
+    for (int i = 0; i < 64; i++) {
+        mailBoxBoard[i] = All;
+    }
+
     ttable.initKeys();
     initMagicMasks();
     magicMovesRook = new std::array<std::array<BitBoard, 4096>, 64>();
@@ -743,9 +747,17 @@ bool Board::makeMove(Move move) {
         else {
 
             BitBoardEnum capturedPiece = mailBoxBoard[move.toSq];
+            if (capturedPiece == All) {
+                printBoard();
+                printBoard(getBitboard(getOtherSide()));
+                int x = 0;
+            }
+
             removePiece(move.toSq, otherSide);
 
             // Update score for captured piece
+            
+
             pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][move.fromSq];
             hashKey ^= ttable.pieceKeys[capturedPiece][move.toSq];
         }
@@ -926,14 +938,13 @@ bool Board::makeMove(Move move) {
             hashKey ^= ttable.castlingRightsKeys[2];
             castleBK = false;
         }
-    }
+    }    
 
 
-    if (move.piece == K + sideToMove || move.piece == k + sideToMove) {
-        if (isSquareAttacked(bitBoardArray[K + sideToMove], otherSide)) {
-            return false;
-        }
+    if (isSquareAttacked(bitBoardArray[K + sideToMove], otherSide)) {
+        return false;
     }
+
     
     
 

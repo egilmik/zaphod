@@ -58,7 +58,7 @@ class Perft {
                     }
                     if (pcs == Q || pcs == q) invalidQMove++;
                     if (pcs == K || pcs == k) {
-                        //board.printBoard();
+                        board.printBoard();
                         invalidKMove++;
 
                     }
@@ -67,6 +67,8 @@ class Perft {
                         board.printBoard();
                         invalidNMove++;
                     }
+
+                    
                 }
 
                 board.revertLastMove();               

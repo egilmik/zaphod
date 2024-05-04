@@ -175,6 +175,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
         if(valid){            
             score = -quinesence(board,-beta,-alpha,depth++);
         }
+        else {
+            board.printBoard();
+            int x = 0;
+        }
 
         if(score > alpha){
             alpha = score;

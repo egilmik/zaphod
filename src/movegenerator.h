@@ -13,13 +13,13 @@ class MoveGenerator {
     private:
         void static generatePawnMoves(Board &board,MoveList &moveList,BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
         void static generateKnightMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
-        void static generateRookMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare);
+        void static generateRookMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
         void static generateBishopMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
         void static generateQueenMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
         void static generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
 
         BitBoard static makeLegalMoves(Board& board, BitBoard moves, BitBoard pinned, BitBoard checkers, BitBoard snipers, int fromSq, int kingSquare);
-
+        BitBoard static pawnAttacks(Board& board, BitBoardEnum color);
 
 };
 
