@@ -39,40 +39,9 @@ class Perft {
             MoveGenerator::generateMoves(board,moveList);
             unsigned long long nrOfNodes = moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
-                if(board.makeMove(moveList.moves[i])){
-                    nrOfNodes += perft(board, depth-1);
-                } else {
-                    nrOfNodes--;
-                    BitBoardEnum pcs = moveList.moves[i].piece;
-                    if (pcs == P || pcs == p) {
-                        board.printBoard();
-                        invalidPMove++;
-                    }
-                    if (pcs == B || pcs == b) {
-                        //board.printBoard();
-                        invalidBMove++;
-                    }
-                    if (pcs == R || pcs == r) {
-                        board.printBoard();
-                        invalidRMove++;
-                    }
-                    if (pcs == Q || pcs == q) invalidQMove++;
-                    if (pcs == K || pcs == k) {
-                        board.printBoard();
-                        invalidKMove++;
-
-                    }
-                        
-                    if (pcs == N || pcs == n) {
-                        board.printBoard();
-                        invalidNMove++;
-                    }
-
-                    
-                }
-
-                board.revertLastMove();               
-                
+                board.makeMove(moveList.moves[i]);
+                nrOfNodes += perft(board, depth-1);
+                board.revertLastMove();
             }
             return nrOfNodes;
         }

@@ -77,33 +77,29 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
     for (int i = 0; i < moveList.counter; i++) {
         Move move = moveList.moves[i];
-        if (board.makeMove(move)) {
-            score = -negamax(board, depth - 1, -beta, -alpha);
-            if (score >= beta) {
-                board.revertLastMove();
-                /*
-                if (it == transpositionMap.end() || it->second.depth < depth) {
-                    transpositionMap[key] = { move, TEType::lower, depth, beta };
-                }
-                */
+        board.makeMove(move);
+        score = -negamax(board, depth - 1, -beta, -alpha);
+        if (score >= beta) {
+            board.revertLastMove();
+            /*
+            if (it == transpositionMap.end() || it->second.depth < depth) {
+                transpositionMap[key] = { move, TEType::lower, depth, beta };
+            }
+            */
                 
-                return beta;
-            }
-
-            if (score > alpha) {
-                alpha = score;
-                alphaMove = move;
-                if (depth == currentTargetDepth) {
-                    bestMove.bestMove = move;
-                    bestMove.score = alpha;
-                    bestMove.depth = depth;
-                }
-            }
-
+            return beta;
         }
-        else {
-            validMoves--;
+
+        if (score > alpha) {
+            alpha = score;
+            alphaMove = move;
+            if (depth == currentTargetDepth) {
+                bestMove.bestMove = move;
+                bestMove.score = alpha;
+                bestMove.depth = depth;
+            }
         }
+
         board.revertLastMove();
     }
 

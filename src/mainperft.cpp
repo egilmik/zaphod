@@ -18,7 +18,7 @@ int main(int, char**) {
     
     testVector.push_back({6,119060324+4865609+197281+8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",true});
     
-    //testVector.push_back({7,3195901860+119060324+4865609+197281+8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",true});
+    testVector.push_back({7,3195901860+119060324+4865609+197281+8902+400+20,"Starting position","rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",true});
 
 
 

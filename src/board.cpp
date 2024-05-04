@@ -930,16 +930,8 @@ bool Board::makeMove(Move move) {
             hashKey ^= ttable.castlingRightsKeys[2];
             castleBK = false;
         }
-    }    
-
-
-    if (isSquareAttacked(bitBoardArray[K + sideToMove], otherSide)) {
-        return false;
-    }
-
+    } 
     
-    
-
     changeSideToMove();
     return true;
 }
