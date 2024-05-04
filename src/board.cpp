@@ -5,6 +5,7 @@
 #include "material.h"
 #include <array>
 #include <random>
+#include "tools.h"
 
 static std::array<BitBoard,64> initSqToBitMapping(){
     std::array<BitBoard, 64> mapping;
@@ -709,7 +710,7 @@ int Board::popLsb(BitBoard& board)
 }
 
 bool Board::makeMove(Move move) {
-
+    
     MoveStruct *histMove = &moveHistory[historyPly];
     
     int sizeBB = 15*sizeof(bitBoardArray[0]);
@@ -745,19 +746,10 @@ bool Board::makeMove(Move move) {
             hashKey ^= ttable.pieceKeys[otherSide + P][move.toSq - enpassantModifier];
         }
         else {
-
             BitBoardEnum capturedPiece = mailBoxBoard[move.toSq];
-            if (capturedPiece == All) {
-                printBoard();
-                printBoard(getBitboard(getOtherSide()));
-                int x = 0;
-            }
-
             removePiece(move.toSq, otherSide);
 
             // Update score for captured piece
-            
-
             pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][move.fromSq];
             hashKey ^= ttable.pieceKeys[capturedPiece][move.toSq];
         }
@@ -826,7 +818,7 @@ bool Board::makeMove(Move move) {
         if(move.castling){
             if(move.toSq == 58) {
                 removePiece(56, Black);
-                addPiece(59, r, White);
+                addPiece(59, r, Black);
 
                 hashKey ^= ttable.pieceKeys[r][56];
                 hashKey ^= ttable.pieceKeys[r][59];
@@ -836,7 +828,7 @@ bool Board::makeMove(Move move) {
                 pieceSquareScore += Material::pieceSquareScoreArray[R][59];
             } else {
                 removePiece(63, Black);
-                addPiece(61, r, White);
+                addPiece(61, r, Black);
                 
                 hashKey ^= ttable.pieceKeys[r][63];
                 hashKey ^= ttable.pieceKeys[r][61];
