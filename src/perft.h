@@ -38,6 +38,9 @@ class Perft {
             MoveList moveList;
             MoveGenerator::generateMoves(board,moveList);
             unsigned long long nrOfNodes = moveList.counter;
+            if (depth == 1) {
+                return nrOfNodes;
+            }
             for(int i = 0; i < moveList.counter; i++){
                 board.makeMove(moveList.moves[i]);
                 nrOfNodes += perft(board, depth-1);
