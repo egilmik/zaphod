@@ -129,7 +129,7 @@ TEST_F(TranspositionTableTest, castlingGivesCorrectIncrementalHashKeyWhiteKingSi
     Board board1;    
     board1.parseFen("rnb1k1nr/ppp1bppp/3p4/4q3/2B1P3/5N2/PPP2PPP/RNBQK2R w KQkq - 2 6");
 
-    Move move1 = {4,7,false,BitBoardEnum::All,false,false,true,BitBoardEnum::K};   
+    Move move1 = {4,6,false,BitBoardEnum::All,false,false,true,BitBoardEnum::K};   
 
     board1.makeMove(move1);
     
