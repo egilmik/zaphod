@@ -53,6 +53,8 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
         generatePawnMoves(board, moveList,checkers,kingSquare,pinned,snipers);
     }
     generateKingMoves(board, moveList, checkers, kingSquare, pinned, snipers);
+
+    board.setLegalMovesForSideToMove(moveList.counter);
 }
 
 void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)

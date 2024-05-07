@@ -218,6 +218,20 @@ class Board {
 
         TranspositionTable ttable;
 
+        void setLegalMovesForSideToMove(int moves) {
+            if (sideToMove == White) {
+                legalMovesWhite = moves;
+            }
+            else {
+                legalMovesBlack = moves;
+            }
+        }
+
+        //Returns diff between legal moves, white is positive and black negative.
+        int getMobilityDiff() {
+            return legalMovesWhite - legalMovesBlack;
+        }
+
     private:
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
@@ -235,6 +249,8 @@ class Board {
         bool castleBQ = false;
         int pieceSquareScore = 0;
         int materialScore = 0;
+        int legalMovesWhite = 0;
+        int legalMovesBlack = 0;
         BitBoard hashKey = 0;
         
 
