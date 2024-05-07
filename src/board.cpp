@@ -1008,13 +1008,7 @@ bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker
 
 BitBoardEnum Board::getPieceOnSquare(int sq)
 {
-    for (int i = 0; i < 14; i++) {
-        if (i != BitBoardEnum::Black && i != BitBoardEnum::White && (bitBoardArray[i] & sqBB[sq]) != 0) {
-            return static_cast<BitBoardEnum>(i);
-        }
-    }
-    return BitBoardEnum::All;
-
+    return mailBoxBoard[sq];
 }
 
 void Board::printBoard(){
