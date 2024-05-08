@@ -120,21 +120,24 @@ class Perft {
             results.nodes += moveList.counter;
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
+                bool capture = board.getPieceOnSquare(move.to()) != All;
                 bool valid = board.makeMove(move);
                 if(valid){
                     perftWithStats(board, depth-1,results);
-                    if(move.capture){
+                    
+                    if(capture){
                         results.captures +=1;
                     } 
-                    if(move.castling){
+                    if(move.getMoveType() == CASTLING){
                         results.castle += 1;
                     } 
-                    if(move.enpassant){
+                    if(move.getMoveType() == EN_PASSANT){
                         results.enPassant += 1;
                     } 
-                    if(move.promotion != BitBoardEnum::All){
+                    if(move.getMoveType() == PROMOTION){
                         results.promotions += 1;
                     }
+                    
                     //board.printBoard();
                     //std::cout << board.sqToNotation[move.fromSq] << "" << board.sqToNotation[move.toSq] << std::endl;
                 } else {
@@ -163,25 +166,19 @@ class Perft {
 
         static std::string getNotation(Move move){
             std::string promotion = "";
+            BitBoardEnum promotionPiece = move.getPromotionType(White);
+
             
-                if(move.promotion == BitBoardEnum::Q){
+                if(promotionPiece == BitBoardEnum::Q){
                     promotion = "Q";
-                } else if (move.promotion == BitBoardEnum::q){
-                    promotion = "q";
-                } else if (move.promotion == BitBoardEnum::B){
+                } else if (promotionPiece == BitBoardEnum::B){
                     promotion = "B";
-                } else if (move.promotion == BitBoardEnum::b){
-                    promotion = "b";
-                } else if (move.promotion == BitBoardEnum::r){
-                    promotion = "r";
-                } else if (move.promotion == BitBoardEnum::R){
+                } else if (promotionPiece == BitBoardEnum::R){
                     promotion = "R";
-                } else if (move.promotion == BitBoardEnum::n){
-                    promotion = "n";
-                } else if (move.promotion == BitBoardEnum::N){
+                } else if (promotionPiece == BitBoardEnum::N){
                     promotion = "N";
                 }
-            return Board::sqToNotation[move.fromSq] + Board::sqToNotation[move.toSq] + promotion;
+            return Board::sqToNotation[move.from()] + Board::sqToNotation[move.to()] + promotion;
         }
 };
 

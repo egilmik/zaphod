@@ -157,7 +157,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
     MoveList moveListReduced;
     MoveGenerator::generateMoves(board,moveList);
     for(int i = 0; i < moveList.counter; i++){
-        if(moveList.moves[i].capture  || moveList.moves[i].promotion != BitBoardEnum::All) {
+        if(board.getPieceOnSquare(moveList.moves[i].to()) != All || moveList.moves[i].getMoveType() == PROMOTION) {
             moveListReduced.moves[moveListReduced.counter++] = moveList.moves[i];
         }
     }
@@ -207,12 +207,12 @@ void Search::sortMoveList(Board &board, MoveList &list)
         entry.move = list.moves[i];
         if(it != transpositionMap.end() && equal(list.moves[i], it->second.bestMove)){
             entry.score = 10000;
-        } else if(entry.move.promotion != BitBoardEnum::All) {
+        } else if(entry.move.getMoveType() == PROMOTION) {
             entry.score = 1000;
-        } else if(entry.move.capture){
-            BitBoardEnum capturedPiece = board.getPieceOnSquare(entry.move.toSq);
-            BitBoardEnum attacker = entry.move.piece;
-            if (entry.move.enpassant) {
+        } else if(board.getPieceOnSquare(entry.move.to()) != All ){
+            BitBoardEnum capturedPiece = board.getPieceOnSquare(entry.move.to());
+            BitBoardEnum attacker = board.getPieceOnSquare(entry.move.from());
+            if (entry.move.getMoveType() == EN_PASSANT) {
                 capturedPiece = P;
             }
             int Mvv = Material::getMaterialScore(capturedPiece);
@@ -247,8 +247,8 @@ int Search::evaluate(Board &board)
 
 bool Search::equal(Move &a, Move &b)
 {
-    return (a.fromSq == b.fromSq &&
-            a.toSq == b.toSq);
+    return (a.from() == b.from() &&
+            a.to() == b.to());
 }
 
 MoveList Search::reconstructPV(Board& board, int depth)

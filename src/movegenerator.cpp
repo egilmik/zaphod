@@ -171,46 +171,46 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
     int square = 0;
     while (singlePush) {
         square = board.popLsb(singlePush);
-        moveList.moves[moveList.counter++] = { square - pawnIncrement,square, false, BitBoardEnum::All,false, false,false,movedPiece };
+        moveList.moves[moveList.counter++] = Move::make<NORMAL>(square - pawnIncrement,square);
     }
 
     while (doublePush) {
         square = board.popLsb(doublePush);
-        moveList.moves[moveList.counter++] = { square - pawnDoubleIncrement,square, false, BitBoardEnum::All,true, false,false,movedPiece };
+        moveList.moves[moveList.counter++] = Move::make<NORMAL>(square - pawnDoubleIncrement, square);
     }
 
     while (promotions) {
         square = board.popLsb(promotions);
-        moveList.moves[moveList.counter++] = { square - pawnIncrement,square,false,queenPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnIncrement,square,false,rookPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnIncrement,square,false,knightPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnIncrement,square,false,bishopPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnIncrement, square, Q);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnIncrement, square, B);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnIncrement, square, R);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnIncrement, square, N);
     }
 
     while (nwAttacks) {
         square = board.popLsb(nwAttacks);
-        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square, true,BitBoardEnum::All,false,false,false,movedPiece };
-    }
+        moveList.moves[moveList.counter++] = Move::make<NORMAL>(square - pawnCaptureRightIncrement, square);
+    };
 
     while (neAttacks) {
         square = board.popLsb(neAttacks);
-        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square, true,BitBoardEnum::All,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = Move::make<NORMAL>(square - pawnCaptureLeftIncrement, square);
     }
 
     while (promoNEAttacks) {
         square = board.popLsb(promoNEAttacks);
-        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square,true,queenPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square,true,rookPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square,true,knightPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnCaptureLeftIncrement,square,true,bishopPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, Q);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, B);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, R);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, N);
     }
 
     while (promoNWAttacks) {
         square = board.popLsb(promoNWAttacks);
-        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square,true,queenPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square,true,rookPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square,true,knightPromo,false,false,false,movedPiece };
-        moveList.moves[moveList.counter++] = { square - pawnCaptureRightIncrement,square,true,bishopPromo,false,false,false,movedPiece };
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, Q);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, B);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, R);
+        moveList.moves[moveList.counter++] = Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, N);
     }
 
     if (board.getEnPassantSq() != Board::noSq) {
@@ -246,7 +246,7 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
                 checkers |= (*board.magicMovesBishop)[kingSquare][magic] & (board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(B + board.getOtherSide()));
 
                 if(checkers == 0){
-                    moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false,true, false,movedPiece };
+                    moveList.moves[moveList.counter++] = Move::make<MoveType::EN_PASSANT>(fromSq, toSq);
                 }
             }
 
@@ -301,12 +301,12 @@ void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoa
         while(knightMoves != 0){
             toSq = board.popLsb(knightMoves);
             if(!board.checkBit(allPieces,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece};
+                moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
             }
 
             
             if(board.checkBit(enemyBoard,toSq)){
-                moveList.moves[moveList.counter++] = {fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece};
+                moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
             }
            
         }
@@ -335,11 +335,11 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList, BitBoard
         while (magicBoard) {
             toSq = board.popLsb(magicBoard);
             if (board.checkBit(emptySquares, toSq)) {
-                moveList.moves[moveList.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
+                moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
                 
             }
             else if (board.checkBit(enemyBoard, toSq)) {
-                moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
+                moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
                 
             }
         }
@@ -398,12 +398,12 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoa
         
         while(silentMoves){
             toSq = board.popLsb(silentMoves);
-            moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece};
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
 
         while (captures!= 0) {
             toSq = board.popLsb(captures);
-            moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
         
     }
@@ -437,12 +437,12 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoar
 
         while (silentMoves) {
             toSq = board.popLsb(silentMoves);
-            moveList.moves[moveList.counter++] = { fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece };
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
 
         while (captures) {
             toSq = board.popLsb(captures);
-            moveList.moves[moveList.counter++] = { fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece };
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
         
     }
@@ -502,9 +502,9 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
 
         
         if(!board.checkBit(allPieces,toSq)){
-            moveList.moves[moveList.counter++] = {fromSq,toSq, false,BitBoardEnum::All,false, false,false,movedPiece};
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         } else if(board.checkBit(enemyBoard,toSq)){
-            moveList.moves[moveList.counter++] = {fromSq,toSq, true,BitBoardEnum::All,false, false,false,movedPiece};
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
         
     }
@@ -515,7 +515,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
             board.setBit(castlineSquares, 5);
             board.setBit(castlineSquares, 6);
             if ((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::Black)) {
-                moveList.moves[moveList.counter++] = { fromSq,fromSq + 2,false,BitBoardEnum::All,false,false,true,movedPiece };
+                moveList.moves[moveList.counter++] = Move::make<CASTLING>(fromSq, fromSq+2);
             }  //f1,g1;
         }
         if (board.getCastleRightsWQ()) {
@@ -527,7 +527,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
             board.setBit(emptySquaresWQ, 1);
 
             if ((allPieces & emptySquaresWQ) == 0 && !board.isSquareAttacked(checkSquaresWQ | board.sqBB[fromSq], BitBoardEnum::Black)) {
-                moveList.moves[moveList.counter++] = { fromSq,fromSq - 2,false,BitBoardEnum::All,false,false,true,movedPiece };
+                moveList.moves[moveList.counter++] = Move::make<CASTLING>(fromSq, fromSq - 2);
             }  //b1,c1,d1;
         }
     }
@@ -537,7 +537,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
             board.setBit(castlineSquares, 61);
             board.setBit(castlineSquares, 62);
             if ((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::White)) {
-                moveList.moves[moveList.counter++] = { fromSq,fromSq + 2,false,BitBoardEnum::All,false,false,true,movedPiece };
+                moveList.moves[moveList.counter++] = Move::make<CASTLING>(fromSq, fromSq + 2);
             }
         }
         if (board.getCastleRightsBQ()) {
@@ -548,7 +548,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
             BitBoard emptySquaresBQ = checkSquaresBQ;
             board.setBit(emptySquaresBQ, 57);
             if ((allPieces & emptySquaresBQ) == 0 && !board.isSquareAttacked(checkSquaresBQ | board.sqBB[fromSq], BitBoardEnum::White)) {
-                moveList.moves[moveList.counter++] = { fromSq,fromSq - 2,false,BitBoardEnum::All,false,false,true,movedPiece };
+                moveList.moves[moveList.counter++] = Move::make<CASTLING>(fromSq, fromSq - 2);
             }
         }
     }
