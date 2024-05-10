@@ -449,6 +449,8 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
     BitBoard king = board.getBitboard(movedPiece);
+    BitBoard otherKingBoard = board.getBitboard(K + board.getOtherSide());
+    int otherKingSq = board.popLsb(otherKingBoard);
     BitBoardEnum sideToMove = board.getSideToMove();
 
     int fromSq = board.popLsb(king);
@@ -466,6 +468,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
     }
 
     kingMove &= ~enemyKnightAttacks;
+    kingMove &= ~board.getKingMask(otherKingSq);
     
     BitBoard all = board.getBitboard(All) & ~board.getBitboard(K + board.getSideToMove());
 
@@ -483,7 +486,6 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
         int square = board.popLsb(enemyBishops);
         uint64_t magic = ((all & board.bishopMask[square]) * board.magicNumberBishop[square]) >> board.magicNumberShiftsBishop[square];
         attacks |= (*board.magicMovesBishop)[square][magic];
-
     }
     
     attacks |= pawnAttacks(board, board.getOtherSide());
