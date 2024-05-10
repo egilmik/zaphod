@@ -99,46 +99,50 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
     BitBoard promoNWAttacks = 0;
     BitBoard promoNEAttacks = 0;
 
-    //Checking pinned pieces individually
-    BitBoard pinnedPawnSinglePush = 0;
-    BitBoard pinnedDoublePush = 0;
-    BitBoard pinnedNEAttack = 0;
-    BitBoard pinnedNWAttack = 0;
+    
 
     if (board.getSideToMove() == White) {
         singlePush = (pawns << 8) & ~allPieces;        
         doublePush = ((singlePush & doublePushRank) << 8) & ~allPieces;
         neAttacks = ((pawns & ~board.FileHMask) << 7) & enemyBoard;
         nwAttacks = ((pawns & ~board.FileAMask) << 9) & enemyBoard;
-
-        pinnedPawnSinglePush = (pinnedPawns << 8) & ~allPieces;
-        pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) << 8) & ~allPieces;
-        pinnedNEAttack = ((pinnedPawns & ~board.FileHMask) << 7) & enemyBoard;
-        pinnedNWAttack = ((pinnedPawns & ~board.FileAMask) << 9) & enemyBoard;
     }
     else {
         singlePush = (pawns >> 8) & ~allPieces;
         doublePush = ((singlePush & doublePushRank) >> 8) & ~allPieces;
         neAttacks = ((pawns & ~board.FileAMask) >> 7) & enemyBoard;
         nwAttacks = ((pawns & ~board.FileHMask) >> 9) & enemyBoard;
-
-        pinnedPawnSinglePush = (pinnedPawns >> 8) & ~allPieces;
-        pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) >> 8) & ~allPieces;
-        pinnedNEAttack = ((pinnedPawns & ~board.FileAMask) >> 7) & enemyBoard;
-        pinnedNWAttack = ((pinnedPawns & ~board.FileHMask) >> 9) & enemyBoard;
     }
 
      
+    //Checking pinned pieces individually
+    BitBoard pinnedPawnSinglePush = 0;
+    BitBoard pinnedDoublePush = 0;
+    BitBoard pinnedNEAttack = 0;
+    BitBoard pinnedNWAttack = 0;
     int pinnedSquare = 0;
 
     while (pinnedPawns) {
         pinnedSquare = board.popLsb(pinnedPawns);
+        BitBoard pinnedPawnBB = board.sqBB[pinnedSquare];
+
+        if (board.getSideToMove() == White) {
+            pinnedPawnSinglePush = (pinnedPawnBB << 8) & ~allPieces;
+            pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) << 8) & ~allPieces;
+            pinnedNEAttack = ((pinnedPawnBB & ~board.FileHMask) << 7) & enemyBoard;
+            pinnedNWAttack = ((pinnedPawnBB & ~board.FileAMask) << 9) & enemyBoard;
+        }
+        else {
+            pinnedPawnSinglePush = (pinnedPawnBB >> 8) & ~allPieces;
+            pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) >> 8) & ~allPieces;
+            pinnedNEAttack = ((pinnedPawnBB & ~board.FileAMask) >> 7) & enemyBoard;
+            pinnedNWAttack = ((pinnedPawnBB & ~board.FileHMask) >> 9) & enemyBoard;
+        }
         singlePush |= makeLegalMoves(board, pinnedPawnSinglePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
         doublePush |= makeLegalMoves(board, pinnedDoublePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
         neAttacks |= makeLegalMoves(board, pinnedNEAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
         nwAttacks |= makeLegalMoves(board, pinnedNWAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
     }
-
 
     //If in check, only consider moves that capture checker or obstruct the check
     BitBoard inBetween = 0;

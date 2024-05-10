@@ -859,6 +859,9 @@ bool Board::makeMove(Move move) {
         hashKey ^= ttable.pieceKeys[promotionPiece][toSq];
         pieceSquareScore += Material::pieceSquareScoreArray[promotionPiece][toSq];
         materialScore = Material::getMaterialScore(*this);
+        removePiece(toSq,sideToMove);
+        addPiece(toSq, promotionPiece, sideToMove);
+
     }
 
     //TODO Castline status overly complex
