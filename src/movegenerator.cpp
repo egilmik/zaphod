@@ -327,21 +327,21 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList, BitBoard
         fromSq = board.popLsb(rooks);
 
         
-        BitBoard magicBoard = board.getRookMagics(fromSq);
+        BitBoard moves = board.getRookMagics(fromSq);
 
-        magicBoard = makeLegalMoves(board, magicBoard, pinned, checkers, snipers, fromSq, kingSquare);
+        moves = makeLegalMoves(board, moves, pinned, checkers, snipers, fromSq, kingSquare);
+        BitBoard captures = moves & enemyBoard;
+        BitBoard silentMoves = moves & emptySquares;
+
         int toSq = 0;
+        while (silentMoves) {
+            toSq = board.popLsb(silentMoves);
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
+        }
 
-        while (magicBoard) {
-            toSq = board.popLsb(magicBoard);
-            if (board.checkBit(emptySquares, toSq)) {
-                moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-                
-            }
-            else if (board.checkBit(enemyBoard, toSq)) {
-                moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-                
-            }
+        while (captures != 0) {
+            toSq = board.popLsb(captures);
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
     }
 }
