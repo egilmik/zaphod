@@ -58,10 +58,12 @@ class Perft {
             for(int i = 0; i < moveList.counter; i++){
                 Move move = moveList.moves[i];
                 bool valid = board.makeMove(move);
+
                 if(valid){
+                    std::string notation = getNotation(move);
                     unsigned long long nodes = dperftLeafNodeCounter(board, depth-1);
                     divideNodes += nodes;
-                    std::string notation = getNotation(move);
+                    
                     std::cout << notation << ": " << nodes << std::endl;
                 }
 
@@ -71,7 +73,7 @@ class Perft {
             std::cout << "Depth: " << depth << " Count: " << divideNodes << std::endl;
         }
 
-        static unsigned long long dperftLeafNodeCounter(Board board, int depth){
+        static unsigned long long dperftLeafNodeCounter(Board &board, int depth){
             unsigned long long divideNodes = 0;
             
             if(depth == 0){
@@ -100,7 +102,7 @@ class Perft {
         }
 
 
-        static void perftWithStats(Board board, int depth, PerftResults &results){
+        static void perftWithStats(Board &board, int depth, PerftResults &results){
             
             if(depth == 0){
                 return;
@@ -169,15 +171,20 @@ class Perft {
             BitBoardEnum promotionPiece = move.getPromotionType(White);
 
             
-                if(promotionPiece == BitBoardEnum::Q){
-                    promotion = "Q";
-                } else if (promotionPiece == BitBoardEnum::B){
-                    promotion = "B";
-                } else if (promotionPiece == BitBoardEnum::R){
-                    promotion = "R";
-                } else if (promotionPiece == BitBoardEnum::N){
-                    promotion = "N";
-                }
+            if(promotionPiece == BitBoardEnum::Q){
+                promotion = "Q";
+            } else if (promotionPiece == BitBoardEnum::B){
+                promotion = "B";
+            } else if (promotionPiece == BitBoardEnum::R){
+                promotion = "R";
+            } else if (promotionPiece == BitBoardEnum::N){
+                promotion = "N";
+            }
+
+            if (move.getMoveType() != PROMOTION) {
+                promotion = "";
+            }
+
             return Board::sqToNotation[move.from()] + Board::sqToNotation[move.to()] + promotion;
         }
 };

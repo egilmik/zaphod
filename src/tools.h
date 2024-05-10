@@ -13,6 +13,11 @@ public:
 			isConsistent = true;
 		}
 
+		if (checkPiecesAgainstAll(board, White) &&
+			checkPiecesAgainstAll(board, Black)) {
+			isConsistent = true;
+		}
+
 
 		return isConsistent;
 	};
@@ -34,6 +39,28 @@ public:
 			queenBoard == (colorBoard & queenBoard) && 
 			kingBoard == (colorBoard & kingBoard)  &&
 			rookBoard == (colorBoard & rookBoard)) {
+			isConsistent = true;
+		}
+		return isConsistent;
+	}
+
+	static bool checkPiecesAgainstAll(Board& board, BitBoardEnum color) {
+		BitBoard allBoard = board.getBitboard(All);
+		BitBoard pawnBoard = board.getBitboard(P + color);
+		BitBoard knightBoard = board.getBitboard(N + color);
+		BitBoard bishopBoard = board.getBitboard(B + color);
+		BitBoard queenBoard = board.getBitboard(Q + color);
+		BitBoard kingBoard = board.getBitboard(K + color);
+		BitBoard rookBoard = board.getBitboard(R + color);
+
+		bool isConsistent = false;
+
+		if (pawnBoard == (allBoard & pawnBoard) &&
+			knightBoard == (allBoard & knightBoard) &&
+			bishopBoard == (allBoard & bishopBoard) &&
+			queenBoard == (allBoard & queenBoard) &&
+			kingBoard == (allBoard & kingBoard) &&
+			rookBoard == (allBoard & rookBoard)) {
 			isConsistent = true;
 		}
 		return isConsistent;

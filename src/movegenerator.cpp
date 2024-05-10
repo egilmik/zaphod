@@ -65,14 +65,9 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
     BitBoardEnum sideToMove = board.getSideToMove();
     BitBoard enemyBoard = board.getEnemyBoard();
 
-    BitBoard pinnedPawn = pawns & pinned;
-    pawns &= ~pinnedPawn;
+    BitBoard pinnedPawns = pawns & pinned;
+    pawns &= ~pinnedPawns;
 
-    if (pinnedPawn > 0) {
-        //board.printBoard(pawns);
-        //board.printBoard(pinnedPawn);
-        int x = 0;
-    }
 
     int pawnIncrement = 8;
     int pawnDoubleIncrement = 16;
@@ -110,19 +105,16 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
     BitBoard pinnedNEAttack = 0;
     BitBoard pinnedNWAttack = 0;
 
-    BitBoard pinnedCopy = pinned;
-    int pinnedSquare = board.popLsb(pinnedCopy);
-
     if (board.getSideToMove() == White) {
         singlePush = (pawns << 8) & ~allPieces;        
         doublePush = ((singlePush & doublePushRank) << 8) & ~allPieces;
         neAttacks = ((pawns & ~board.FileHMask) << 7) & enemyBoard;
         nwAttacks = ((pawns & ~board.FileAMask) << 9) & enemyBoard;
 
-        pinnedPawnSinglePush = (pinnedPawn << 8) & ~allPieces;
+        pinnedPawnSinglePush = (pinnedPawns << 8) & ~allPieces;
         pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) << 8) & ~allPieces;
-        pinnedNEAttack = ((pinnedPawn & ~board.FileHMask) << 7) & enemyBoard;
-        pinnedNWAttack = ((pinnedPawn & ~board.FileAMask) << 9) & enemyBoard;
+        pinnedNEAttack = ((pinnedPawns & ~board.FileHMask) << 7) & enemyBoard;
+        pinnedNWAttack = ((pinnedPawns & ~board.FileAMask) << 9) & enemyBoard;
     }
     else {
         singlePush = (pawns >> 8) & ~allPieces;
@@ -130,21 +122,23 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
         neAttacks = ((pawns & ~board.FileAMask) >> 7) & enemyBoard;
         nwAttacks = ((pawns & ~board.FileHMask) >> 9) & enemyBoard;
 
-        pinnedPawnSinglePush = (pinnedPawn >> 8) & ~allPieces;
+        pinnedPawnSinglePush = (pinnedPawns >> 8) & ~allPieces;
         pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) >> 8) & ~allPieces;
-        pinnedNEAttack = ((pinnedPawn & ~board.FileAMask) >> 7) & enemyBoard;
-        pinnedNWAttack = ((pinnedPawn & ~board.FileHMask) >> 9) & enemyBoard;
+        pinnedNEAttack = ((pinnedPawns & ~board.FileAMask) >> 7) & enemyBoard;
+        pinnedNWAttack = ((pinnedPawns & ~board.FileHMask) >> 9) & enemyBoard;
     }
 
-    pinnedPawnSinglePush = makeLegalMoves(board, pinnedPawnSinglePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
-    pinnedDoublePush = makeLegalMoves(board, pinnedDoublePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
-    pinnedNEAttack = makeLegalMoves(board, pinnedNEAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
-    pinnedNWAttack = makeLegalMoves(board, pinnedNWAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
+     
+    int pinnedSquare = 0;
 
-    singlePush |= pinnedPawnSinglePush;
-    doublePush |= pinnedDoublePush;
-    neAttacks |= pinnedNEAttack;
-    nwAttacks |= pinnedNWAttack;
+    while (pinnedPawns) {
+        pinnedSquare = board.popLsb(pinnedPawns);
+        singlePush |= makeLegalMoves(board, pinnedPawnSinglePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
+        doublePush |= makeLegalMoves(board, pinnedDoublePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
+        neAttacks |= makeLegalMoves(board, pinnedNEAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
+        nwAttacks |= makeLegalMoves(board, pinnedNWAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
+    }
+
 
     //If in check, only consider moves that capture checker or obstruct the check
     BitBoard inBetween = 0;
@@ -424,11 +418,6 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoar
 
         moves = makeLegalMoves(board, moves, pinned, checkers, snipers, fromSq, kingSquare);
 
-        BitBoard test = board.getBitboard(All) & enemyBoard;
-
-        if (test != enemyBoard) {
-            int x = 0;
-        }
 
         BitBoard captures = moves & enemyBoard;
         BitBoard silentMoves = moves & emptySquares;
@@ -494,6 +483,8 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
     attacks |= pawnAttacks(board, board.getOtherSide());
 
     kingMove &= ~attacks;
+
+    //Remember to ownpieces
     
     int toSq = 0;
     while(kingMove){
