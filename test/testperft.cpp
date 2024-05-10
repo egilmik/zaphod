@@ -58,12 +58,12 @@ TEST_F(PerftTest,Position2ChessProgramming){
     Board board;
     board.parseFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
     PerftResults results;
-    Perft::perftWithStats(board,2,results);
+    Perft::perftWithStats(board,4,results);
 
-    int expectedNodes = 48 + 2039;// +97862 + 4085603;
-    int expectedCaptures = 8 + 351;// +17102 + 757163;
-    int expectedEnPassant = 1;// + 45 +1929;
-    int expectedCastle = 2 + 91;// +3162 + 128013;
+    int expectedNodes = 48 + 2039+97862 + 4085603;
+    int expectedCaptures = 8 + 351 +17102 + 757163;
+    int expectedEnPassant = 1 +45 +1929;
+    int expectedCastle = 2 + 91 +3162 + 128013;
     int expectedPromotions = 15172;
     int expectedCheckMate = 1;//We do not generate moves for the last move, so last depth is not checked+43;
 

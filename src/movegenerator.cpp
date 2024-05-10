@@ -231,7 +231,9 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
                 //Removing current attacking pawn and enpassant pawn from board to perform check check
                 BitBoard toBeRemoved = (board.sqBB[fromSq] | board.sqBB[board.getEnPassantSq()- pawnIncrement]);
 
+                //Remove both pawns from old pos, then add in new pos
                 all &= ~toBeRemoved;
+                all |= board.sqBB[toSq];
                 
                 
                 uint64_t magic = ((all & board.rookMask[kingSquare]) * board.magicNumberRook[kingSquare]) >> board.magicNumberShiftsRook[kingSquare];
