@@ -272,6 +272,7 @@ BitBoard MoveGenerator::pawnAttacks(Board &board, BitBoardEnum color) {
 
 void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
+    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::N + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
@@ -290,25 +291,24 @@ void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoa
     while (knights)
     {
         fromSq = board.popLsb(knights);
-        BitBoard knightMoves = board.getKnightMask(fromSq);
+        BitBoard moves = board.getKnightMask(fromSq);
 
         if ((checkers | inBetween) > 0) {
-            knightMoves &= (inBetween | checkers);
+            moves &= (inBetween | checkers);
         }
 
+        BitBoard captures = moves & enemyBoard;
+        BitBoard silentMoves = moves & emptySquares;
+
         int toSq = 0;
+        while (silentMoves) {
+            toSq = board.popLsb(silentMoves);
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
+        }
 
-        while(knightMoves != 0){
-            toSq = board.popLsb(knightMoves);
-            if(!board.checkBit(allPieces,toSq)){
-                moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-            }
-
-            
-            if(board.checkBit(enemyBoard,toSq)){
-                moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-            }
-           
+        while (captures != 0) {
+            toSq = board.popLsb(captures);
+            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
     }
 }
@@ -445,6 +445,7 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoar
 
 void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
+    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board.getSideToMove());
     BitBoard enemyBoard = board.getEnemyBoard();
@@ -454,7 +455,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
     BitBoardEnum sideToMove = board.getSideToMove();
 
     int fromSq = board.popLsb(king);
-    BitBoard kingMove = board.getKingMask(fromSq);
+    BitBoard moves = board.getKingMask(fromSq);
 
 
     
@@ -467,8 +468,8 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
         enemyKnightAttacks |= board.getKnightMask(knightSquare);
     }
 
-    kingMove &= ~enemyKnightAttacks;
-    kingMove &= ~board.getKingMask(otherKingSq);
+    moves &= ~enemyKnightAttacks;
+    moves &= ~board.getKingMask(otherKingSq);
     
     BitBoard all = board.getBitboard(All) & ~board.getBitboard(K + board.getSideToMove());
 
@@ -490,22 +491,20 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
     
     attacks |= pawnAttacks(board, board.getOtherSide());
 
-    kingMove &= ~attacks;
+    moves &= ~attacks;
 
-    //Remember to ownpieces
-    
+    BitBoard captures = moves & enemyBoard;
+    BitBoard silentMoves = moves & emptySquares;
+
     int toSq = 0;
-    while(kingMove){
-        toSq = board.popLsb(kingMove);
+    while (silentMoves) {
+        toSq = board.popLsb(silentMoves);
+        moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
+    }
 
-
-        
-        if(!board.checkBit(allPieces,toSq)){
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        } else if(board.checkBit(enemyBoard,toSq)){
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-        
+    while (captures != 0) {
+        toSq = board.popLsb(captures);
+        moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
     }
 
     if (sideToMove == BitBoardEnum::White) {
