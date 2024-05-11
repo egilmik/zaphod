@@ -24,7 +24,12 @@ int main(int, char**) {
     benchVector.push_back({ "CCR04","r1bqrnk1/pp2bp1p/2p2np1/3p2B1/3P4/2NBPN2/PPQ2PPP/1R3RK1 w - - 1 12","b2b4" });
     benchVector.push_back({ "CCR05","rnbqkb1r/ppp1pppp/5n2/8/3PP3/2N5/PP3PPP/R1BQKBNR b KQkq - 3 5","e7e5" });
     benchVector.push_back({ "CCR06","rnbq1rk1/pppp1ppp/4pn2/8/1bPP4/P1N5/1PQ1PPPP/R1B1KBNR b KQ - 1 5","b4c3" });
-    //Tar for lang tid benchVector.push_back({ "CCR07","r4rk1/3nppbp/bq1p1np1/2pP4/8/2N2NPP/PP2PPB1/R1BQR1K1 b - - 1 12","f8b8" });
+    benchVector.push_back({ "CCR07","r4rk1/3nppbp/bq1p1np1/2pP4/8/2N2NPP/PP2PPB1/R1BQR1K1 b - - 1 12","f8b8" });
+    benchVector.push_back({ "CCR08","rn1qkb1r/pb1p1ppp/1p2pn2/2p5/2PP4/5NP1/PP2PPBP/RNBQK2R w KQkq c6 1 6","d4d5" });
+    benchVector.push_back({ "CCR09","r1bq1rk1/1pp2pbp/p1np1np1/3Pp3/2P1P3/2N1BP2/PP4PP/R1NQKB1R b KQ - 1 9","c6d4" });
+
+
+
 
     benchVector.push_back({ "Random1","1R6/1brk2p1/4p2p/p1P1Pp2/P7/6P1/1P4P1/2R3K1 w - - 0 1","b8b7" });
     benchVector.push_back({ "Random2","4r1k1/p1qr1p2/2pb1Bp1/1p5p/3P1n1R/1B3P2/PP3PK1/2Q4R w - - 0 1","c1f4" });
@@ -39,9 +44,9 @@ int main(int, char**) {
         std::cout << def.text << " " << def.fen << std::endl;
         Board board;
         board.parseFen(def.fen);
-        int depth = 7;
+        int depth = 100;
         Search search;        
-        Score move = search.search(board, depth,600000);
+        Score move = search.search(board, depth,30000);
 
         MoveList pvList = search.reconstructPV(board,depth);
 
