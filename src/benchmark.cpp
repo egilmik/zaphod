@@ -46,7 +46,7 @@ int main(int, char**) {
         board.parseFen(def.fen);
         int depth = 100;
         Search search;        
-        Score move = search.search(board, depth,30000);
+        Score move = search.search(board, depth,1000000);
 
         MoveList pvList = search.reconstructPV(board,depth);
 

@@ -236,7 +236,7 @@ int Search::evaluate(Board &board)
     evaluatedNodes++;
     int score = board.getPieceSquareScore();
     score += board.getMaterialScore();
-    score += board.getMobilityDiff();
+    //score += board.getMobilityDiff();
 
     if (board.getSideToMove() == BitBoardEnum::Black) {
         return score *= -1;
