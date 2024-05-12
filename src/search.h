@@ -36,6 +36,7 @@ class Search {
         bool isSearchStopped();
         
         int currentFinishedDepth = 0;
+        int maxQuinesenceDepthThisSearch = 0;
 
     private:
 

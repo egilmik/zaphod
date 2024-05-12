@@ -35,7 +35,7 @@ int main(int, char**) {
     benchVector.push_back({ "Random2","4r1k1/p1qr1p2/2pb1Bp1/1p5p/3P1n1R/1B3P2/PP3PK1/2Q4R w - - 0 1","c1f4" });
 
     std::ofstream csvFile("benchmark.csv");
-    csvFile << "id,expMove,selMove,depth,score,elapsedtime,nps,nodes\n";
+    csvFile << "id,status,expMove,selMove,depth,qdepth,score,elapsedtime,nps,nodes\n";
     
     
     for (BenchmarkDefinition def : benchVector) {
@@ -44,7 +44,7 @@ int main(int, char**) {
         std::cout << def.text << " " << def.fen << std::endl;
         Board board;
         board.parseFen(def.fen);
-        int depth = 100;
+        int depth = 7;
         Search search;        
         Score move = search.search(board, depth,1000000);
 
@@ -63,7 +63,7 @@ int main(int, char**) {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         int nps = (double)search.evaluatedNodes / ((double)duration.count() / (double)1000);
         std::cout << status << " Score: " << (double)move.score / 100.0 << " Depth: ";
-        std::cout << move.depth << " NPS: " << nps << " Nodes: " << search.evaluatedNodes << " Playtime " << (duration.count()) << " ms" << std::endl;
+        std::cout << move.depth <<"/"<< search.maxQuinesenceDepthThisSearch << " NPS: " << nps << " Nodes: " << search.evaluatedNodes << " Playtime " << (duration.count()) << " ms" << std::endl;
         std::cout << "Best move " << Perft::getNotation(move.bestMove)  << " Expected best move " << def.bestMove << std::endl;
         std::cout << "TT stats " << " Upper bound hit: " << search.upperBoundHit << " Lower bound hit " << search.lowerBoundHit << " Exact hit " << search.exactHit << std::endl;
         std::cout << "PV ";
@@ -71,8 +71,8 @@ int main(int, char**) {
             std::cout << Perft::getNotation(pvList.moves[i]) << " ";
         }
         //csvFile << "id,expMove,selMove,depth,score,elapsedtime,nps,nodes\n";
-        csvFile << def.text << "," << def.bestMove << "," << Perft::getNotation(move.bestMove);
-        csvFile << "," << move.depth << "," << move.score << "," << duration.count() << "," << nps << "," << search.evaluatedNodes <<"\n";
+        csvFile << def.text << "," << status << "," << def.bestMove << "," << Perft::getNotation(move.bestMove);
+        csvFile << "," << move.depth << "," << search.maxQuinesenceDepthThisSearch << "," << move.score << "," << duration.count() << "," << nps << "," << search.evaluatedNodes << "\n";
 
         std::cout << std::endl;
         std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;

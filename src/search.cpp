@@ -7,6 +7,7 @@
 Score Search::search(Board &board, int maxDepth, int maxTime)
 {    
     maxSearchTime = maxTime;
+    maxQuinesenceDepthThisSearch = 0;
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();;
     int lowerBound = -20000;
     int upperBound = 20000;
@@ -136,6 +137,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
 
     int standPat = evaluate(board);
 
+    if (maxQuinesenceDepthThisSearch < depth) {
+        maxQuinesenceDepthThisSearch = depth;
+    }
+
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
     if (evaluatedNodes % 1000 && isSearchStopped()) {
@@ -149,7 +154,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
         alpha = standPat;
     }
 
-    if (depth > 20) {
+    if (depth > 5) {
         return standPat;
     }
 
@@ -169,7 +174,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
         Move move = moveListReduced.moves[i];
         bool valid = board.makeMove(move);
         if(valid){            
-            score = -quinesence(board,-beta,-alpha,depth++);
+            score = -quinesence(board,-beta,-alpha,depth+1);
         }
         else {
             board.printBoard();
