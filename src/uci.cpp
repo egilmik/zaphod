@@ -24,11 +24,12 @@ void UCI::loop(/*int argc, char* argv[]*/) {
         token.clear(); // Avoid a stale if getline() returns nothing or a blank line
         is >> std::skipws >> token;
         
-        if(token == "quit") break;
-        else if(token == "uci") sendID();
-        else if(token == "position") setPosition(is);
-        else if(token == "go") startSearch(is);
-        else if(token == "isready") std::cout << "readyok" << std::endl;
+        if (token == "quit") break;
+        else if (token == "uci") sendID();
+        else if (token == "position") setPosition(is);
+        else if (token == "go") startSearch(is);
+        else if (token == "isready") std::cout << "readyok" << std::endl;
+        else if (token == "d") motherBoard.printBoard();
 
 
         /*
@@ -98,6 +99,7 @@ void UCI::setPosition(std::istringstream &is)
 
     if(nextToken == "fen"){
         is >> std::skipws >> nextToken;
+        fenString += nextToken + " ";
         while (is >> nextToken && nextToken != "moves"){
             fenString += nextToken + " ";
         }
@@ -116,9 +118,65 @@ void UCI::setPosition(std::istringstream &is)
 
 void UCI::startSearch(std::istringstream &is)
 {
+
+    std::string nextToken;
+    int wTime = 10000;
+    int bTime = 10000;
+
+    while (is >> nextToken) {
+        if (nextToken == "searchmoves") {
+            /*
+            while (is >> nextToken) {
+
+            }
+            */
+
+        }
+        else if (nextToken == "wtime") {
+            is >> nextToken;
+            wTime = stoi(nextToken);
+        }
+        else if (nextToken == "btime") {
+            is >> nextToken;
+            bTime = stoi(nextToken);
+        }
+    }
+    /*
+        else if (token == "winc")
+            is >> limits.inc[WHITE];
+        else if (token == "binc")
+            is >> limits.inc[BLACK];
+        else if (token == "movestogo")
+            is >> limits.movestogo;
+        else if (token == "depth")
+            is >> limits.depth;
+        else if (token == "nodes")
+            is >> limits.nodes;
+        else if (token == "movetime")
+            is >> limits.movetime;
+        else if (token == "mate")
+            is >> limits.mate;
+        else if (token == "perft")
+            is >> limits.perft;
+        else if (token == "infinite")
+            limits.infinite = 1;
+        else if (token == "ponder")
+            ponderMode = true;
+    }
+    */
+    int searchTime = 1200000;
+    /*
+    if (motherBoard.getSideToMove() == White) {
+        searchTime = std::min(searchTime, wTime / 30);
+    }
+    else {
+        searchTime = std::min(searchTime, bTime / 30);
+    }
+    */
+
     Score move;
     Search newSearch;
-    move = newSearch.search(motherBoard,9,18000);
+    move = newSearch.search(motherBoard,100,searchTime);
     std::string bestMove = Perft::getNotation(move.bestMove);
     std::cout << "info depth " << newSearch.currentFinishedDepth << std::endl;
     std::cout << "bestmove " << bestMove << std::endl;

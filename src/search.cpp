@@ -20,7 +20,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         if (stopSearch) {
             break;
         }
-        //std::cout << "info depth " << i << " score cp " << score << " pv " << Perft::getNotation(bestMove.bestMove) << std::endl;
+        std::cout << "info depth " << i << " score cp " << score << " pv " << Perft::getNotation(bestMove.bestMove) << std::endl;
         currentFinishedDepth = i;
     }
  
@@ -42,7 +42,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     
 
     std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
-    /*
     if (it != transpositionMap.end() && it->second.depth >= depth) {
         TEType entryType = it->second.type;
         if (entryType == TEType::exact) {
@@ -61,7 +60,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         if (alpha >= beta) {
             return it->second.score;
         }
-    }*/
+    }
 
     
 
@@ -82,11 +81,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         score = -negamax(board, depth - 1, -beta, -alpha);
         if (score >= beta) {
             board.revertLastMove();
-            /*
             if (it == transpositionMap.end() || it->second.depth < depth) {
                 transpositionMap[key] = { move, TEType::lower, depth, beta };
             }
-            */
                 
             return beta;
         }
@@ -115,12 +112,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     
     //Replace if depth is higher
     if (it == transpositionMap.end() || it->second.depth < depth) {
-        /*/if (alpha <= alphaOrginal) {
-            //transpositionMap[key] = { alphaMove, TEType::upper, depth, alpha };
+        if (alpha <= alphaOrginal) {
+            transpositionMap[key] = { alphaMove, TEType::upper, depth, alpha };
         }
         else if (alpha >= beta) {
-            //transpositionMap[key] = { alphaMove, TEType::lower, depth, alpha };
-        } */
+            transpositionMap[key] = { alphaMove, TEType::lower, depth, alpha };
+        } 
         if (alpha < beta && alpha > alphaOrginal) {
             transpositionMap[key] = { alphaMove, TEType::exact, depth, alpha};
         }

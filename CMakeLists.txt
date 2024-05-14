@@ -48,7 +48,7 @@ enable_testing()
 add_executable(
   zaphod_test
   test/testboard.cpp test/testperft.cpp src/move.h src/bitboard.h test/testtranspositiontable.cpp test/testsearch.cpp test/testuci.cpp src/uci.cpp src/tools.h src/uci.h src/board.h src/board.cpp src/search.h src/search.cpp src/perft.h src/perft.cpp src/movegenerator.cpp src/transpositiontable.h src/movegenerator.h
- "test/testtools.cpp" "test/testmove.cpp")
+ "test/testtools.cpp" "test/testmove.cpp" "test/testmaterial.cpp")
 
 
 

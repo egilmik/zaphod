@@ -754,7 +754,7 @@ bool Board::makeMove(Move move) {
         if (enpassant) {
             capturedPiece = mailBoxBoard[toSq - enpassantModifier];
             removePiece(toSq - enpassantModifier, otherSide);
-            pieceSquareScore -= Material::pieceSquareScoreArray[otherSide + P][toSq - enpassantModifier];
+            pieceSquareScore -= Material::getPieceSquareScore(static_cast<BitBoardEnum>(otherSide + P),(toSq - enpassantModifier));
             hashKey ^= ttable.pieceKeys[otherSide + P][toSq - enpassantModifier];
         }
         else {
@@ -763,7 +763,7 @@ bool Board::makeMove(Move move) {
             removePiece(toSq, otherSide);
 
             // Update score for captured piece
-            pieceSquareScore -= Material::pieceSquareScoreArray[capturedPiece][fromSq];
+            pieceSquareScore -= Material::getPieceSquareScore(capturedPiece,fromSq);
             hashKey ^= ttable.pieceKeys[capturedPiece][toSq];
         }
         materialScore = Material::getMaterialScore(*this);
@@ -778,8 +778,8 @@ bool Board::makeMove(Move move) {
 
 
     // Upadet score for moved piece
-    pieceSquareScore -= Material::pieceSquareScoreArray[piece][fromSq];
-    pieceSquareScore += Material::pieceSquareScoreArray[piece][toSq];
+    pieceSquareScore -= Material::getPieceSquareScore(piece, fromSq);
+    pieceSquareScore += Material::getPieceSquareScore(piece, toSq);
 
 
     if (doublePush) {
@@ -809,16 +809,16 @@ bool Board::makeMove(Move move) {
                 hashKey ^= ttable.pieceKeys[R][3];
 
                 // Upadet score for rook
-                pieceSquareScore -= Material::pieceSquareScoreArray[R][0];
-                pieceSquareScore += Material::pieceSquareScoreArray[R][3];
+                pieceSquareScore -= Material::getPieceSquareScore(R, 0);
+                pieceSquareScore += Material::getPieceSquareScore(R, 3);;
 
             } else {
                 removePiece(7, White);
                 addPiece(5, R, White);
                 
                 // Upadet score for rook
-                pieceSquareScore -= Material::pieceSquareScoreArray[R][7];
-                pieceSquareScore += Material::pieceSquareScoreArray[R][5];
+                pieceSquareScore -= Material::getPieceSquareScore(R, 7);
+                pieceSquareScore += Material::getPieceSquareScore(R, 5);
 
                 hashKey ^= ttable.pieceKeys[R][7];
                 hashKey ^= ttable.pieceKeys[R][5];
@@ -836,8 +836,8 @@ bool Board::makeMove(Move move) {
                 hashKey ^= ttable.pieceKeys[r][59];
 
                 // Upadet score for rook
-                pieceSquareScore -= Material::pieceSquareScoreArray[R][56];
-                pieceSquareScore += Material::pieceSquareScoreArray[R][59];
+                pieceSquareScore -= Material::getPieceSquareScore(r, 56);
+                pieceSquareScore += Material::getPieceSquareScore(r, 59);;
             } else {
                 removePiece(63, Black);
                 addPiece(61, r, Black);
@@ -846,8 +846,8 @@ bool Board::makeMove(Move move) {
                 hashKey ^= ttable.pieceKeys[r][61];
 
                 // Upadet score for rook
-                pieceSquareScore -= Material::pieceSquareScoreArray[R][63];
-                pieceSquareScore += Material::pieceSquareScoreArray[R][61];
+                pieceSquareScore -= Material::getPieceSquareScore(r, 63);
+                pieceSquareScore += Material::getPieceSquareScore(r, 61);
             }
         }
     }   
@@ -855,9 +855,9 @@ bool Board::makeMove(Move move) {
     if(moveType == MoveType::PROMOTION){  
         BitBoardEnum promotionPiece = move.getPromotionType(sideToMove);
         hashKey ^= ttable.pieceKeys[piece][toSq];
-        pieceSquareScore -= Material::pieceSquareScoreArray[piece][toSq];
+        pieceSquareScore -= Material::getPieceSquareScore(piece, toSq);
         hashKey ^= ttable.pieceKeys[promotionPiece][toSq];
-        pieceSquareScore += Material::pieceSquareScoreArray[promotionPiece][toSq];
+        pieceSquareScore += Material::getPieceSquareScore(promotionPiece, toSq);
         materialScore = Material::getMaterialScore(*this);
         removePiece(toSq,sideToMove);
         addPiece(toSq, promotionPiece, sideToMove);
