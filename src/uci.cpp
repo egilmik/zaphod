@@ -123,6 +123,9 @@ void UCI::startSearch(std::istringstream &is)
     int wTime = 10000;
     int bTime = 10000;
 
+    bool fixedSearchTime = false;
+    int searchTime = 12000;
+
     while (is >> nextToken) {
         if (nextToken == "searchmoves") {
             /*
@@ -139,6 +142,11 @@ void UCI::startSearch(std::istringstream &is)
         else if (nextToken == "btime") {
             is >> nextToken;
             bTime = stoi(nextToken);
+        }
+        else if (nextToken == "movetime") {
+            is >> nextToken;
+            searchTime = stoi(nextToken);
+            fixedSearchTime = true;
         }
     }
     /*
@@ -164,21 +172,22 @@ void UCI::startSearch(std::istringstream &is)
             ponderMode = true;
     }
     */
-    int searchTime = 1200000;
-    /*
-    if (motherBoard.getSideToMove() == White) {
-        searchTime = std::min(searchTime, wTime / 30);
+    
+    if(!fixedSearchTime){
+        if (motherBoard.getSideToMove() == White) {
+            searchTime = std::min(searchTime, wTime / 30);
+        }
+        else {
+            searchTime = std::min(searchTime, bTime / 30);
+        }
     }
-    else {
-        searchTime = std::min(searchTime, bTime / 30);
-    }
-    */
+    
 
     Score move;
     Search newSearch;
-    move = newSearch.search(motherBoard,100,searchTime);
+    move = newSearch.search(motherBoard,9,searchTime);
     std::string bestMove = Perft::getNotation(move.bestMove);
-    std::cout << "info depth " << newSearch.currentFinishedDepth << std::endl;
+    //std::cout << "info depth " << newSearch.currentFinishedDepth << std::endl;
     std::cout << "bestmove " << bestMove << std::endl;
 }
 

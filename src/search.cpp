@@ -13,6 +13,10 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     int upperBound = 20000;
     stopSearch = false;
     bool inIteration = true;
+    Score bestScore;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
 
     for (int i = 1; i <= maxDepth; i++) {
         currentTargetDepth = i;
@@ -20,12 +24,18 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         if (stopSearch) {
             break;
         }
-        std::cout << "info depth " << i << " score cp " << score << " pv " << Perft::getNotation(bestMove.bestMove) << std::endl;
+
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000);
+
+        std::cout << "info depth " << i << " score cp " << score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
         currentFinishedDepth = i;
+        bestScore = bestMoveIteration;
     }
  
     
-    return bestMove;
+    return bestScore;
 }
 
 int Search::negamax(Board& board, int depth, int alpha, int beta)
@@ -92,9 +102,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
             alpha = score;
             alphaMove = move;
             if (depth == currentTargetDepth) {
-                bestMove.bestMove = move;
-                bestMove.score = alpha;
-                bestMove.depth = depth;
+                bestMoveIteration.bestMove = move;
+                bestMoveIteration.score = alpha;
+                bestMoveIteration.depth = depth;
             }
         }
 
@@ -102,7 +112,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     }
 
     if (validMoves == 0 && board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
-        alpha = 3000;
+        alpha = -3000;
 
         if (board.getSideToMove() == BitBoardEnum::Black) {
             alpha *= -1;
