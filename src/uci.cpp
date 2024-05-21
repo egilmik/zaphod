@@ -120,12 +120,13 @@ void UCI::startSearch(std::istringstream &is)
 {
 
     std::string nextToken;
-    int wTime = 10000;
-    int bTime = 10000;
+    int wTime = 30000*30;
+    int bTime = 30000*30;
 
     bool fixedSearchTime = false;
-    int searchTime = 12000;
+    int searchTime = 30000;
 
+    //https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
     while (is >> nextToken) {
         if (nextToken == "searchmoves") {
             /*
@@ -149,29 +150,6 @@ void UCI::startSearch(std::istringstream &is)
             fixedSearchTime = true;
         }
     }
-    /*
-        else if (token == "winc")
-            is >> limits.inc[WHITE];
-        else if (token == "binc")
-            is >> limits.inc[BLACK];
-        else if (token == "movestogo")
-            is >> limits.movestogo;
-        else if (token == "depth")
-            is >> limits.depth;
-        else if (token == "nodes")
-            is >> limits.nodes;
-        else if (token == "movetime")
-            is >> limits.movetime;
-        else if (token == "mate")
-            is >> limits.mate;
-        else if (token == "perft")
-            is >> limits.perft;
-        else if (token == "infinite")
-            limits.infinite = 1;
-        else if (token == "ponder")
-            ponderMode = true;
-    }
-    */
     
     if(!fixedSearchTime){
         if (motherBoard.getSideToMove() == White) {

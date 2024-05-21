@@ -16,7 +16,7 @@ struct BenchmarkDefinition {
 int main(int, char**) {
 
     std::vector<BenchmarkDefinition> benchVector;
-
+    /*
     //https://www.chessprogramming.org/CCR_One_Hour_Test
     benchVector.push_back({ "CCR01","rn1qkb1r/pp2pppp/5n2/3p1b2/3P4/2N1P3/PP3PPP/R1BQKBNR w KQkq - 0 1", "d1b3" });
     benchVector.push_back({ "CCR02","rn1qkb1r/pp2pppp/5n2/3p1b2/3P4/1QN1P3/PP3PPP/R1B1KBNR b KQkq - 1 1", "f5c8" });
@@ -34,6 +34,12 @@ int main(int, char**) {
     benchVector.push_back({ "Random1","1R6/1brk2p1/4p2p/p1P1Pp2/P7/6P1/1P4P1/2R3K1 w - - 0 1","b8b7" });
     benchVector.push_back({ "Random2","4r1k1/p1qr1p2/2pb1Bp1/1p5p/3P1n1R/1B3P2/PP3PK1/2Q4R w - - 0 1","c1f4" });
 
+    benchVector.push_back({ "Mate In 3 - 01","8/8/8/8/1p1N4/1Bk1K3/3N4/b7 w - -","d4e6" });
+    benchVector.push_back({ "Mate In 3 - 01","1N4k1/2p5/3p3Q/p3p3/4P3/2P1B1Pp/PP6/3R1RK1 w - - 0 35 ","f1f8" });
+    */
+
+    benchVector.push_back({ "Why do I not see the mate?", "4rk1r/p2b1ppp/8/1p1pR1N1/3P4/2P5/P4PPP/4R1K1 w - - 6 23 ","g5f3" });
+
     std::ofstream csvFile("benchmark.csv");
     csvFile << "id,status,expMove,selMove,depth,qdepth,score,elapsedtime,nps,nodes\n";
     
@@ -44,7 +50,7 @@ int main(int, char**) {
         std::cout << def.text << " " << def.fen << std::endl;
         Board board;
         board.parseFen(def.fen);
-        int depth = 7;
+        int depth = 9;
         Search search;        
         Score move = search.search(board, depth,1000000);
 

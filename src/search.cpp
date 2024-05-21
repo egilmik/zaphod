@@ -9,8 +9,8 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     maxSearchTime = maxTime;
     maxQuinesenceDepthThisSearch = 0;
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();;
-    int lowerBound = -20000;
-    int upperBound = 20000;
+    int lowerBound = -100000;
+    int upperBound = 100000;
     stopSearch = false;
     bool inIteration = true;
     Score bestScore;
@@ -20,6 +20,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
     for (int i = 1; i <= maxDepth; i++) {
         currentTargetDepth = i;
+        maxQuinesenceDepthThisSearch = 0;
         int score = negamax(board, i, lowerBound, upperBound);
         if (stopSearch) {
             break;
@@ -29,7 +30,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000);
 
-        std::cout << "info depth " << i << " score cp " << score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
+        std::cout << "info depth " << i << " seldepth " << i+maxQuinesenceDepthThisSearch << " score cp " << score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
         currentFinishedDepth = i;
         bestScore = bestMoveIteration;
     }
@@ -37,6 +38,8 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     
     return bestScore;
 }
+
+
 
 int Search::negamax(Board& board, int depth, int alpha, int beta)
 {
@@ -56,6 +59,11 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         TEType entryType = it->second.type;
         if (entryType == TEType::exact) {
             exactHit++;
+            if (depth == currentTargetDepth) {
+                bestMoveIteration.bestMove = it->second.bestMove;
+                bestMoveIteration.score = alpha;
+                bestMoveIteration.depth = depth;
+            }
             return it->second.score;
         }
         else if (entryType == TEType::lower) {
@@ -68,6 +76,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         }
 
         if (alpha >= beta) {
+            if (depth == currentTargetDepth) {
+                bestMoveIteration.bestMove = it->second.bestMove;
+                bestMoveIteration.score = alpha;
+                bestMoveIteration.depth = depth;
+            }
+
             return it->second.score;
         }
     }
@@ -111,12 +125,24 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         board.revertLastMove();
     }
 
-    if (validMoves == 0 && board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
-        alpha = -3000;
+    if (validMoves == 0) {
+        if (board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
+            // We are check mate
+            alpha = -30000-(currentTargetDepth-depth);
 
-        if (board.getSideToMove() == BitBoardEnum::Black) {
-            alpha *= -1;
+            if (board.getSideToMove() == BitBoardEnum::Black) {
+                alpha *= -1;
+            }
         }
+        else if (board.isSquareAttacked(board.getOtherSide() + BitBoardEnum::K, board.getSideToMove())) {
+            // They are check mate
+            alpha = -30000+ (currentTargetDepth - depth);
+
+            if (board.getSideToMove() == BitBoardEnum::Black) {
+                alpha *= -1;
+            }
+        }
+        
     }
 
     
@@ -180,13 +206,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
     for(int i = 0; i < moveListReduced.counter; i++){
         Move move = moveListReduced.moves[i];
         bool valid = board.makeMove(move);
-        if(valid){            
-            score = -quinesence(board,-beta,-alpha,depth+1);
-        }
-        else {
-            board.printBoard();
-            int x = 0;
-        }
+        score = -quinesence(board,-beta,-alpha,depth+1);
 
         if(score > alpha){
             alpha = score;
