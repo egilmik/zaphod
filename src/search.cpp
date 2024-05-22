@@ -269,13 +269,16 @@ int Search::evaluate(Board &board)
     int mgScore = 0;
     int egScore = 0;
     int gamePhase = 0;
-    for (int i = 0; i < 64; i++) {
-        BitBoardEnum piece = board.getPieceOnSquare(i);
-        if (piece != All) {
-            mgScore += Material::getPieceSquareScoreMG(piece, i);
-            egScore += Material::getPieceSquareScoreEG(piece, i);
-            gamePhase += Material::gamePhaseArray[piece];
-        }
+    int materialScore = 0;
+    BitBoard allPieces = board.getBitboard(All);
+    int square = 0;
+    while (allPieces) {
+        square = board.popLsb(allPieces);
+        BitBoardEnum piece = board.getPieceOnSquare(square);
+        mgScore += Material::getPieceSquareScoreMG(piece, square);
+        egScore += Material::getPieceSquareScoreEG(piece, square);
+        gamePhase += Material::gamePhaseArray[piece];
+        materialScore += Material::materialScoreArray[piece];
     }
 
     //Pesto gamephase handling
@@ -283,10 +286,8 @@ int Search::evaluate(Board &board)
     if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
     int egPhase = 24 - mgPhase;
     int score = (mgScore * mgPhase + egScore * egPhase) / 24;
+    score += materialScore;
 
-
-    score += Material::getMaterialScore(board);
-    //score += board.getMobilityDiff();
 
     if (board.getSideToMove() == BitBoardEnum::Black) {
         return score *= -1;
