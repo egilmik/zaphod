@@ -398,8 +398,6 @@ void Board::parseFen(std::string fen){
         }
     }
 
-    materialScore = Material::getMaterialScore(*this);
-    pieceSquareScore = Material::getPieceSquareScore(*this);
     hashKey = generateHashKey();
     historyPly = 0;
 }
@@ -725,8 +723,6 @@ bool Board::makeMove(Move move) {
     histMove->castleWQCopy= castleWQ;
     histMove->castleBKCopy = castleBK;
     histMove->castleBQCopy = castleBQ;
-    histMove->pieceSquareScoreCopy = pieceSquareScore;
-    histMove->materialScoreCopy = materialScore;
     histMove->hashKeyCopy = hashKey;
 
     historyPly++;
@@ -754,19 +750,13 @@ bool Board::makeMove(Move move) {
         if (enpassant) {
             capturedPiece = mailBoxBoard[toSq - enpassantModifier];
             removePiece(toSq - enpassantModifier, otherSide);
-            pieceSquareScore -= Material::getPieceSquareScore(static_cast<BitBoardEnum>(otherSide + P),(toSq - enpassantModifier));
             hashKey ^= ttable.pieceKeys[otherSide + P][toSq - enpassantModifier];
         }
         else {
-
             capturedPiece = mailBoxBoard[toSq];
             removePiece(toSq, otherSide);
-
-            // Update score for captured piece
-            pieceSquareScore -= Material::getPieceSquareScore(capturedPiece,fromSq);
             hashKey ^= ttable.pieceKeys[capturedPiece][toSq];
         }
-        materialScore = Material::getMaterialScore(*this);
     }
 
     // Pop and set bits in piece and all board
@@ -775,12 +765,6 @@ bool Board::makeMove(Move move) {
 
     hashKey ^= ttable.pieceKeys[piece][fromSq];
     hashKey ^= ttable.pieceKeys[piece][toSq];
-
-
-    // Upadet score for moved piece
-    pieceSquareScore -= Material::getPieceSquareScore(piece, fromSq);
-    pieceSquareScore += Material::getPieceSquareScore(piece, toSq);
-
 
     if (doublePush) {
         // Remove the previous enpassantSquare
@@ -807,19 +791,10 @@ bool Board::makeMove(Move move) {
 
                 hashKey ^= ttable.pieceKeys[R][0];
                 hashKey ^= ttable.pieceKeys[R][3];
-
-                // Upadet score for rook
-                pieceSquareScore -= Material::getPieceSquareScore(R, 0);
-                pieceSquareScore += Material::getPieceSquareScore(R, 3);;
-
             } else {
                 removePiece(7, White);
                 addPiece(5, R, White);
                 
-                // Upadet score for rook
-                pieceSquareScore -= Material::getPieceSquareScore(R, 7);
-                pieceSquareScore += Material::getPieceSquareScore(R, 5);
-
                 hashKey ^= ttable.pieceKeys[R][7];
                 hashKey ^= ttable.pieceKeys[R][5];
             }
@@ -835,9 +810,6 @@ bool Board::makeMove(Move move) {
                 hashKey ^= ttable.pieceKeys[r][56];
                 hashKey ^= ttable.pieceKeys[r][59];
 
-                // Upadet score for rook
-                pieceSquareScore -= Material::getPieceSquareScore(r, 56);
-                pieceSquareScore += Material::getPieceSquareScore(r, 59);;
             } else {
                 removePiece(63, Black);
                 addPiece(61, r, Black);
@@ -845,9 +817,6 @@ bool Board::makeMove(Move move) {
                 hashKey ^= ttable.pieceKeys[r][63];
                 hashKey ^= ttable.pieceKeys[r][61];
 
-                // Upadet score for rook
-                pieceSquareScore -= Material::getPieceSquareScore(r, 63);
-                pieceSquareScore += Material::getPieceSquareScore(r, 61);
             }
         }
     }   
@@ -855,10 +824,7 @@ bool Board::makeMove(Move move) {
     if(moveType == MoveType::PROMOTION){  
         BitBoardEnum promotionPiece = move.getPromotionType(sideToMove);
         hashKey ^= ttable.pieceKeys[piece][toSq];
-        pieceSquareScore -= Material::getPieceSquareScore(piece, toSq);
         hashKey ^= ttable.pieceKeys[promotionPiece][toSq];
-        pieceSquareScore += Material::getPieceSquareScore(promotionPiece, toSq);
-        materialScore = Material::getMaterialScore(*this);
         removePiece(toSq,sideToMove);
         addPiece(toSq, promotionPiece, sideToMove);
 
@@ -967,8 +933,6 @@ void Board::revertLastMove()
     castleWQ = move->castleWQCopy;
     castleBK = move->castleBKCopy;
     castleBQ = move->castleBQCopy;
-    pieceSquareScore = move->pieceSquareScoreCopy;
-    materialScore = move->materialScoreCopy;
     hashKey = move->hashKeyCopy;
 }
 

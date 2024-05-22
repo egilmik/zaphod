@@ -17,8 +17,6 @@ struct MoveStruct {
     bool castleWQCopy = true;
     bool castleBKCopy = true;
     bool castleBQCopy = true;
-    int materialScoreCopy = 0;
-    int pieceSquareScoreCopy = 0;
     BitBoard hashKeyCopy = 0;
 };
 
@@ -210,8 +208,7 @@ class Board {
         bool getCastleRightsBK(){return castleBK;};
         bool getCastleRightsBQ(){return castleBQ;};
 
-        int getPieceSquareScore(){ return pieceSquareScore;};
-        int getMaterialScore(){ return materialScore;};
+        
 
         BitBoard generateHashKey();
         BitBoard getHashKey(){ return hashKey;};
@@ -247,8 +244,6 @@ class Board {
         bool castleWQ = false;
         bool castleBK = false;
         bool castleBQ = false;
-        int pieceSquareScore = 0;
-        int materialScore = 0;
         int legalMovesWhite = 0;
         int legalMovesBlack = 0;
         BitBoard hashKey = 0;

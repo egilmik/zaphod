@@ -65,7 +65,7 @@ class Material {
         return pieceSquareScoreArray[pieceIndex][square]*modifier;
     }
 
-    static int getPieceSquareScore(BitBoardEnum piece, int square, double gamePhase) {
+    static int getPieceSquareScoreMG(BitBoardEnum piece, int square) {
         int pieceIndex = piece;
         int modifier = 1;
         if (piece > Black) {
@@ -73,14 +73,20 @@ class Material {
             pieceIndex -= Black;
             modifier = -1;
         }
-
-        double gamePhaseEG = 1 - gamePhase;
-
-        int score = (pieceSquareScoreArray[pieceIndex][square] * modifier) * (gamePhase);
-        score += (pieceSquareScoreArrayEG[pieceIndex][square] * modifier)* (gamePhaseEG);
-        return score;
+        return (pieceSquareScoreArray[pieceIndex][square] * modifier);
     }
 
+    static int getPieceSquareScoreEG(BitBoardEnum piece, int square) {
+        int pieceIndex = piece;
+        int modifier = 1;
+        if (piece > Black) {
+            square = flip[square];
+            pieceIndex -= Black;
+            modifier = -1;
+        }
+        return (pieceSquareScoreArrayEG[pieceIndex][square] * modifier);
+    }
+    inline static const int gamePhaseArray[14] = { 0,2,1,1,4,0,0,0,2,1,1,4,0,0 };
     inline static const std::array<int, 14> pieceMaterialScoreArray = { 0,500,320,330,900,2000,100,0,500,320,330,900,2000,100 };
 
 private:

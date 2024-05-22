@@ -266,19 +266,26 @@ void Search::sortMoveList(Board &board, MoveList &list)
 int Search::evaluate(Board &board)
 {
     evaluatedNodes++;
-    int score = 0;
+    int mgScore = 0;
+    int egScore = 0;
+    int gamePhase = 0;
     for (int i = 0; i < 64; i++) {
         BitBoardEnum piece = board.getPieceOnSquare(i);
         if (piece != All) {
-            score += Material::getPieceSquareScore(piece, i, 1.0);
+            mgScore += Material::getPieceSquareScoreMG(piece, i);
+            egScore += Material::getPieceSquareScoreEG(piece, i);
+            gamePhase += Material::gamePhaseArray[piece];
         }
-
     }
 
-    //int score = board.getPieceSquareScore();
+    //Pesto gamephase handling
+    int mgPhase = gamePhase;
+    if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
+    int egPhase = 24 - mgPhase;
+    int score = (mgScore * mgPhase + egScore * egPhase) / 24;
 
 
-    score += board.getMaterialScore();
+    score += Material::getMaterialScore(board);
     //score += board.getMobilityDiff();
 
     if (board.getSideToMove() == BitBoardEnum::Black) {
