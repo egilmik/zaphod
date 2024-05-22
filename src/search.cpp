@@ -187,7 +187,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
         alpha = standPat;
     }
 
-    if (depth > 5) {
+    if (depth > 100) {
         return standPat;
     }
 
@@ -195,7 +195,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
     MoveList moveListReduced;
     MoveGenerator::generateMoves(board,moveList);
     for(int i = 0; i < moveList.counter; i++){
-        if(board.getPieceOnSquare(moveList.moves[i].to()) != All || moveList.moves[i].getMoveType() == PROMOTION) {
+        if(moveList.checkers != 0 || board.getPieceOnSquare(moveList.moves[i].to()) != All || moveList.moves[i].getMoveType() == PROMOTION) {
             moveListReduced.moves[moveListReduced.counter++] = moveList.moves[i];
         }
     }

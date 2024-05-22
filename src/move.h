@@ -64,6 +64,7 @@ struct MoveList{
     //218 seems to be the largest nr of moves for a position https://www.chessprogramming.org/Chess_Position
     //No additional instructions to allocate 250, just to sure :)
     Move moves[250];
+    BitBoard checkers = 0;
     int64_t counter = 0;
 };
 
