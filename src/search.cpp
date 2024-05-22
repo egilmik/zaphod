@@ -266,7 +266,18 @@ void Search::sortMoveList(Board &board, MoveList &list)
 int Search::evaluate(Board &board)
 {
     evaluatedNodes++;
-    int score = board.getPieceSquareScore();
+    int score = 0;
+    for (int i = 0; i < 64; i++) {
+        BitBoardEnum piece = board.getPieceOnSquare(i);
+        if (piece != All) {
+            score += Material::getPieceSquareScore(piece, i, 1.0);
+        }
+
+    }
+
+    //int score = board.getPieceSquareScore();
+
+
     score += board.getMaterialScore();
     //score += board.getMobilityDiff();
 

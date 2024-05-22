@@ -163,7 +163,7 @@ void UCI::startSearch(std::istringstream &is)
 
     Score move;
     Search newSearch;
-    move = newSearch.search(motherBoard,9,searchTime);
+    move = newSearch.search(motherBoard,20,searchTime);
     std::string bestMove = Perft::getNotation(move.bestMove);
     //std::cout << "info depth " << newSearch.currentFinishedDepth << std::endl;
     std::cout << "bestmove " << bestMove << std::endl;
