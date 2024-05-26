@@ -233,7 +233,7 @@ class Board {
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
 
-        MoveStruct moveHistory[128];
+        MoveStruct moveHistory[1024];
         int historyPly = 0;
         
         BitBoardEnum mailBoxBoard[64];
