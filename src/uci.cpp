@@ -176,7 +176,7 @@ void UCI::startSearch(std::istringstream &is)
 
 void UCI::sendID()
 {
-    std::cout << "id name Zaphod 0.4-beta" << std::endl;
+    std::cout << "id name Zaphod 1.0" << std::endl;
     std::cout << "id author Egil Tennfjord Mikalsen" << std::endl;
     std::cout << "uciok" << std::endl;
 }
