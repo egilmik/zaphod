@@ -176,7 +176,7 @@ void UCI::startSearch(std::istringstream &is)
 
 void UCI::sendID()
 {
-    std::cout << "id name Zaphod 1.0" << std::endl;
+    std::cout << "id name Zaphod 1.0.1" << std::endl;
     std::cout << "id author Egil Tennfjord Mikalsen" << std::endl;
     std::cout << "uciok" << std::endl;
 }
@@ -186,7 +186,7 @@ bool UCI::parseMove(std::string token)
     MoveList list;
     MoveGenerator::generateMoves(motherBoard,list);
     for(int i = 0; i < list.counter; i++){
-        if(token == Perft::getNotation(list.moves[i])){
+        if(token == Perft::getNotation(list.moves[i], motherBoard.getOtherSide())){
             motherBoard.makeMove(list.moves[i]);
             return true;
         }

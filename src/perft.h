@@ -166,9 +166,13 @@ class Perft {
             return {};
         }
 
-        static std::string getNotation(Move move){
+        static std::string getNotation(Move move) {
+            return getNotation(move, White);
+        }
+
+        static std::string getNotation(Move move, BitBoardEnum color){
             std::string promotion = "";
-            BitBoardEnum promotionPiece = move.getPromotionType(White);
+            BitBoardEnum promotionPiece = move.getPromotionType(color);
 
             
             if(promotionPiece == BitBoardEnum::Q){
@@ -179,6 +183,14 @@ class Perft {
                 promotion = "R";
             } else if (promotionPiece == BitBoardEnum::N){
                 promotion = "N";
+            } else if (promotionPiece == BitBoardEnum::q) {
+                promotion = "q";
+            } else if (promotionPiece == BitBoardEnum::b) {
+                promotion = "b";
+            } else if (promotionPiece == BitBoardEnum::r) {
+                promotion = "r";
+            } else if (promotionPiece == BitBoardEnum::n) {
+                promotion = "n";
             }
 
             if (move.getMoveType() != PROMOTION) {
