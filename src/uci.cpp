@@ -186,7 +186,7 @@ bool UCI::parseMove(std::string token)
     MoveList list;
     MoveGenerator::generateMoves(motherBoard,list);
     for(int i = 0; i < list.counter; i++){
-        if(token == Perft::getNotation(list.moves[i], motherBoard.getOtherSide())){
+        if(token == Perft::getNotation(list.moves[i], motherBoard.getSideToMove())){
             motherBoard.makeMove(list.moves[i]);
             return true;
         }

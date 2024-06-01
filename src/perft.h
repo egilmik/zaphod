@@ -175,21 +175,13 @@ class Perft {
             BitBoardEnum promotionPiece = move.getPromotionType(color);
 
             
-            if(promotionPiece == BitBoardEnum::Q){
-                promotion = "Q";
-            } else if (promotionPiece == BitBoardEnum::B){
-                promotion = "B";
-            } else if (promotionPiece == BitBoardEnum::R){
-                promotion = "R";
-            } else if (promotionPiece == BitBoardEnum::N){
-                promotion = "N";
-            } else if (promotionPiece == BitBoardEnum::q) {
+            if(promotionPiece == BitBoardEnum::Q || promotionPiece == BitBoardEnum::q){
                 promotion = "q";
-            } else if (promotionPiece == BitBoardEnum::b) {
+            } else if (promotionPiece == BitBoardEnum::B || promotionPiece == BitBoardEnum::b){
                 promotion = "b";
-            } else if (promotionPiece == BitBoardEnum::r) {
+            } else if (promotionPiece == BitBoardEnum::R || promotionPiece == BitBoardEnum::r){
                 promotion = "r";
-            } else if (promotionPiece == BitBoardEnum::n) {
+            } else if (promotionPiece == BitBoardEnum::N || promotionPiece == BitBoardEnum::n){
                 promotion = "n";
             }
 
