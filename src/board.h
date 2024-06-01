@@ -12,6 +12,7 @@ struct MoveStruct {
     BitBoard bitBoardArrayCopy[15];
     BitBoardEnum mailBox[64];
     BitBoardEnum sideToMoveCopy = BitBoardEnum::White;
+    int halfMoveClock = 0;
     int enPassantSqCopy = -1;
     bool castleWKCopy = true;
     bool castleWQCopy = true;
@@ -229,12 +230,18 @@ class Board {
             return legalMovesWhite - legalMovesBlack;
         }
 
+        int getHalfMoveClock() {
+            return halfMoveClock;
+        }
+
     private:
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
 
         MoveStruct moveHistory[1024];
         int historyPly = 0;
+
+        int halfMoveClock = 0;
         
         BitBoardEnum mailBoxBoard[64];
         BitBoard bitBoardArray[15];

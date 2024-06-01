@@ -119,3 +119,34 @@ TEST(BoardTest, SquareBetweenDiagonal) {
     board.setBit(testBoard, 44);
     EXPECT_EQ(between, testBoard);
 }
+
+TEST(BoardTest, HalfMoveClockIsCorrectFromFenString) {
+    Board board;
+    board.parseFen("rn1qkbnr/ppp1pppp/8/3p1b2/3P4/4B3/PPP1PPPP/RN1QKBNR w KQkq - 2 3");
+
+    EXPECT_EQ(2, board.getHalfMoveClock());
+}
+
+
+TEST(BoardTest, HalfMoveClockIsCorrectFromFenStringTwoDigits) {
+    Board board;
+    board.parseFen("rn2kb1r/ppp1pppp/Q4n1q/3p2B1/3P4/2N2N1b/PPP1PPPP/R3KB1R b KQkq - 11 7");
+
+    EXPECT_EQ(11, board.getHalfMoveClock());
+}
+
+TEST(BoardTest, HalfMoveClockIsResetWithPawnMove) {
+    Board board;
+    board.parseFen("r3kb1r/ppp1pppp/Q1n2n1q/3p2B1/3P4/2N2N1b/PPP1PPPP/R3KB1R w KQkq - 12 8");
+    board.makeMove(Move::make<NORMAL>(8, 16));
+
+    EXPECT_EQ(0, board.getHalfMoveClock());
+}
+
+TEST(BoardTest, HalfMoveClockIsResetWithCapture) {
+    Board board;
+    board.parseFen("r3kb1r/ppp1pppp/Q1n2n1q/3p2B1/3P4/2N2N1b/PPP1PPPP/R3KB1R w KQkq - 12 8");
+    board.makeMove(Move::make<NORMAL>(14, 23));
+
+    EXPECT_EQ(0, board.getHalfMoveClock());
+}

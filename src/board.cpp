@@ -362,6 +362,7 @@ void Board::parseFen(std::string fen){
     int state = 0;
     for(std::string::size_type i = 0; i < fen.size(); ++i) {
 
+
         if(fen[i] == ' '){
             state++;
         }
@@ -391,8 +392,25 @@ void Board::parseFen(std::string fen){
                 }
             }
             break;
-            
-        
+        case 4:
+        {
+            //Half move clock
+            std::string halfString = "";
+            halfString += fen[i];
+            if (fen[i + 1] != ' ') {
+                halfString += fen[i + 1];
+                i++;
+            }
+            if (fen[i + 1] != ' ') {
+                halfString += fen[i + 1];
+                i++;
+            }
+
+            halfMoveClock = std::stoi(halfString);
+            break;
+        }
+        case 5:
+            //This is the move counter
         default:
             break;
         }
@@ -717,6 +735,7 @@ bool Board::makeMove(Move move) {
     int sizeMB = 64 * sizeof(mailBoxBoard[0]);
     std::memcpy(&histMove->bitBoardArrayCopy,&bitBoardArray,sizeBB);    
     std::memcpy(&histMove->mailBox, &mailBoxBoard, sizeMB);
+    histMove->halfMoveClock = halfMoveClock;
     histMove->sideToMoveCopy = sideToMove;
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleWKCopy = castleWK;
@@ -736,7 +755,7 @@ bool Board::makeMove(Move move) {
     bool capture = (capturedPiece != All) || enpassant;
     bool isPawn = (piece == p || piece == P);
     bool doublePush = isPawn && std::abs(fromSq - toSq) == 16;
-
+    halfMoveClock++;
 
 
     BitBoardEnum otherSide = BitBoardEnum::White;
@@ -757,6 +776,8 @@ bool Board::makeMove(Move move) {
             removePiece(toSq, otherSide);
             hashKey ^= ttable.pieceKeys[capturedPiece][toSq];
         }
+        // Capture resets halfmoveclock
+        halfMoveClock = 0;
     }
 
     // Pop and set bits in piece and all board
@@ -765,6 +786,11 @@ bool Board::makeMove(Move move) {
 
     hashKey ^= ttable.pieceKeys[piece][fromSq];
     hashKey ^= ttable.pieceKeys[piece][toSq];
+
+    // Reset halfmoveclock if there is a pawn move
+    if (piece == P + sideToMove) {
+        halfMoveClock = 0;
+    }
 
     if (doublePush) {
         // Remove the previous enpassantSquare
@@ -928,6 +954,7 @@ void Board::revertLastMove()
     std::memcpy(&bitBoardArray,&move->bitBoardArrayCopy,sizeBB);
     std::memcpy(&mailBoxBoard, &move->mailBox, sizeMB);
     sideToMove = move->sideToMoveCopy;
+    halfMoveClock = move->halfMoveClock;
     enPassantSq = move->enPassantSqCopy;
     castleWK = move->castleWKCopy;
     castleWQ = move->castleWQCopy;

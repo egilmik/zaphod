@@ -98,7 +98,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     sortMoveList(board, moveList);
     
     int validMoves = moveList.counter;
-
+    
     for (int i = 0; i < moveList.counter; i++) {
         Move move = moveList.moves[i];
         board.makeMove(move);
@@ -285,8 +285,8 @@ int Search::evaluate(Board &board)
     int mgPhase = gamePhase;
     if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
     int egPhase = 24 - mgPhase;
-    int score = (mgScore * mgPhase + egScore * egPhase) / 24;
-    score += materialScore;
+    int psqt = (mgScore * mgPhase + egScore * egPhase) / 24;
+    int score = materialScore+psqt;
 
 
     if (board.getSideToMove() == BitBoardEnum::Black) {
