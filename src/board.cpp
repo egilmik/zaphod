@@ -331,6 +331,12 @@ void Board::clearBoard()
     for(int i = 0; i < 15; i++){
         bitBoardArray[i] = 0;
     }
+    for (int i = 0; i < 64; i++) {
+        mailBoxBoard[i] == All;
+    }
+    historyPly = 0;
+    halfMoveClock = 0;
+
     sideToMove = White;
     enPassantSq = noSq;
     castleWK = false;
