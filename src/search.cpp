@@ -21,6 +21,18 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     for (int i = 1; i <= maxDepth; i++) {
         currentTargetDepth = i;
         maxQuinesenceDepthThisSearch = 0;
+
+        /////////////////////////////////
+        // Limit quiesence the first 2 iterations,
+        // to make sure we have a decent score fast. 
+        // Make sure it does not make illegal moves due to missing best move.
+        if (i < 3) {
+            currentQuiesenceTargetDepth = 2;
+        }
+        else {
+            currentQuiesenceTargetDepth = 100;
+        }
+
         int score = negamax(board, i, lowerBound, upperBound);
         if (stopSearch) {
             break;
@@ -211,7 +223,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
         alpha = standPat;
     }
 
-    if (depth > 100) {
+    if (depth > currentQuiesenceTargetDepth) {
         return standPat;
     }
 
