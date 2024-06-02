@@ -122,6 +122,8 @@ void UCI::startSearch(std::istringstream &is)
     std::string nextToken;
     int wTime = 30000*30;
     int bTime = 30000*30;
+    int wIncrement = 0;
+    int bIncrement = 0;
 
     bool fixedSearchTime = false;
     int searchTime = 30000;
@@ -145,6 +147,14 @@ void UCI::startSearch(std::istringstream &is)
             is >> nextToken;
             bTime = stoi(nextToken);
         }
+        else if (nextToken == "winc") {
+            is >> nextToken;
+            wIncrement = stoi(nextToken);
+        }
+        else if (nextToken == "binc") {
+            is >> nextToken;
+            bIncrement = stoi(nextToken);
+        }
         else if (nextToken == "movetime") {
             is >> nextToken;
             searchTime = stoi(nextToken);
@@ -156,12 +166,23 @@ void UCI::startSearch(std::istringstream &is)
         }
     }
     
+
+    /////////////////////
+    // Sets searchtime, based on amount left and/or increment time per move
+    /////////////////////
     if(!fixedSearchTime){
         if (motherBoard.getSideToMove() == White) {
             searchTime = std::min(searchTime, wTime / 30);
+
+            if (wIncrement > 0) {
+                searchTime = std::max(searchTime, wIncrement);
+            }
         }
         else {
             searchTime = std::min(searchTime, bTime / 30);
+            if (bIncrement > 0) {
+                searchTime = std::max(searchTime, bIncrement);
+            }
         }
     }
     
