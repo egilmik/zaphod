@@ -52,6 +52,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     if (evaluatedNodes % 1000 && isSearchStopped()) {
         return beta;
     }
+    //////////////////////////
+    // Has repeated 3-fold
+    //////////////////////////
+    if (board.hasPositionRepeated()) {
+        return 0;
+    }
     
 
     std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
@@ -167,6 +173,13 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
 int Search::quinesence(Board &board, int alpha, int beta,int depth)
 {
+
+    //////////////////////////
+    // Has repeated 3-fold
+    //////////////////////////
+    if (board.hasPositionRepeated()) {
+        return 0;
+    }
 
     int standPat = evaluate(board);
 

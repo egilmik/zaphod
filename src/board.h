@@ -225,6 +225,8 @@ class Board {
             }
         }
 
+        bool hasPositionRepeated();
+
         //Returns diff between legal moves, white is positive and black negative.
         int getMobilityDiff() {
             return legalMovesWhite - legalMovesBlack;
