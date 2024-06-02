@@ -56,7 +56,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     // Has repeated 3-fold
     //////////////////////////
     if (board.hasPositionRepeated()) {
-        return 0;
+        alpha = 0;
+        if(alpha > beta){
+            return alpha;
+        }
     }
     
 
