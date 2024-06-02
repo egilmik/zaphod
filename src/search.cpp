@@ -112,14 +112,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         Move move = moveList.moves[i];
         board.makeMove(move);
         score = -negamax(board, depth - 1, -beta, -alpha);
-        if (score >= beta) {
-            board.revertLastMove();
-            if (it == transpositionMap.end() || it->second.depth < depth) {
-                transpositionMap[key] = { move, TEType::lower, depth, beta };
-            }
-                
-            return beta;
-        }
+        board.revertLastMove();
 
         if (score > alpha) {
             alpha = score;
@@ -131,27 +124,42 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
             }
         }
 
-        board.revertLastMove();
+        if (score >= beta) {
+            
+            /*if (it == transpositionMap.end() || it->second.depth < depth) {
+                transpositionMap[key] = { move, TEType::lower, depth, beta };
+            }*/
+                
+            break;
+        }
+
+        
+
     }
 
     if (validMoves == 0) {
         if (board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
             // We are check mate
-            alpha = -30000-(currentTargetDepth-depth);
-
+            alpha = -300000+(currentTargetDepth-depth);
+            /*
             if (board.getSideToMove() == BitBoardEnum::Black) {
                 alpha *= -1;
             }
+            */
         }
         else if (board.isSquareAttacked(board.getOtherSide() + BitBoardEnum::K, board.getSideToMove())) {
             // They are check mate
-            alpha = -30000+ (currentTargetDepth - depth);
-
+            alpha = 300000+ (currentTargetDepth - depth);
+            /*
             if (board.getSideToMove() == BitBoardEnum::Black) {
                 alpha *= -1;
             }
+            */
         }
-        
+        else {
+            // Stalemate
+            alpha = 0;
+        }
     }
 
     
