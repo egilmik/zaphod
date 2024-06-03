@@ -175,13 +175,13 @@ void UCI::startSearch(std::istringstream &is)
             searchTime = std::min(searchTime, wTime / 30);
 
             if (wIncrement > 0) {
-                searchTime = std::max(searchTime, wIncrement);
+                searchTime = std::max(searchTime, (int)(wIncrement*0.95));
             }
         }
         else {
             searchTime = std::min(searchTime, bTime / 30);
             if (bIncrement > 0) {
-                searchTime = std::max(searchTime, bIncrement);
+                searchTime = std::max(searchTime, (int)(bIncrement*0.95));
             }
         }
     }
