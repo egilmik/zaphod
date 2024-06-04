@@ -31,6 +31,8 @@ class Search {
         int quinesence(Board &board, int alpha, int beta, int depth);
         void sortMoveList(Board &board,MoveList &list);
         int evaluate(Board &board);
+        int evaluatePawns(Board& board);
+        int evaluatePassedPawn(Board& board, BitBoardEnum side);
         bool equal(Move &a, Move &b);
         MoveList reconstructPV(Board& board, int depth);
         bool isSearchStopped();

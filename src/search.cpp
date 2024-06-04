@@ -333,60 +333,45 @@ int Search::evaluate(Board &board)
 }
 
 int Search::evaluatePawns(Board& board) {
-    BitBoard whitePawns = board.getBitboard(P);
-    BitBoard blackPawns = board.getBitboard(p);
+    int score = evaluatePassedPawn(board, White);
+    score -= evaluatePassedPawn(board, Black);
+    return score;
+}
+
+int Search::evaluatePassedPawn(Board& board, BitBoardEnum side) {
+    BitBoard pawns = board.getBitboard(P+side);
+    int modifier = 1;
+    BitBoardEnum otherSide = Black;
+    if (side == Black) {
+        modifier = -1;
+        otherSide = White;
+    }
     int score = 0;
 
     int sq = 0;
-    while (whitePawns) {
+    while (pawns) {
         bool isPassed = true;
-        sq = board.popLsb(whitePawns);
+        sq = board.popLsb(pawns);
         BitBoard file = board.fileArray[sq % 8];
-        BitBoard sqNorthWest = board.sqBB[sq + 9];
-        BitBoard sqNorthEast = board.sqBB[sq + 7];
+        //
+        BitBoard sqNorthWest = board.sqBB[sq + 9*modifier];
+        BitBoard sqNorthEast = board.sqBB[sq + 7*modifier];
         // Check if there is our own pawn in front
-        int sqNorth = sq + 8;
+        int sqNorth = sq + 8*modifier;
         while (sqNorth < 64) {
             BitBoard sqNBB = board.sqBB[sqNorth];
-            if (sqNBB == (board.getBitboard(P) & sqNBB)) {
+            if (sqNBB == (board.getBitboard(P+side) & sqNBB)) {
                 isPassed = false;
             }
             sqNorth += 8;
         }
         // Check if there is a enemy pawn on the file, or one that can capture us
-        if ((board.getBitboard(p) & file) != 0 || sqNorthWest != (board.getBitboard(p) & sqNorthWest) || sqNorthEast != (board.getBitboard(p) & sqNorthEast)) {
+        if ((board.getBitboard(otherSide+P) & file) != 0 || sqNorthWest != (board.getBitboard(otherSide + P) & sqNorthWest) || sqNorthEast != (board.getBitboard(otherSide + P) & sqNorthEast)) {
             isPassed = false;
         }
 
         if (isPassed) {
             score += (sq % 8) * 15;
-        }
-    }
-
-    while (blackPawns) {
-        bool isPassed = true;
-        sq = board.popLsb(blackPawns);
-        BitBoard file = board.fileArray[sq % 8];
-        BitBoard sqNorthWest = board.sqBB[sq - 9];
-        BitBoard sqNorthEast = board.sqBB[sq - 7];
-
-        // Check if there is our own pawn in front
-        int sqNorth = sq - 8;
-        while (sqNorth > 0) {
-            BitBoard sqNBB = board.sqBB[sqNorth];
-            if (sqNBB == (board.getBitboard(p) & sqNBB)) {
-                isPassed = false;
-            }
-            sqNorth -= 8;
-        }
-
-        // Check if there is a pawn in front, either doubled pawn or enemy
-        if ((board.getBitboard(P) & file) != 0 || sqNorthWest != (board.getBitboard(P) & sqNorthWest) || sqNorthEast != (board.getBitboard(P) & sqNorthEast)) {
-            isPassed = false;
-        }
-
-        if (isPassed) {
-            score -= (sq % 8) * 15;
         }
     }
     return score;
