@@ -3,6 +3,7 @@
 #include "material.h"
 #include <algorithm>
 #include <chrono>
+#include "evaluation.h"
 
 Score Search::search(Board &board, int maxDepth, int maxTime)
 {    
@@ -16,6 +17,8 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     Score bestScore;
 
     auto start = std::chrono::high_resolution_clock::now();
+    evaluatedNodes = 0;
+    pawnTTHits = 0;
 
 
     for (int i = 1; i <= maxDepth; i++) {
@@ -333,49 +336,18 @@ int Search::evaluate(Board &board)
 }
 
 int Search::evaluatePawns(Board& board) {
-    int score = evaluatePassedPawn(board, White);
-    score -= evaluatePassedPawn(board, Black);
-    return score;
+    std::unordered_map<BitBoard, uint32_t>::iterator it = pawnHashTable.find(board.getPawnHashKey());
+    if (it == pawnHashTable.end()) {
+        int score = Evaluation::evaluatePassedPawn(board, White);
+        score += Evaluation::evaluatePassedPawn(board, Black);
+        pawnHashTable[board.getPawnHashKey()] = score;
+        return score;
+    }
+    pawnTTHits++;
+    return it->second;
 }
 
-int Search::evaluatePassedPawn(Board& board, BitBoardEnum side) {
-    BitBoard pawns = board.getBitboard(P+side);
-    int modifier = 1;
-    BitBoardEnum otherSide = Black;
-    if (side == Black) {
-        modifier = -1;
-        otherSide = White;
-    }
-    int score = 0;
 
-    int sq = 0;
-    while (pawns) {
-        bool isPassed = true;
-        sq = board.popLsb(pawns);
-        BitBoard file = board.fileArray[sq % 8];
-        //
-        BitBoard sqNorthWest = board.sqBB[sq + 9*modifier];
-        BitBoard sqNorthEast = board.sqBB[sq + 7*modifier];
-        // Check if there is our own pawn in front
-        int sqNorth = sq + 8*modifier;
-        while (sqNorth < 64) {
-            BitBoard sqNBB = board.sqBB[sqNorth];
-            if (sqNBB == (board.getBitboard(P+side) & sqNBB)) {
-                isPassed = false;
-            }
-            sqNorth += 8;
-        }
-        // Check if there is a enemy pawn on the file, or one that can capture us
-        if ((board.getBitboard(otherSide+P) & file) != 0 || sqNorthWest != (board.getBitboard(otherSide + P) & sqNorthWest) || sqNorthEast != (board.getBitboard(otherSide + P) & sqNorthEast)) {
-            isPassed = false;
-        }
-
-        if (isPassed) {
-            score += (sq % 8) * 15;
-        }
-    }
-    return score;
-}
 
 
 bool Search::equal(Move &a, Move &b)

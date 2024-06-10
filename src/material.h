@@ -86,6 +86,16 @@ class Material {
         }
         return (pieceSquareScoreArrayEG[pieceIndex][square] * modifier);
     }
+
+    static int getPassPawnScore(BitBoardEnum side, int square) {
+        int modifier = 1;
+        if (side == Black) {
+            square = flip[square];
+            modifier = -1;
+        }
+        return (passedPawnArray[square] * modifier);
+    }
+
     inline static const int gamePhaseArray[14] = { 0,2,1,1,4,0,0,0,2,1,1,4,0,0 };
     //Legacy
     inline static const std::array<int, 14> pieceMaterialScoreArray = { 0,500,320,330,900,2000,100,0,500,320,330,900,2000,100 };
@@ -103,6 +113,17 @@ private:
      16,  17,  18,  19,  20,  21,  22,  23,
       8,   9,  10,  11,  12,  13,  14,  15,
       0,   1,   2,   3,   4,   5,   6,   7
+    };
+
+    inline static const std::array<int, 64> passedPawnArray = {
+         0,   0,   0,   0,   0,   0,  0,   0,
+         0,   0,   0,   0,   0,   0,  0,   0,
+         15,   15,   15,   15,   15,   15,  15,   15,
+         15,   15,   15,   15,   15,   15,  15,   15,
+         15,   15,   15,   15,   15,   15,  15,   15,
+         30,   30,   30,   30,   30,   30,  30,   30,
+         30,   30,   30,   30,   30,   30,  30,   30,
+         15,   15,   15,   15,   15,   15,  15,   15,
     };
 
     inline static const std::array<std::array<int, 64>, 7> pieceSquareScoreArray = { {

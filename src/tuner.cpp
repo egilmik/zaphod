@@ -31,7 +31,7 @@ int main() {
     std::getline(file, line);
     
     // Read each line from the file
-    while (std::getline(file, line) && vector.size() < 100) {
+    while (std::getline(file, line) && vector.size() < 1000000) {
         std::stringstream ss(line);
         std::string column1;
         std::string column2_str;
@@ -77,7 +77,6 @@ int main() {
         board.parseFen(fenEval.fen);
         int score = search.evaluate(board);
 
-        int x = 0;
     }
 
     return 0;

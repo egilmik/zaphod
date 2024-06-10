@@ -59,9 +59,12 @@ TEST_F(TranspositionTableTest, samePositionGivesSameResultAfterDifferentMoves){
     TranspositionTable table;
     BitBoard key1 = board1.getHashKey();
     BitBoard key2 = board2.generateHashKey();
+    BitBoard pawnKey1 = board1.getPawnHashKey();
+    BitBoard pawnKey2 = board2.generatePawnHashKey();
 
     
     EXPECT_EQ(key1,key2);
+    EXPECT_EQ(pawnKey1, pawnKey2);
 }
 
 TEST_F(TranspositionTableTest, incrementalHashKeyHandlingEnpassantSquare){

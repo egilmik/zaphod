@@ -436,7 +436,24 @@ void Board::parseFen(std::string fen){
     }
 
     hashKey = generateHashKey();
+    pawnHash = generatePawnHashKey();
     historyPly = 0;
+}
+
+BitBoard Board::generatePawnHashKey() {
+    BitBoard whitePawns = getBitboard(P);
+    BitBoard blackPawns = getBitboard(p);
+    BitBoard key = 0;
+    int sq = 0;
+    while (whitePawns != 0) {
+        sq = popLsb(whitePawns);
+        key ^= ttable.pieceKeys[P][sq];
+    }
+    while (blackPawns != 0) {
+        sq = popLsb(blackPawns);
+        key ^= ttable.pieceKeys[p][sq];
+    }
+    return key;
 }
 
 BitBoard Board::generateHashKey(){
@@ -447,8 +464,10 @@ BitBoard Board::generateHashKey(){
             BitBoardEnum pieceEnum = static_cast<BitBoardEnum>(pieceValue);
             BitBoard pieceBoard = getBitboard(pieceEnum);
 
+            int sq = 0;
             while(pieceBoard != 0){
-                key ^= ttable.pieceKeys[pieceEnum][popLsb(pieceBoard)];
+                sq = popLsb(pieceBoard);
+                key ^= ttable.pieceKeys[pieceEnum][sq];
             }
         }
     }
@@ -762,6 +781,7 @@ bool Board::makeMove(Move move) {
     histMove->castleBKCopy = castleBK;
     histMove->castleBQCopy = castleBQ;
     histMove->hashKeyCopy = hashKey;
+    histMove->pawnHashCopy = pawnHash;
 
     historyPly++;
 
@@ -797,6 +817,17 @@ bool Board::makeMove(Move move) {
         }
         // Capture resets halfmoveclock
         halfMoveClock = 0;
+    }
+
+    // update Pawn hash
+    if (capturedPiece == P + otherSide) {
+        pawnHash ^= ttable.pieceKeys[P+otherSide][toSq];
+    }
+    if (piece == P + sideToMove) {
+        if(moveType != PROMOTION){
+            pawnHash ^= ttable.pieceKeys[P + sideToMove][toSq];
+        }
+        pawnHash ^= ttable.pieceKeys[P+sideToMove][fromSq];
     }
 
     // Pop and set bits in piece and all board
@@ -980,6 +1011,7 @@ void Board::revertLastMove()
     castleBK = move->castleBKCopy;
     castleBQ = move->castleBQCopy;
     hashKey = move->hashKeyCopy;
+    pawnHash = move->pawnHashCopy;
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)

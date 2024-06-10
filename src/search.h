@@ -22,6 +22,7 @@ class Search {
     public:
         unsigned long long evaluatedNodes = 0;
         unsigned long long evaluatedQuinesenceNodes = 0;
+        unsigned long long pawnTTHits = 0;
         int64_t lowerBoundHit = 0;
         int64_t upperBoundHit = 0;
         int64_t exactHit = 0;
@@ -32,7 +33,6 @@ class Search {
         void sortMoveList(Board &board,MoveList &list);
         int evaluate(Board &board);
         int evaluatePawns(Board& board);
-        int evaluatePassedPawn(Board& board, BitBoardEnum side);
         bool equal(Move &a, Move &b);
         MoveList reconstructPV(Board& board, int depth);
         bool isSearchStopped();
@@ -45,6 +45,7 @@ class Search {
 
         Score bestMoveIteration;        
         std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
+        std::unordered_map<BitBoard, uint32_t> pawnHashTable;
         int currentTargetDepth;
         int currentQuiesenceTargetDepth = 0;
         Move pvMoves[50];

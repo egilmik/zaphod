@@ -19,6 +19,7 @@ struct MoveStruct {
     bool castleBKCopy = true;
     bool castleBQCopy = true;
     BitBoard hashKeyCopy = 0;
+    BitBoard pawnHashCopy = 0;
 };
 
 
@@ -221,7 +222,9 @@ class Board {
         
 
         BitBoard generateHashKey();
+        BitBoard generatePawnHashKey();
         BitBoard getHashKey(){ return hashKey;};
+        BitBoard getPawnHashKey() { return pawnHash; };
 
         TranspositionTable ttable;
 
@@ -265,6 +268,7 @@ class Board {
         int legalMovesWhite = 0;
         int legalMovesBlack = 0;
         BitBoard hashKey = 0;
+        BitBoard pawnHash = 0;
         
 
         inline static const int fenToBitMapping[64] = { 56,57,58,59,60,61,62,63,
