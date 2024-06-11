@@ -48,8 +48,20 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         std::cout << "info depth " << i << " seldepth " << i+maxQuinesenceDepthThisSearch << " score cp " << score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
         currentFinishedDepth = i;
         bestScore = bestMoveIteration;
+    } 
+
+
+    ////////////////////////////
+    // We might have canceled early and do not have a valid move.
+    // We pick one.....  Lets see how that goes
+    ////////////////////////////
+    if (bestScore.depth == 0) {
+        MoveList list;
+        MoveGenerator::generateMoves(board, list);
+        // Lets try sorting to perhaps hit something in TT
+        sortMoveList(board, list);
+        bestScore = { 0,0, list.moves[0] }; 
     }
- 
     
     return bestScore;
 }
@@ -156,20 +168,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         if (board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
             // We are check mate
             alpha = -300000+(currentTargetDepth-depth);
-            /*
-            if (board.getSideToMove() == BitBoardEnum::Black) {
-                alpha *= -1;
-            }
-            */
-        }
-        else if (board.isSquareAttacked(board.getOtherSide() + BitBoardEnum::K, board.getSideToMove())) {
-            // They are check mate
-            alpha = 300000+ (currentTargetDepth - depth);
-            /*
-            if (board.getSideToMove() == BitBoardEnum::Black) {
-                alpha *= -1;
-            }
-            */
         }
         else {
             // Stalemate
@@ -258,6 +256,18 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
 
         board.revertLastMove();               
     }
+
+    if (moveList.counter == 0) {
+        if (board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
+            // We are check mate
+            alpha = -300000 + (currentTargetDepth - depth);
+        }
+        else {
+            // Stalemate
+            alpha = 0;
+        }
+    }
+
     return alpha;
 }
 
