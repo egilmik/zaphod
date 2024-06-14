@@ -5,11 +5,8 @@
 #include <vector>
 #include "board.h"
 #include "search.h";
-
-struct FenEvalStruct {
-    std::string fen;
-    float score;
-};
+#include "material.h"
+#include "tuner.h"
 
 int main() {
     // Name of the CSV file
@@ -23,7 +20,7 @@ int main() {
         std::cerr << "Error opening file: " << filename << std::endl;
         return 1;
     }
-    std::vector<FenEvalStruct> vector;
+    std::vector<FenEvalStruct> *vector;
 
     std::string line;
 
@@ -31,11 +28,11 @@ int main() {
     std::getline(file, line);
     
     // Read each line from the file
-    while (std::getline(file, line) && vector.size() < 1000000) {
+    while (std::getline(file, line) && vector.size() < 10000) {
         std::stringstream ss(line);
         std::string column1;
         std::string column2_str;
-        float column2;
+        int column2;
 
         // Read the first column
         if (!std::getline(ss, column1, ',')) {
@@ -51,7 +48,7 @@ int main() {
 
         // Convert the second column to float
         try {
-            column2 = std::stof(column2_str);
+            column2 = std::stof(column2_str)*100;
         }
         catch (const std::invalid_argument& e) {
             std::cerr << "Invalid number: " << column2_str << std::endl;
@@ -72,12 +69,49 @@ int main() {
     Board board;
     Search search;
 
-    for (int i = 0; i < vector.size(); i++) {
-        FenEvalStruct fenEval = vector.at(i);
-        board.parseFen(fenEval.fen);
-        int score = search.evaluate(board);
+    int error = Tuner::calculateMSE(vector);
+
+    int bestError = error / vector.size();
+
+    bool improved = true;
+    int epochs = 0;
+    while (improved) {
+        epochs++;
+        improved = false;
+
+        Material::materialScoreArray[6] += 1;
+
+        int newError = 0;
+        for (int i = 0; i < vector.size(); i++) {
+            FenEvalStruct fenEval = vector.at(i);
+            board.parseFen(fenEval.fen);
+            int score = search.evaluate(board);
+
+            newError += pow((fenEval.score - score), 2);
+        }
+
+        if (newError < bestError) {
+            improved = true;
+        }
+        else {
+            Material::materialScoreArray[6] -= 2;
+
+            for (int i = 0; i < vector.size(); i++) {
+                FenEvalStruct fenEval = vector.at(i);
+                board.parseFen(fenEval.fen);
+                int score = search.evaluate(board);
+
+                newError += pow((fenEval.score - score), 2);
+            }
+
+            if (newError < bestError) {
+                improved = true;
+            }
+        }
 
     }
+
+    std::cout << "Epoch: " << epochs << " value: " << Material::materialScoreArray[6] << std::endl;
 
     return 0;
 }
