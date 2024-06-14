@@ -20,15 +20,16 @@ int main() {
         std::cerr << "Error opening file: " << filename << std::endl;
         return 1;
     }
-    std::vector<FenEvalStruct> *vector;
+    std::vector<FenEvalStruct> *vector = new std::vector<FenEvalStruct>();
 
     std::string line;
+    Tuner tuner;
 
     //Swallow first line
     std::getline(file, line);
     
     // Read each line from the file
-    while (std::getline(file, line) && vector.size() < 10000) {
+    while (std::getline(file, line) && vector->size() < 100000) {
         std::stringstream ss(line);
         std::string column1;
         std::string column2_str;
@@ -58,53 +59,39 @@ int main() {
             std::cerr << "Number out of range: " << column2_str << std::endl;
             continue;
         }
-        FenEvalStruct fenEval = { column1,column2 };
+        float score = tuner.sigmoid(column2);
+        FenEvalStruct fenEval = { column1,score };
 
-        vector.push_back(fenEval);
+        vector->push_back(fenEval);
     }
     std::cout << "Finished parsing csv" << std::endl;
 
     // Close the file
     file.close();
-    Board board;
-    Search search;
-
-    int error = Tuner::calculateMSE(vector);
-
-    int bestError = error / vector.size();
-
+    
     bool improved = true;
     int epochs = 0;
+    Board board;
+    float bestError = tuner.calculateMSE(vector, board);
+    
     while (improved) {
         epochs++;
         improved = false;
 
         Material::materialScoreArray[6] += 1;
 
-        int newError = 0;
-        for (int i = 0; i < vector.size(); i++) {
-            FenEvalStruct fenEval = vector.at(i);
-            board.parseFen(fenEval.fen);
-            int score = search.evaluate(board);
-
-            newError += pow((fenEval.score - score), 2);
-        }
+        float newError = tuner.calculateMSE(vector,board);
 
         if (newError < bestError) {
+            bestError = newError;
             improved = true;
         }
         else {
             Material::materialScoreArray[6] -= 2;
-
-            for (int i = 0; i < vector.size(); i++) {
-                FenEvalStruct fenEval = vector.at(i);
-                board.parseFen(fenEval.fen);
-                int score = search.evaluate(board);
-
-                newError += pow((fenEval.score - score), 2);
-            }
+            newError = tuner.calculateMSE(vector, board);
 
             if (newError < bestError) {
+                bestError = newError;
                 improved = true;
             }
         }

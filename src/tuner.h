@@ -14,23 +14,29 @@ struct FenEvalStruct {
 class Tuner {
 
 	public:
-		static int calculateMSE(std::vector<FenEvalStruct> &positions) {
-            Board board;
+		float calculateMSE(std::vector<FenEvalStruct> *positions, Board &board) {
+            
             Search search;
 
-            int error = 0;
+            float error = 0;
 
-            for (int i = 0; i < positions.size(); i++) {
-                FenEvalStruct fenEval = positions.at(i);
+            for (int i = 0; i < positions->size(); i++) {
+                FenEvalStruct fenEval = positions->at(i);
                 board.parseFen(fenEval.fen);
-                int score = search.evaluate(board);
+                int eval = search.evaluate(board);
+                float score = sigmoid(eval);
 
                 error += pow((fenEval.score - score), 2);
+
             }
 
-            return error = error / positions.size();
+            return error / positions->size();
 
 		};
+
+        float sigmoid(int score) {
+            return 1.0 / (1.0 + pow(10.0, -0.1 * score / 400));
+        };
 
 
 };

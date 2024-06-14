@@ -100,7 +100,7 @@ class Material {
     //Legacy
     inline static const std::array<int, 14> pieceMaterialScoreArray = { 0,500,320,330,900,2000,100,0,500,320,330,900,2000,100 };
     //New way
-    inline static const std::array<int, 14> materialScoreArray = { 0,500,320,330,900,2000,100,0,-500,-320,-330,-900,-2000,-100 };
+    inline static std::array<int, 14> materialScoreArray = { 0,500,320,330,900,2000,100,0,-500,-320,-330,-900,-2000,-100 };
 
 private:
       //https://www.talkchess.com/forum3/viewtopic.php?f=2&t=68311&start=19
