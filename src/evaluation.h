@@ -8,6 +8,8 @@ class Evaluation
 {
 public:
 
+    static const int doublePawnScore = 50;
+
     static int evaluatePassedPawn(Board& board, BitBoardEnum side) {
         BitBoard pawns = board.getBitboard(P + side);
         int modifier = 1;
@@ -33,10 +35,23 @@ public:
             BitBoard sqNorthWest = board.sqBB[sq + 9 * modifier];
             BitBoard sqNorthEast = board.sqBB[sq + 7 * modifier];
 
-            // Check if there is our own pawn in front
+            
             int sqNorth = sq + 8 * modifier;
-            while (sqNorth <= 63 && sqNorth >= 0 ) {
-                BitBoard bbSqNorth = board.sqBB[sqNorth];
+            BitBoard bbSqNorth = board.sqBB[sqNorth];
+
+            // Check if there is our own pawn in front
+            if (bbSqNorth == (board.getBitboard(P + side) & bbSqNorth)) {
+                if (side == White) {
+                    score -= doublePawnScore;
+                }
+                else {
+                    score += doublePawnScore;
+                }
+                
+            }
+
+            //Check passed pawn
+            while (sqNorth <= 63 && sqNorth >= 0 ) {                
                 if ((bbSqNorth & aFile) == 0) {
                     BitBoard bbSqWest = board.sqBB[sqNorth + (1 * modifier)];
                     if (bbSqWest == (board.getBitboard(otherSide + P) & bbSqWest)) {
@@ -53,7 +68,9 @@ public:
                 if (bbSqNorth == (board.getBitboard(P + side) & bbSqNorth) || bbSqNorth == (board.getBitboard(P + otherSide) & bbSqNorth)) {
                     isPassed = false;
                 }
+
                 sqNorth += 8*modifier;
+                bbSqNorth = board.sqBB[sqNorth];
             }
 
             if (isPassed) {

@@ -104,3 +104,23 @@ TEST_F(EvaluationTest, SymmetricPositionWithPassedPawnIsEqual) {
     // Invert black score
     EXPECT_EQ(whiteScore, blackScore*-1);
 }
+
+TEST_F(EvaluationTest, DoubledPawn1) {
+    Board board;
+    board.parseFen("8/8/k1p5/8/8/5P1K/5P2/8 w - - 0 1");
+    int whiteScore = Evaluation::evaluatePassedPawn(board, White);
+    int blackScore = Evaluation::evaluatePassedPawn(board, Black);
+
+    // Passed pawn to black
+    EXPECT_TRUE(whiteScore < blackScore*-1);
+}
+
+TEST_F(EvaluationTest, DoubledPawn2) {
+    Board board;
+    board.parseFen("8/2p5/k1p5/8/8/5P1K/8/8 w - - 0 1");
+    int whiteScore = Evaluation::evaluatePassedPawn(board, White);
+    int blackScore = Evaluation::evaluatePassedPawn(board, Black);
+
+    // Passed pawn to black
+    EXPECT_TRUE(whiteScore > blackScore * -1);
+}

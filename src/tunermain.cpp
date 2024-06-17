@@ -78,27 +78,35 @@ int main() {
         epochs++;
         improved = false;
 
-        Material::materialScoreArray[6] += 1;
+        for (int i = 1; i < 14; i++) {            
 
-        float newError = tuner.calculateMSE(vector,board);
+            Material::materialScoreArray[i] += 1;
 
-        if (newError < bestError) {
-            bestError = newError;
-            improved = true;
-        }
-        else {
-            Material::materialScoreArray[6] -= 2;
-            newError = tuner.calculateMSE(vector, board);
+            float newError = tuner.calculateMSE(vector, board);
 
             if (newError < bestError) {
                 bestError = newError;
                 improved = true;
             }
+            else {
+                Material::materialScoreArray[i] -= 2;
+                newError = tuner.calculateMSE(vector, board);
+
+                if (newError < bestError) {
+                    bestError = newError;
+                    improved = true;
+                }
+            }
         }
+
 
     }
 
-    std::cout << "Epoch: " << epochs << " value: " << Material::materialScoreArray[6] << std::endl;
+    std::cout << "Epoch: " << epochs << std::endl;
+
+    for (int i = 0; i < 14; i++) {
+        std::cout << Material::materialScoreArray[i] << std::endl;
+    }
 
     return 0;
 }
