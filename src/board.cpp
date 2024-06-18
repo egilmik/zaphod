@@ -7,6 +7,7 @@
 #include <random>
 #include "tools.h"
 #include <cstdlib>
+#include <cassert>
 
 static std::array<BitBoard,64> initSqToBitMapping(){
     std::array<BitBoard, 64> mapping;
@@ -347,6 +348,9 @@ void Board::clearBoard()
 
 void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 {
+    if (sq > 63) {
+        std::cout << "How did this happen" << std::endl;
+    }
     mailBoxBoard[sq] = piece;
     bitBoardArray[All] |= sqBB[sq];
     bitBoardArray[piece] |= sqBB[sq];
@@ -381,6 +385,10 @@ void Board::parseFen(std::string fen){
     int state = 0;
     for(std::string::size_type i = 0; i < fen.size(); ++i) {
 
+        if (count > 64) {
+            std::cout << "How did this happen" << std::endl;
+        }
+
 
         if(fen[i] == ' '){
             state++;
@@ -405,12 +413,15 @@ void Board::parseFen(std::string fen){
             if(fen[i] == 'q'){ castleBQ = true;}
             break;
         case 3:
-            for(int x = 0; x < 64; x++){
-                if(fen.substr(i,2) == sqToNotation[x]){
+        {
+            std::string enpassant = fen.substr(i, 2);
+            for (int x = 0; x < 64; x++) {
+                if (enpassant == sqToNotation[x]) {
                     enPassantSq = x;
                 }
             }
             break;
+        }
         case 4:
         {
             //Half move clock
@@ -663,6 +674,7 @@ BitBoardEnum Board::getOtherSide()
 
 void Board::parseFenPosition(char value, int &count)
 {
+    assert(count < 64);
 
     int bitNr = fenToBitMapping[count];
 

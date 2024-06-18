@@ -75,7 +75,8 @@ int main() {
     float bestError = tuner.calculateMSE(vector, board);
     
     while (improved) {
-        epochs++;
+        std::cout << "Epoch: " << epochs++ << " Error: " << bestError << std::endl;
+        
         improved = false;
 
         for (int i = 1; i < 14; i++) {            
@@ -96,13 +97,19 @@ int main() {
                     bestError = newError;
                     improved = true;
                 }
+                else {
+                    // No improvement, back to normal
+                    Material::materialScoreArray[i] += 1;
+                }
+            }
+        }
+        if (epochs % 10 == 0) {
+            for (int i = 0; i < 14; i++) {
+                std::cout << Material::materialScoreArray[i] << std::endl;
             }
         }
 
-
     }
-
-    std::cout << "Epoch: " << epochs << std::endl;
 
     for (int i = 0; i < 14; i++) {
         std::cout << Material::materialScoreArray[i] << std::endl;
