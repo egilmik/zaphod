@@ -5,6 +5,7 @@
 #include "board.h"
 #include "search.h"
 #include <array>
+#include "material.h"
 
 struct FenEvalStruct {
 	std::string fen;
@@ -35,7 +36,90 @@ class Tuner {
 		};
 
         float sigmoid(int score) {
-            return 1.0 / (1.0 + pow(10.0, -0.1 * score / 400));
+            return 1.0 / (1.0 + pow(10.0, ( - 0.4 * score) / 400));
+        };
+
+        float tuneMaterial(std::vector<FenEvalStruct>* positions, Board& board, float bestError ) {
+            for (int i = 1; i < 14; i++) {
+
+                Material::materialScoreArray[i] += 1;
+
+                float newError = calculateMSE(positions, board);
+
+                if (newError < bestError) {
+                    bestError = newError;
+                }
+                else {
+                    Material::materialScoreArray[i] -= 2;
+                    newError = calculateMSE(positions, board);
+
+                    if (newError < bestError) {
+                        bestError = newError;
+                    }
+                    else {
+                        // No improvement, back to normal
+                        Material::materialScoreArray[i] += 1;
+                    }
+                }
+            }
+            return bestError;
+        }
+
+        float tunePSQT(std::vector<FenEvalStruct>* positions, Board& board, float bestError) {
+            for (int i = 1; i < 7; i++) {
+                for (int x = 0; x < 64; x++) {
+                    Material::pieceSquareScoreArray[i][x] += 1;
+
+                    float newError = calculateMSE(positions, board);
+
+                    if (newError < bestError) {
+                        bestError = newError;
+                    }
+                    else {
+                        Material::pieceSquareScoreArray[i][x] -= 2;
+                        newError = calculateMSE(positions, board);
+
+                        if (newError < bestError) {
+                            bestError = newError;
+                        }
+                        else {
+                            // No improvement, back to normal
+                            Material::pieceSquareScoreArray[i][x] += 1;
+                        }
+                    }
+
+                }
+            }
+            return bestError;
+        };
+
+        float tunePSQTEG(std::vector<FenEvalStruct>* positions, Board& board, float bestError) {
+            for (int i = 1; i < 7; i++) {
+                for (int x = 0; x < 64; x++) {
+                    Material::pieceSquareScoreArrayEG[i][x] += 1;
+
+                    float newError = calculateMSE(positions, board);
+
+                    if (newError < bestError) {
+                        bestError = newError;
+                    }
+                    else {
+                        Material::pieceSquareScoreArrayEG[i][x] -= 2;
+                        newError = calculateMSE(positions, board);
+
+                        if (newError < bestError) {
+                            bestError = newError;
+                        }
+                        else {
+                            // No improvement, back to normal
+                            Material::pieceSquareScoreArrayEG[i][x] += 1;
+                        }
+                    }
+
+                }
+            }
+
+            return bestError;
         };
 
 

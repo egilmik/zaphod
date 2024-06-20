@@ -10,7 +10,8 @@
 
 int main() {
     // Name of the CSV file
-    std::string filename = "D:\\chess\\chessdb\\output.csv";
+    //std::string filename = "D:\\chess\\chessdb\\output.csv";
+    std::string filename = "D:\\chess\\tuner\\wukong_positions.txt";
 
     // Open the file
     std::ifstream file(filename);
@@ -27,7 +28,15 @@ int main() {
 
     //Swallow first line
     std::getline(file, line);
-    
+
+    while (std::getline(file, line) && vector->size() < 10000) {
+        std::string fen = line.substr(0, line.size() - 5);
+        std::string resultString = line.substr(line.size() - 4, 3);
+        float result = std::stof(resultString);
+
+        vector->push_back({fen, result});
+    }
+    /*
     // Read each line from the file
     while (std::getline(file, line) && vector->size() < 100000) {
         std::stringstream ss(line);
@@ -64,7 +73,8 @@ int main() {
 
         vector->push_back(fenEval);
     }
-    std::cout << "Finished parsing csv" << std::endl;
+    */
+    std::cout << "Finished parsing csv.  Number of entries: " << vector->size() << std::endl;
 
     // Close the file
     file.close();
@@ -73,36 +83,33 @@ int main() {
     int epochs = 0;
     Board board;
     float bestError = tuner.calculateMSE(vector, board);
+    float error = 0;
     
     while (improved) {
         std::cout << "Epoch: " << epochs++ << " Error: " << bestError << std::endl;
         
         improved = false;
 
-        for (int i = 1; i < 14; i++) {            
-
-            Material::materialScoreArray[i] += 1;
-
-            float newError = tuner.calculateMSE(vector, board);
-
-            if (newError < bestError) {
-                bestError = newError;
-                improved = true;
-            }
-            else {
-                Material::materialScoreArray[i] -= 2;
-                newError = tuner.calculateMSE(vector, board);
-
-                if (newError < bestError) {
-                    bestError = newError;
-                    improved = true;
-                }
-                else {
-                    // No improvement, back to normal
-                    Material::materialScoreArray[i] += 1;
-                }
-            }
+        error = tuner.tuneMaterial(vector, board, bestError);
+        if (error < bestError) {
+            bestError = error;
+            improved = true;
         }
+        
+        error = tuner.tunePSQT(vector, board, bestError);
+        if (error < bestError) {
+            bestError = error;
+            improved = true;
+        }
+
+        error = tuner.tunePSQTEG(vector, board, bestError);
+        if (error < bestError) {
+            bestError = error;
+            improved = true;
+        }
+        
+
+
         if (epochs % 10 == 0) {
             for (int i = 0; i < 14; i++) {
                 std::cout << Material::materialScoreArray[i] << std::endl;

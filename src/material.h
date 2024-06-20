@@ -102,7 +102,7 @@ class Material {
     //New way
     inline static std::array<int, 14> materialScoreArray = { 0,500,320,330,900,2000,100,0,-500,-320,-330,-900,-2000,-100 };
 
-private:
+
       //https://www.talkchess.com/forum3/viewtopic.php?f=2&t=68311&start=19
     inline static const int flip[64] = {
      56,  57,  58,  59,  60,  61,  62,  63,
@@ -115,7 +115,7 @@ private:
       0,   1,   2,   3,   4,   5,   6,   7
     };
 
-    inline static const std::array<int, 64> passedPawnArray = {
+    inline static  std::array<int, 64> passedPawnArray = {
          0,   0,   0,   0,   0,   0,  0,   0,
          0,   0,   0,   0,   0,   0,  0,   0,
          15,   15,   15,   15,   15,   15,  15,   15,
@@ -126,7 +126,7 @@ private:
          15,   15,   15,   15,   15,   15,  15,   15,
     };
 
-    inline static const std::array<std::array<int, 64>, 7> pieceSquareScoreArray = { {
+    inline static  std::array<std::array<int, 64>, 7> pieceSquareScoreArray = { {
             //Empty Black
             {-5,0,0,0,0,0,0,-5,
             -5,0,0,0,0,0,0,-5,
@@ -192,7 +192,7 @@ private:
                 0,   0,   0,   0,   0,   0,  0,   0, },
         } };
 
-    inline static const std::array<std::array<int, 64>, 7> pieceSquareScoreArrayEG = { {
+    inline static  std::array<std::array<int, 64>, 7> pieceSquareScoreArrayEG = { {
             //Empty Black
             {-5,0,0,0,0,0,0,-5,
             -5,0,0,0,0,0,0,-5,
