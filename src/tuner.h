@@ -9,6 +9,7 @@
 
 struct FenEvalStruct {
 	std::string fen;
+    MoveStruct boardState;
 	float score;
 };
 
@@ -23,11 +24,11 @@ class Tuner {
 
             for (int i = 0; i < positions->size(); i++) {
                 FenEvalStruct fenEval = positions->at(i);
-                board.parseFen(fenEval.fen);
+                board.setBoardState(fenEval.boardState);
                 int eval = search.evaluate(board);
                 float score = sigmoid(eval);
 
-                error += pow((fenEval.score - score), 2);
+                error += pow(fenEval.score - score, 2);
 
             }
 

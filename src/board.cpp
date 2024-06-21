@@ -379,6 +379,46 @@ bool Board::hasPositionRepeated() {
     return moveCounter > 1;
 }
 
+MoveStruct Board::getBoardState() {
+
+    MoveStruct moveStruct;
+
+    int sizeBB = 15 * sizeof(bitBoardArray[0]);
+    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
+    std::memcpy(moveStruct.bitBoardArrayCopy, &bitBoardArray, sizeBB);
+    std::memcpy(moveStruct.mailBox, &mailBoxBoard, sizeMB);
+    moveStruct.halfMoveClock = halfMoveClock;
+    moveStruct.sideToMoveCopy = sideToMove;
+    moveStruct.enPassantSqCopy = enPassantSq;
+    moveStruct.castleWKCopy = castleWK;
+    moveStruct.castleWQCopy = castleWQ;
+    moveStruct.castleBKCopy = castleBK;
+    moveStruct.castleBQCopy = castleBQ;
+    moveStruct.hashKeyCopy = hashKey;
+    moveStruct.pawnHashCopy = pawnHash;
+
+    return moveStruct;
+}
+
+void Board::setBoardState(MoveStruct& move) {
+
+
+    int sizeBB = 15 * sizeof(bitBoardArray[0]);
+    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
+    std::memcpy(&bitBoardArray, move.bitBoardArrayCopy, sizeBB);
+    std::memcpy(&mailBoxBoard, move.mailBox, sizeMB);
+    sideToMove = move.sideToMoveCopy;
+    halfMoveClock = move.halfMoveClock;
+    enPassantSq = move.enPassantSqCopy;
+    castleWK = move.castleWKCopy;
+    castleWQ = move.castleWQCopy;
+    castleBK = move.castleBKCopy;
+    castleBQ = move.castleBQCopy;
+    hashKey = move.hashKeyCopy;
+    pawnHash = move.pawnHashCopy;
+
+}
+
 void Board::parseFen(std::string fen){
     clearBoard();
     int count = 0;
@@ -424,19 +464,44 @@ void Board::parseFen(std::string fen){
         }
         case 4:
         {
-            //Half move clock
-            std::string halfString = "";
-            halfString += fen[i];
-            if (fen[i + 1] != ' ') {
-                halfString += fen[i + 1];
+            if (fen.size() > i + 3) {
+                //Half move clock
+                std::string halfString = "";
+                halfString += fen[i];
+
+            
+                if (fen[i + 1] != ' ') {
+                    halfString += fen[i + 1];
+                    i++;
+                }
+                if (fen[i + 1] != ' ') {
+                    halfString += fen[i + 1];
+                    i++;
+                }
+
                 i++;
-            }
-            if (fen[i + 1] != ' ') {
-                halfString += fen[i + 1];
-                i++;
+
+                std::string fullmoveString = "";
+                fullmoveString += fen[i];
+
+                //Double for double digit positions
+                if (fen[i + 1] != ' ') {
+                    fullmoveString += fen[i + 1];
+                    i++;
+                }
+                if (fen[i + 1] != ' ') {
+                    fullmoveString += fen[i + 1];
+                    i++;
+                }
+
+                halfMoveClock = std::stoi(halfString);
+                int fullMove = std::stoi(fullmoveString);
             }
 
-            halfMoveClock = std::stoi(halfString);
+
+
+
+
             break;
         }
         case 5:
@@ -1011,19 +1076,7 @@ void Board::revertLastMove()
     historyPly--;
     MoveStruct *move = &moveHistory[historyPly];    
 
-    int sizeBB = 15*sizeof(bitBoardArray[0]);
-    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
-    std::memcpy(&bitBoardArray,&move->bitBoardArrayCopy,sizeBB);
-    std::memcpy(&mailBoxBoard, &move->mailBox, sizeMB);
-    sideToMove = move->sideToMoveCopy;
-    halfMoveClock = move->halfMoveClock;
-    enPassantSq = move->enPassantSqCopy;
-    castleWK = move->castleWKCopy;
-    castleWQ = move->castleWQCopy;
-    castleBK = move->castleBKCopy;
-    castleBQ = move->castleBQCopy;
-    hashKey = move->hashKeyCopy;
-    pawnHash = move->pawnHashCopy;
+    setBoardState(*move);
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)

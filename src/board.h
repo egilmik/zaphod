@@ -171,6 +171,8 @@ class Board {
         void removePiece(int sq, BitBoardEnum color);
 
         void parseFen(std::string fen);
+        void setBoardState(MoveStruct& moveInfo);
+        MoveStruct getBoardState();
         void printBoard();
         void printBoard(BitBoard board);
         void printBoard(BitBoard board, int origin);

@@ -25,16 +25,18 @@ int main() {
 
     std::string line;
     Tuner tuner;
+    Board board;
 
     //Swallow first line
     std::getline(file, line);
 
-    while (std::getline(file, line) && vector->size() < 10000) {
+    while (std::getline(file, line) && vector->size() < 30000) {
         std::string fen = line.substr(0, line.size() - 5);
         std::string resultString = line.substr(line.size() - 4, 3);
         float result = std::stof(resultString);
+        board.parseFen(fen);
 
-        vector->push_back({fen, result});
+        vector->push_back({fen,board.getBoardState(), result});
     }
     /*
     // Read each line from the file
@@ -81,7 +83,6 @@ int main() {
     
     bool improved = true;
     int epochs = 0;
-    Board board;
     float bestError = tuner.calculateMSE(vector, board);
     float error = 0;
     
@@ -111,8 +112,30 @@ int main() {
 
 
         if (epochs % 10 == 0) {
+            std::cout << "Material" << std::endl;
+            std::cout << "{";
             for (int i = 0; i < 14; i++) {
-                std::cout << Material::materialScoreArray[i] << std::endl;
+                std::cout << Material::materialScoreArray[i] << ",";
+            }
+            std::cout << "};" << std::endl;
+
+            std::cout << "PSQT EG" << std::endl;
+            for (int i = 1; i < 7; i++) {
+                std::cout << "{";
+                for (int x = 0; x < 64; x++) {
+                    std::cout << Material::pieceSquareScoreArrayEG[i][x] << ",";
+                }
+                std::cout << "}," << std::endl;
+            }
+
+            std::cout << "PSQT MG" << std::endl;
+            std::cout << "{";
+            for (int i = 1; i < 7; i++) {
+                std::cout << "{";
+                for (int x = 0; x < 64; x++) {
+                    std::cout << Material::pieceSquareScoreArray[i][x] << ",";
+                }
+                std::cout << "}," << std::endl;
             }
         }
 
