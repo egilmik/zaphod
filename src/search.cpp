@@ -337,6 +337,7 @@ int Search::evaluate(Board &board)
     int psqt = (mgScore * mgPhase + egScore * egPhase) / 24;
     int score = materialScore+psqt;
     score += evaluatePawns(board);
+    score += Evaluation::evaluatePiecePairs(board);
 
 
     if (board.getSideToMove() == BitBoardEnum::Black) {
