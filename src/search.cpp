@@ -229,19 +229,13 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
     }
 
     MoveList moveList;
-    MoveList moveListReduced;
-    MoveGenerator::generateMoves(board,moveList);
-    for(int i = 0; i < moveList.counter; i++){
-        if(moveList.checkers != 0 || board.getPieceOnSquare(moveList.moves[i].to()) != All || moveList.moves[i].getMoveType() == PROMOTION) {
-            moveListReduced.moves[moveListReduced.counter++] = moveList.moves[i];
-        }
-    }
+    MoveGenerator::generateMoves(board,moveList,true);
 
     //sortMoveList(board, moveListReduced);
 
     int score = 0;
-    for(int i = 0; i < moveListReduced.counter; i++){
-        Move move = moveListReduced.moves[i];
+    for(int i = 0; i < moveList.counter; i++){
+        Move move = moveList.moves[i];
         bool valid = board.makeMove(move);
         score = -quinesence(board,-beta,-alpha,depth+1);
 
