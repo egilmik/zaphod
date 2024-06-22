@@ -76,7 +76,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
-    if (evaluatedNodes % 1000 && isSearchStopped()) {
+    if ((evaluatedNodes % 10000) == 0 && isSearchStopped()) {
         return beta;
     }
     //////////////////////////
@@ -206,14 +206,14 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
     }
 
     int standPat = evaluate(board);
-
+    
     if (maxQuinesenceDepthThisSearch < depth) {
         maxQuinesenceDepthThisSearch = depth;
     }
 
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
-    if (evaluatedNodes % 1000 && isSearchStopped()) {
+    if ((evaluatedNodes % 1000) > 0 && isSearchStopped()) {
         return beta;
     }
 
