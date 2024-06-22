@@ -1,9 +1,7 @@
 #include "movegenerator.h"
 #include <iostream>
 
-
-
-void MoveGenerator::generateMoves(Board &board,MoveList &moveList, bool isQuinesence)
+void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
 {
     
     BitBoard king = board.getBitboard(K + board.getSideToMove());
@@ -45,22 +43,21 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList, bool isQuines
         checkers |= ((king & ~board.FileHMask) >> 9) & board.getBitboard(P + board.getOtherSide());
     }
 
-    bool doQuinesenceReduction = isQuinesence && (checkers < 1);
 
     if (board.countSetBits(checkers) < 2) {
-        generateKnightMoves(board, moveList, checkers, kingSquare, pinned, snipers,doQuinesenceReduction);
-        generateRookMoves(board, moveList, checkers, kingSquare,pinned,snipers,doQuinesenceReduction);
-        generateBishopMoves(board, moveList, checkers, kingSquare,pinned,snipers,doQuinesenceReduction);
-        generateQueenMoves(board, moveList, checkers, kingSquare, pinned,snipers,doQuinesenceReduction);
+        generateKnightMoves(board, moveList, checkers, kingSquare, pinned, snipers);
+        generateRookMoves(board, moveList, checkers, kingSquare,pinned,snipers);
+        generateBishopMoves(board, moveList, checkers, kingSquare,pinned,snipers);
+        generateQueenMoves(board, moveList, checkers, kingSquare, pinned,snipers);
         //Pawns last, to prevent promotions to move twice
-        generatePawnMoves(board, moveList,checkers,kingSquare,pinned,snipers,doQuinesenceReduction);
+        generatePawnMoves(board, moveList,checkers,kingSquare,pinned,snipers);
     }
-    generateKingMoves(board, moveList, checkers, kingSquare, pinned, snipers, doQuinesenceReduction);
+    generateKingMoves(board, moveList, checkers, kingSquare, pinned, snipers);
     moveList.checkers = checkers;
     board.setLegalMovesForSideToMove(moveList.counter);
 }
 
-void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers, bool doQuinesenceReduction)
+void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::P + board.getSideToMove());
@@ -170,12 +167,12 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
 
     //Single push
     int square = 0;
-    while (singlePush && !doQuinesenceReduction) {
+    while (singlePush) {
         square = board.popLsb(singlePush);
         moveList.moves[moveList.counter++] = Move::make<NORMAL>(square - pawnIncrement,square);
     }
 
-    while (doublePush && !doQuinesenceReduction) {
+    while (doublePush) {
         square = board.popLsb(doublePush);
         moveList.moves[moveList.counter++] = Move::make<NORMAL>(square - pawnDoubleIncrement, square);
     }
@@ -273,7 +270,7 @@ BitBoard MoveGenerator::pawnAttacks(Board &board, BitBoardEnum color) {
 }
 
 
-void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers, bool doQuinesenceReduction)
+void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
@@ -304,7 +301,7 @@ void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoa
         BitBoard silentMoves = moves & emptySquares;
 
         int toSq = 0;
-        while (silentMoves && !doQuinesenceReduction) {
+        while (silentMoves) {
             toSq = board.popLsb(silentMoves);
             moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
@@ -316,7 +313,7 @@ void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoa
     }
 }
 
-void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers, bool doQuinesenceReduction)
+void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::R + board.getSideToMove());
@@ -337,7 +334,7 @@ void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList, BitBoard
         BitBoard silentMoves = moves & emptySquares;
 
         int toSq = 0;
-        while (silentMoves && !doQuinesenceReduction) {
+        while (silentMoves) {
             toSq = board.popLsb(silentMoves);
             moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
@@ -378,7 +375,7 @@ BitBoard MoveGenerator::makeLegalMoves(Board &board, BitBoard moves, BitBoard pi
     return moves;
 }
 
-void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers, bool doQuinesenceReduction)
+void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::B + board.getSideToMove());
@@ -399,7 +396,7 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoa
 
         int toSq = 0;
         
-        while(silentMoves && !doQuinesenceReduction){
+        while(silentMoves){
             toSq = board.popLsb(silentMoves);
             moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
@@ -412,7 +409,7 @@ void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoa
     }
 }
 
-void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers, bool doQuinesenceReduction)
+void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::Q + board.getSideToMove());
@@ -433,7 +430,7 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoar
 
         int toSq = 0;
 
-        while (silentMoves && !doQuinesenceReduction) {
+        while (silentMoves) {
             toSq = board.popLsb(silentMoves);
             moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
         }
@@ -446,7 +443,7 @@ void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoar
     }
 }
 
-void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers, bool doQuinesenceReduction)
+void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
@@ -500,7 +497,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
     BitBoard silentMoves = moves & emptySquares;
 
     int toSq = 0;
-    while (silentMoves && !doQuinesenceReduction) {
+    while (silentMoves) {
         toSq = board.popLsb(silentMoves);
         moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
     }
@@ -510,7 +507,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
         moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
     }
 
-    if (sideToMove == BitBoardEnum::White && !doQuinesenceReduction) {
+    if (sideToMove == BitBoardEnum::White) {
         if (board.getCastleRightsWK()) {
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares, 5);
@@ -532,7 +529,7 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
             }  //b1,c1,d1;
         }
     }
-    else if (sideToMove == BitBoardEnum::Black && !doQuinesenceReduction) {
+    else if (sideToMove == BitBoardEnum::Black) {
         if (board.getCastleRightsBK()) {
             BitBoard castlineSquares = 0;
             board.setBit(castlineSquares, 61);
