@@ -36,7 +36,8 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
             currentQuiesenceTargetDepth = 100;
         }
 
-        int score = negamax(board, i, lowerBound, upperBound);
+        bestScore = searchRootMoves(board, i, lowerBound, upperBound);
+
         if (stopSearch) {
             break;
         }
@@ -45,25 +46,65 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000);
 
-        std::cout << "info depth " << i << " seldepth " << i+maxQuinesenceDepthThisSearch << " score cp " << score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
+        std::cout << "info depth " << i << " seldepth " << i+maxQuinesenceDepthThisSearch << " score cp " << bestScore.score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestScore.bestMove) << std::endl;
         currentFinishedDepth = i;
-        bestScore = bestMoveIteration;
     } 
 
-
-    ////////////////////////////
-    // We might have canceled early and do not have a valid move.
-    // We pick one.....  Lets see how that goes
-    ////////////////////////////
-    if (bestScore.depth == 0) {
-        MoveList list;
-        MoveGenerator::generateMoves(board, list);
-        // Lets try sorting to perhaps hit something in TT
-        sortMoveList(board, list);
-        bestScore = { 0,0, list.moves[0] }; 
-    }
     
     return bestScore;
+}
+
+Score Search::searchRootMoves(Board& board, int depth, int alpha, int beta) {
+
+    MoveList moveList;
+    MoveGenerator::generateMoves(board, moveList);
+    int score = 0;
+
+    Score bestMove;
+    Move alphaMove;
+
+    //Make sure there is one valid move
+    bestMove.bestMove = moveList.moves[0];
+
+    sortMoveList(board, moveList);
+
+    for (int i = 0; i < moveList.counter; i++) {
+        Move move = moveList.moves[i];
+        board.makeMove(move);
+        score = -negamax(board, depth - 1, -beta, -alpha);
+        board.revertLastMove();
+
+        if (score > alpha) {
+            alpha = score;
+            bestMove.bestMove = move;
+            bestMove.depth = depth;
+            bestMove.score = score;
+
+            alphaMove = move;
+        }
+    }
+
+    if (moveList.counter == 0) {
+        if (board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
+            // We are check mate
+            alpha = -300000 + (currentTargetDepth - depth);
+        }
+        else {
+            // Stalemate
+            alpha = 0;
+        }
+    }
+
+    BitBoard key = board.getHashKey();
+    std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
+
+
+    //Replace if depth is higher
+    if (it == transpositionMap.end() || it->second.depth < depth) {
+        transpositionMap[key] = { alphaMove, TEType::exact, depth, alpha };
+    }
+
+    return bestMove;
 }
 
 
@@ -95,11 +136,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         TEType entryType = it->second.type;
         if (entryType == TEType::exact) {
             exactHit++;
-            if (depth == currentTargetDepth) {
-                bestMoveIteration.bestMove = it->second.bestMove;
-                bestMoveIteration.score = alpha;
-                bestMoveIteration.depth = depth;
-            }
             return it->second.score;
         }
         else if (entryType == TEType::lower) {
@@ -144,19 +180,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         if (score > alpha) {
             alpha = score;
             alphaMove = move;
-            if (depth == currentTargetDepth) {
-                bestMoveIteration.bestMove = move;
-                bestMoveIteration.score = alpha;
-                bestMoveIteration.depth = depth;
-            }
         }
 
-        if (score >= beta) {
-            
-            /*if (it == transpositionMap.end() || it->second.depth < depth) {
-                transpositionMap[key] = { move, TEType::lower, depth, beta };
-            }*/
-                
+        if (score >= beta) {                
             break;
         }
 
