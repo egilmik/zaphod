@@ -28,7 +28,6 @@ class Search {
         int64_t exactHit = 0;
         unsigned long long ttHits = 0;
         Score search(Board &board, int maxDepth, int maxTime);
-        Score searchRootMoves(Board& board, int depth, int alpha, int beta);
         int negamax(Board &board, int depth, int alpha, int beta);
         int quinesence(Board &board, int alpha, int beta, int depth);
         void sortMoveList(Board &board,MoveList &list);
