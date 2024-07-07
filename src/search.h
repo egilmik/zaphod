@@ -6,6 +6,7 @@
 #include "movegenerator.h"
 #include <iostream>
 #include <chrono>
+#include "ttable.h"
 
 struct Score {
     int depth = 0;
@@ -46,6 +47,7 @@ class Search {
         Score bestMoveIteration;        
         std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
         std::unordered_map<BitBoard, uint32_t> pawnHashTable;
+        TTable pawnTable;
         int currentTargetDepth;
         int currentQuiesenceTargetDepth = 0;
         Move pvMoves[50];

@@ -348,15 +348,20 @@ int Search::evaluate(Board &board)
 }
 
 int Search::evaluatePawns(Board& board) {
-    std::unordered_map<BitBoard, uint32_t>::iterator it = pawnHashTable.find(board.getPawnHashKey());
-    if (it == pawnHashTable.end()) {
-        int score = Evaluation::evaluatePassedPawn(board, White);
+    uint64_t hash = board.getPawnHashKey();
+    bool isValid = false;
+    int score = 0;
+    pawnTable.probe(hash, isValid, score);
+
+    if (!isValid) {
+        score = 0;
+        score = Evaluation::evaluatePassedPawn(board, White);
         score += Evaluation::evaluatePassedPawn(board, Black);
-        pawnHashTable[board.getPawnHashKey()] = score;
+        pawnTable.put(hash, score);
         return score;
     }
     pawnTTHits++;
-    return it->second;
+    return score;
 }
 
 
