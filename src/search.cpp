@@ -101,7 +101,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
                 bestMoveIteration.depth = depth;
             }
             return it->second.score;
-        }
+        }/*
         else if (entryType == TEType::lower) {
             lowerBoundHit++;
             alpha = std::max(it->second.score, alpha);
@@ -120,6 +120,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
             return it->second.score;
         }
+        */
     }
 
     
