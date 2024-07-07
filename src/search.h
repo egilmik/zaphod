@@ -45,9 +45,8 @@ class Search {
 
 
         Score bestMoveIteration;        
-        std::unordered_map<BitBoard,TranspositionEntry> transpositionMap;
-        std::unordered_map<BitBoard, uint32_t> pawnHashTable;
         TTable pawnTable;
+        TTable tt;
         int currentTargetDepth;
         int currentQuiesenceTargetDepth = 0;
         Move pvMoves[50];

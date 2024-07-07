@@ -89,18 +89,19 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
         }
     }
     
+    bool isTTValid = false;
+    TTEntry* tte = tt.probe(key, isTTValid);
 
-    std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
-    if (it != transpositionMap.end() && it->second.depth >= depth) {
-        TEType entryType = it->second.type;
-        if (entryType == TEType::exact) {
+    if (isTTValid && tte->depth >= depth) {
+        TType entryType = tte->type;
+        if (entryType == EXACT) {
             exactHit++;
             if (depth == currentTargetDepth) {
-                bestMoveIteration.bestMove = it->second.bestMove;
+                bestMoveIteration.bestMove = tte->bestMove;
                 bestMoveIteration.score = alpha;
                 bestMoveIteration.depth = depth;
             }
-            return it->second.score;
+            return tte->score;
         }/*
         else if (entryType == TEType::lower) {
             lowerBoundHit++;
@@ -178,15 +179,15 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
     
     //Replace if depth is higher
-    if (it == transpositionMap.end() || it->second.depth < depth) {
+    if (!isTTValid || (isTTValid && tte->depth < depth)) {
         if (alpha <= alphaOrginal) {
-            transpositionMap[key] = { alphaMove, TEType::upper, depth, alpha };
+            tt.put(key, alpha, depth, alphaMove, UPPER);
         }
         else if (alpha >= beta) {
-            transpositionMap[key] = { alphaMove, TEType::lower, depth, alpha };
+            tt.put(key, alpha, depth, alphaMove, LOWER);
         } 
         if (alpha < beta && alpha > alphaOrginal) {
-            transpositionMap[key] = { alphaMove, TEType::exact, depth, alpha};
+            tt.put(key, alpha, depth, alphaMove, EXACT);
         }
     }
     
@@ -281,13 +282,15 @@ bool compare(SortStruct a, SortStruct b)
 
 void Search::sortMoveList(Board &board, MoveList &list)
 {
+
+    bool isTTValid = false;
+    TTEntry* tte = tt.probe(board.getHashKey(), isTTValid);
     
-    std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(board.getHashKey());
     SortStruct sortArray[256];
     for(int i = 0; i< list.counter; i++){
         SortStruct entry;
         entry.move = list.moves[i];
-        if(it != transpositionMap.end() && equal(list.moves[i], it->second.bestMove)){
+        if(isTTValid && equal(list.moves[i], tte->bestMove)){
             entry.score = 10000;
         } else if(entry.move.getMoveType() == PROMOTION) {
             entry.score = 1000;
@@ -351,7 +354,7 @@ int Search::evaluatePawns(Board& board) {
     uint64_t hash = board.getPawnHashKey();
     bool isValid = false;
     int score = 0;
-    pawnTable.probe(hash, isValid, score);
+    TTEntry* entry = pawnTable.probe(hash, isValid);
 
     if (!isValid) {
         score = 0;
@@ -361,7 +364,7 @@ int Search::evaluatePawns(Board& board) {
         return score;
     }
     pawnTTHits++;
-    return score;
+    return entry->score;
 }
 
 
@@ -378,11 +381,12 @@ MoveList Search::reconstructPV(Board& board, int depth)
     MoveList list;
 
     for (int i = 0; i < depth; i++) {
-        BitBoard key = board.getHashKey();
-        std::unordered_map<BitBoard, TranspositionEntry>::iterator it = transpositionMap.find(key);
-        if (it != transpositionMap.end() && it->second.type == TEType::exact) {
-            board.makeMove(it->second.bestMove);
-            list.moves[list.counter++] = it->second.bestMove;
+        bool isTTValid = false;
+        TTEntry* tte = tt.probe(board.getHashKey(), isTTValid);
+
+        if (isTTValid && tte->type == EXACT) {
+            board.makeMove(tte->bestMove);
+            list.moves[list.counter++] = tte->bestMove;
         }
         else {
             return list;
