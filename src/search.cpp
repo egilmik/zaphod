@@ -76,7 +76,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
 
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
-    if ((evaluatedNodes % 10000) == 0 && isSearchStopped()) {
+    if ((evaluatedNodes % 100) == 0 && isSearchStopped()) {
         return beta;
     }
     //////////////////////////
