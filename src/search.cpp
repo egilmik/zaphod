@@ -6,20 +6,26 @@
 #include "evaluation.h"
 
 Score Search::search(Board &board, int maxDepth, int maxTime)
-{    
+{   
+    tt.clear();
+    pawnTable.clear();
+    
     maxSearchTime = maxTime;
-    maxQuinesenceDepthThisSearch = 0;
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();;
-    int lowerBound = -100000;
-    int upperBound = 100000;
     stopSearch = false;
-    bool inIteration = true;
-    Score bestScore;
-
-    auto start = std::chrono::high_resolution_clock::now();
     evaluatedNodes = 0;
     pawnTTHits = 0;
+    bestMoveIteration.depth = 0;
 
+
+
+    bool inIteration = true;
+    Score bestScore;
+    int lowerBound = -100000;
+    int upperBound = 100000;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    
 
     for (int i = 1; i <= maxDepth; i++) {
         currentTargetDepth = i;

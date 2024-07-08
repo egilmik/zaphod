@@ -22,12 +22,10 @@ struct SortStruct {
 class Search {
     public:
         unsigned long long evaluatedNodes = 0;
-        unsigned long long evaluatedQuinesenceNodes = 0;
         unsigned long long pawnTTHits = 0;
         int64_t lowerBoundHit = 0;
         int64_t upperBoundHit = 0;
         int64_t exactHit = 0;
-        unsigned long long ttHits = 0;
         Score search(Board &board, int maxDepth, int maxTime);
         int negamax(Board &board, int depth, int alpha, int beta);
         int quinesence(Board &board, int alpha, int beta, int depth);
@@ -45,12 +43,10 @@ class Search {
 
 
         Score bestMoveIteration;        
-        TTable pawnTable;
-        TTable tt;
+        TTable pawnTable = TTable(64); 
+        TTable tt = TTable(256);
         int currentTargetDepth;
         int currentQuiesenceTargetDepth = 0;
-        Move pvMoves[50];
-        int maxQuiesenceDepth = 0;
         int64_t startTime = 0;
         int64_t maxSearchTime = 0;
         bool stopSearch = false;

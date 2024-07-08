@@ -23,10 +23,9 @@ struct TTEntry {
 
 class TTable {
 public:
-    TTable() {
+    TTable(int sizeMB) {
         //In MB
-        int sizeInMB = 256;
-        size = (sizeInMB * 1000000) / sizeof(TTEntry);
+        size = (sizeMB * 1000000) / sizeof(TTEntry);
         table = (TTEntry*)malloc(size * sizeof(TTEntry));
     }
 
@@ -42,6 +41,13 @@ public:
     void put(uint64_t key, int score,int depth = 0, Move move = Move(), TType type = EXACT) {
         TTEntry entry = { key, score, move, type, depth };
         table[key % size] = entry;
+    }
+
+    void clear() {
+        for (int i = 0; i < size; i++) {
+            table[i].key = 0;
+            table[i].score = 0;
+        }
     }
 
     
