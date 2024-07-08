@@ -173,7 +173,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     }
 
     if (validMoves == 0) {
-        if (board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
+
+        BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
+        if (board.isSquareAttacked(kingBB, board.getOtherSide())) {
             // We are check mate
             alpha = -300000+(currentTargetDepth-depth);
         }
@@ -266,7 +268,8 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
     }
 
     if (moveList.counter == 0) {
-        if (board.isSquareAttacked(board.getSideToMove() + BitBoardEnum::K, board.getOtherSide())) {
+        BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
+        if (board.isSquareAttacked(kingBB, board.getOtherSide())) {
             // We are check mate
             alpha = -300000 + (currentTargetDepth - depth);
         }
