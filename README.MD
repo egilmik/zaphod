@@ -7,7 +7,7 @@ Maybe at some point it will get to a ELO 2000+, but not today
 Estimated ELO ~1470
 
 Testing:
-TC: 10+0.1
+TC: 10+0.1.
 2000 games per engine
 Reference engines:
 - Pulse 1.7.2 64-bit ELO 1518
