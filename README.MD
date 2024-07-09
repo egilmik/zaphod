@@ -2,9 +2,29 @@ Zaphod is just a hobby!
 
 Maybe at some point it will get to a ELO 2000+, but not today
 
+### Version 1.3
+
+Estimated ELO ~1470
+
+## Testing
+TC: 10+0.1
+2000 games per engine
+Reference engines:
+- Pulse 1.7.2 64-bit ELO 1518
+- Cicada 0.1 64-bit ELO 1443
+- Zaphod 1.2 ELO 1366
+
+
+
+## Change log
+- Fixed bug in mate check ( Most of the elo increase comes from this )
+- Implemented custom hashtable for TT, configurable with specifying MB (not exposed to UCI)
+- Pawn hash table
+- Pair evaluation of minor pieces ( No significant gain )
+
 ### Version 1.2
 
-Estimated ELO ~1400
+Estimated ELO ~1366
 
 Changelog:
 - If negamax does not return a move, pick one from the movelist instead of doing an invalid move
@@ -12,7 +32,7 @@ Changelog:
 
 ### Version 1.1
 
-Estimated ELO ~1380
+Estimated ELO ~1360?
 
 Change log:
 - Fixed error in promotion
@@ -22,7 +42,7 @@ Change log:
 
 The first functional version which can play games, with a certain confidence it will not do very stupid things.
 
-Estimated ELO ~1350
+Estimated ELO ~1350?
 
 Features:
 - Magic bitboards
