@@ -6,7 +6,7 @@ Maybe at some point it will get to a ELO 2000+, but not today
 
 Estimated ELO ~1470
 
-## Testing
+Testing:
 TC: 10+0.1
 2000 games per engine
 Reference engines:
@@ -14,9 +14,7 @@ Reference engines:
 - Cicada 0.1 64-bit ELO 1443
 - Zaphod 1.2 ELO 1366
 
-
-
-## Change log
+Change log
 - Fixed bug in mate check ( Most of the elo increase comes from this )
 - Implemented custom hashtable for TT, configurable with specifying MB (not exposed to UCI)
 - Pawn hash table
