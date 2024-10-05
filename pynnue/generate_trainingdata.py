@@ -39,12 +39,12 @@ def process_positions(total_positions, batch_size=1000):
                 if score is not None:
                     evaluations.append((fen, score))
             # Save evaluations to file
-            with open('evaluated_positions.txt', 'a') as f:
+            with open('evaluated_positions5.txt', 'a') as f:
                 for fen, score in evaluations:
                     f.write(f"{fen};{score}\n")
             print(f"Processed batch {i // batch_size + 1} / {total_positions // batch_size}")
 
 if __name__ == '__main__':
-    total_positions = 10000  # One million positions
-    batch_size = 100  # Adjust based on memory and performance considerations
+    total_positions = 100000  # One million positions
+    batch_size = 1000  # Adjust based on memory and performance considerations
     process_positions(total_positions, batch_size)

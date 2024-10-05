@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from nnue_model import NNUEModel
 from board import Board
 from feature_extractor import extract_features
+import time
 
 class ChessDataset(Dataset):
     def __init__(self, epd_list, targets):
@@ -38,12 +39,13 @@ def load_epd_positions(epd_file):
             # Assume the target evaluation is included after a semicolon
             if ';' in line:
                 epd_str, target_str = line.split(';')
-                target = float(target_str.strip())
+                target = int(target_str.strip())
             else:
                 epd_str = line
                 target = 0.0  # Default target if not specified
-            epd_list.append(epd_str.strip())
-            targets.append(target)
+            if abs(target) < 1000:
+                epd_list.append(epd_str.strip())
+                targets.append(target)
     return epd_list, targets
 
 def load_epd_positions_pct(epd_file):
@@ -83,29 +85,42 @@ def load_epd_positions_pct(epd_file):
 
 def main():
     # Load positions and targets from a file
-    epd_list, targets = load_epd_positions('evaluated_positions.txt')
+    print("Loading training data")
+    epd_list, targets = load_epd_positions('training_positions.txt')
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'Using device: {device}')
+    
 
     # Create dataset and dataloader
     dataset = ChessDataset(epd_list, targets)
-    dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     # Initialize model, loss function, and optimizer
     model = NNUEModel()
+    
+    model.to(device)
     criterion = torch.nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.01)
 
     # Training loop
-    epochs = 30
+    print("Starting training")
+    epochs = 90
     for epoch in range(epochs):
+        start_time = time.time()  # Start timing the epoch
         running_loss = 0.0
         for features, target in dataloader:
+            features = features.to(device)
+            target = target.to(device)
             optimizer.zero_grad()
             outputs = model(features)
-            loss = criterion(outputs, target)
+            loss = criterion(outputs, target.squeeze())
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-        print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss/len(dataloader)}")
+        epoch_time = time.time() - start_time  # Calculate epoch duration
+        average_loss = running_loss/len(targets)
+        print(f"Epoch {epoch+1}/{epochs}, "f"Train Loss: {average_loss:.4f},"f"Time: {epoch_time:.2f}s")
 
     # Save the trained model
     torch.save(model.state_dict(), 'nnue_model.pth')
@@ -117,27 +132,27 @@ def main():
     test_features = extract_features(test_board)
     test_features = torch.tensor(test_features, dtype=torch.float32)
     model.eval()
-    with torch.no_grad():
-        evaluation = model(test_features).item()
-    print(f"Evaluation for test position: {evaluation}")
+    #with torch.no_grad():
+    #    evaluation = model(test_features).item()
+    #print(f"Evaluation for test position: {evaluation}")
 
     # Additional testing with more positions
     test_epd_list = [
-        # White has a strong attack
+        # White has a strong attack -3.1
         "r1bqkbnr/pppp1ppp/2n5/4p3/1b1P4/5N2/PPPN1PPP/R1BQKB1R w KQkq - 2 5",
         # Endgame position
         "8/5k2/8/8/8/8/5K2/8 w - - 0 1",
-        # Expected 57.362%
-        "r2qr1k1/1bpnbppp/p2p1n2/1p2p3/3PP3/2P2N1P/PPBN1PP1/R1BQR1K1 w - -"
+        # Expected +6.6
+        "2bqkbn1/rpp1pppN/n2p4/p6p/3PP3/2N5/PPP2PPP/R1BQKB1R w KQ - 1 7"
     ]
     for test_epd in test_epd_list:
         test_board = Board()
         test_board.set_position_from_fen(test_epd)
         test_features = extract_features(test_board)
         test_features = torch.tensor(test_features, dtype=torch.float32)
-        with torch.no_grad():
-            evaluation = model(test_features).item()
-        print(f"Evaluation for position '{test_epd}': {evaluation}")
+        #with torch.no_grad():
+        #    evaluation = model(test_features).item()
+        #print(f"Evaluation for position '{test_epd}': {evaluation}")
 
 if __name__ == '__main__':
     main()
