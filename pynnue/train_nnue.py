@@ -86,7 +86,7 @@ def load_epd_positions_pct(epd_file):
 def main():
     # Load positions and targets from a file
     print("Loading training data")
-    epd_list, targets = load_epd_positions('training_positions.txt')
+    epd_list, targets = load_epd_positions('training_data_05102024.txt')
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')

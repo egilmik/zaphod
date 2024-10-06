@@ -26,21 +26,12 @@ def generate_random_positions(batch_size):
 def evaluate_position(fen, engine, time_limit=0.1):
     board = chess.Board(fen)
     try:
-        info = engine.analyse(board, chess.engine.Limit(time=time_limit))
+        info = engine.analyse(board, chess.engine.Limit(time=time_limit,depth=8))
         score = info['score'].white().score(mate_score=100000)
     except Exception as e:
         print(f"Error evaluating position: {e}")
         score = None
     return score
-
-def evaluate_position_wrapper(args):
-    fen, engine_path, time_limit, batch_size = args
-    engine = chess.engine.SimpleEngine.popen_uci(engine_path)
-    batch_positions = generate_random_positions(batch_size)
-    for fen in batch_positions:
-        score = evaluate_position(fen, engine, time_limit)
-    engine.close()
-    return fen, score
 
 def evaluate_position_wrapper(batch_positions, engine_path, time_limit, result_queue):
     """
@@ -119,24 +110,7 @@ def process_batches(batches,result_queue,max_threads):
     for thread in threads:
         thread.join()
 
-def process_positions(total_positions, batch_size=1000):
-    with chess.engine.SimpleEngine.popen_uci('d:\\source\\Stockfish\\stockfish-windows-x86-64-avx2.exe') as engine:
-        for i in range(0, total_positions, batch_size):
-            start_time = time.time()  # Start timing the generation
-            batch_positions = generate_random_positions(batch_size)
-            evaluations = []
-            for fen in batch_positions:
-                score = evaluate_position(fen, engine)
-                if score is not None:
-                    evaluations.append((fen, score))
-            # Save evaluations to file
-            with open('training_data_05102024.txt', 'a') as f:
-                for fen, score in evaluations:
-                    f.write(f"{fen};{score}\n")
-            duration = time.time() - start_time  # Calculate duration
-            print(f"Processed batch {i // batch_size + 1} / {total_positions // batch_size} Time {duration}")
-
 if __name__ == '__main__':
-    total_positions = 100000  # One million positions
+    total_positions = 4000000  # One million positions
     max_threads = 12  # Adjust based on memory and performance considerations
     process_positions_parallel(total_positions, max_threads)
