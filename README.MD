@@ -8,7 +8,7 @@ Estimated ELO
 
 
 ## Change log
-- Limited quiesence depth to 10 - Estimated +50 ELO gain 
+- Limited quiescence depth to 10 - Estimated +50 ELO gain 
 
 ### Version 1.3
 
