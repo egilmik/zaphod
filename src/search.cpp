@@ -39,7 +39,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
             currentQuiesenceTargetDepth = 2;
         }
         else {
-            currentQuiesenceTargetDepth = 100;
+            currentQuiesenceTargetDepth = 10;
         }
 
         int score = negamax(board, i, lowerBound, upperBound);
@@ -234,7 +234,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
         alpha = standPat;
     }
 
-    if (depth > currentQuiesenceTargetDepth) {
+    if (depth >= currentQuiesenceTargetDepth) {
         return standPat;
     }
 

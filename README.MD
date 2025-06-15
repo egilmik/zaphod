@@ -2,6 +2,14 @@ Zaphod is just a hobby!
 
 Maybe at some point it will get to a ELO 2000+, but not today
 
+### Version 1.4
+
+Estimated ELO
+
+
+## Change log
+- Limited quiesence depth to 10 - Estimated +50 ELO gain 
+
 ### Version 1.3
 
 Estimated ELO ~1470
