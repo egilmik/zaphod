@@ -2,9 +2,9 @@ Zaphod is just a hobby!
 
 Maybe at some point it will get to a ELO 2000+, but not today
 
-### Version 1.4
+### Version 1.3.1
 
-Estimated ELO
+Estimated ELO ~1520
 
 
 ## Change log
