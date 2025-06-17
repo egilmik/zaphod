@@ -19,6 +19,10 @@ struct SortStruct {
     Move move;
 };
 
+struct SearchStack {
+    int checkExt;
+};
+
 class Search {
     public:
         unsigned long long evaluatedNodes = 0;
@@ -27,7 +31,7 @@ class Search {
         int64_t upperBoundHit = 0;
         int64_t exactHit = 0;
         Score search(Board &board, int maxDepth, int maxTime);
-        int negamax(Board &board, int depth, int alpha, int beta);
+        int negamax(Board &board, int depth, int alpha, int beta, int ply);
         int quinesence(Board &board, int alpha, int beta, int depth);
         void sortMoveList(Board &board,MoveList &list);
         int evaluate(Board &board);
@@ -50,6 +54,7 @@ class Search {
         int64_t startTime = 0;
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
+        SearchStack ss[100];
           
 };
 #endif

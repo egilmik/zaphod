@@ -2,12 +2,18 @@ Zaphod is just a hobby!
 
 Maybe at some point it will get to a ELO 2000+, but not today
 
+### Version 1.4
+
+Estimated ELO ~1560
+
+Change log:
+- Check extension in search (not in quiescence) - Estimated +40 ELO gain 
+
 ### Version 1.3.1
 
 Estimated ELO ~1520
 
-
-## Change log
+Change log:
 - Limited quiescence depth to 10 - Estimated +50 ELO gain 
 
 ### Version 1.3

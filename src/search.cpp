@@ -42,7 +42,9 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
             currentQuiesenceTargetDepth = 10;
         }
 
-        int score = negamax(board, i, lowerBound, upperBound);
+        //Reset search stack check extension
+        ss[0].checkExt = 0;
+        int score = negamax(board, i, lowerBound, upperBound,0);
         if (stopSearch) {
             break;
         }
@@ -74,7 +76,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
 
 
-int Search::negamax(Board& board, int depth, int alpha, int beta)
+int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 {
     if (depth == 0) return quinesence(board, alpha, beta, 1);
     BitBoard key = board.getHashKey();
@@ -146,13 +148,24 @@ int Search::negamax(Board& board, int depth, int alpha, int beta)
     for (int i = 0; i < moveList.counter; i++) {
         Move move = moveList.moves[i];
         board.makeMove(move);
-        score = -negamax(board, depth - 1, -beta, -alpha);
+        int plyCheckExtension = ss[ply].checkExt;
+        int extension = 0;
+
+        // Check extension
+        BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
+        if (board.isSquareAttacked(kingBB, board.getOtherSide()) && plyCheckExtension < 3 && depth > 1) {
+            extension++;
+        }
+
+        ss[ply + 1].checkExt = plyCheckExtension + extension;
+
+        score = -negamax(board, depth-1+extension, -beta, -alpha,ply+1);
         board.revertLastMove();
 
         if (score > alpha) {
             alpha = score;
             alphaMove = move;
-            if (depth == currentTargetDepth) {
+            if (ply == 0) {
                 bestMoveIteration.bestMove = move;
                 bestMoveIteration.score = alpha;
                 bestMoveIteration.depth = depth;
