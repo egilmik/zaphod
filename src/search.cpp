@@ -30,6 +30,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     for (int i = 1; i <= maxDepth; i++) {
         currentTargetDepth = i;
         maxQuinesenceDepthThisSearch = 0;
+        maxPlyThisIteration = 0;
 
         /////////////////////////////////
         // Limit quiesence the first 2 iterations,
@@ -53,7 +54,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000);
 
-        std::cout << "info depth " << i << " seldepth " << i+maxQuinesenceDepthThisSearch << " score cp " << score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
+        std::cout << "info depth " << i << " seldepth " << maxPlyThisIteration << " score cp " << score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
         currentFinishedDepth = i;
         bestScore = bestMoveIteration;
     } 
@@ -78,8 +79,9 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 {
-    if (depth == 0) return quinesence(board, alpha, beta, 1);
+    if (depth == 0) return quinesence(board, alpha, beta, 1,ply);
     BitBoard key = board.getHashKey();
+    bool isRoot = ply == 0;
 
 
     // Check if max search time has been exhausted
@@ -104,7 +106,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
         TType entryType = tte->type;
         if (entryType == EXACT) {
             exactHit++;
-            if (depth == currentTargetDepth) {
+            if (isRoot) {
                 bestMoveIteration.bestMove = tte->bestMove;
                 bestMoveIteration.score = alpha;
                 bestMoveIteration.depth = depth;
@@ -154,7 +156,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
         // Check extension
         BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
         if (board.isSquareAttacked(kingBB, board.getOtherSide()) && plyCheckExtension < 3 && depth > 1) {
-            extension++;
+           extension++;
         }
 
         ss[ply + 1].checkExt = plyCheckExtension + extension;
@@ -165,7 +167,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
         if (score > alpha) {
             alpha = score;
             alphaMove = move;
-            if (ply == 0) {
+            if (isRoot) {
                 bestMoveIteration.bestMove = move;
                 bestMoveIteration.score = alpha;
                 bestMoveIteration.depth = depth;
@@ -218,7 +220,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
 
 
-int Search::quinesence(Board &board, int alpha, int beta,int depth)
+int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
 {
 
     //////////////////////////
@@ -232,6 +234,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
     
     if (maxQuinesenceDepthThisSearch < depth) {
         maxQuinesenceDepthThisSearch = depth;
+    }
+
+    if (maxPlyThisIteration < ply) {
+        maxPlyThisIteration = ply;
     }
 
     // Check if max search time has been exhausted
@@ -266,7 +272,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth)
     for(int i = 0; i < moveListReduced.counter; i++){
         Move move = moveListReduced.moves[i];
         bool valid = board.makeMove(move);
-        score = -quinesence(board,-beta,-alpha,depth+1);
+        score = -quinesence(board,-beta,-alpha,depth+1, ply+1);
 
         if(score > alpha){
             alpha = score;

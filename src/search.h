@@ -32,7 +32,7 @@ class Search {
         int64_t exactHit = 0;
         Score search(Board &board, int maxDepth, int maxTime);
         int negamax(Board &board, int depth, int alpha, int beta, int ply);
-        int quinesence(Board &board, int alpha, int beta, int depth);
+        int quinesence(Board &board, int alpha, int beta, int depth, int ply);
         void sortMoveList(Board &board,MoveList &list);
         int evaluate(Board &board);
         int evaluatePawns(Board& board);
@@ -42,6 +42,7 @@ class Search {
         
         int currentFinishedDepth = 0;
         int maxQuinesenceDepthThisSearch = 0;
+        int maxPlyThisIteration = 0;
 
     private:
 
