@@ -7,7 +7,15 @@ Maybe at some point it will get to a ELO 2000+, but not today
 Estimated ELO ~1560
 
 Change log:
-- Check extension in search (not in quiescence) - Estimated +40 ELO gain 
+- Check extension in search (not in quiescence) - Estimated +40 ELO gain
+
+Testing:
+TC: 10+0.1 and 120+1
+200 games per engine per time
+Reference engines:
+- Pulse 1.7.2 64-bit ELO 1518
+- Cicada 0.1 64-bit ELO 1443
+- Zaphod 1.3.1 ELO 1520
 
 ### Version 1.3.1
 
