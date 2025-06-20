@@ -391,7 +391,11 @@ int Search::evaluatePawns(Board& board) {
         pawnTable.put(hash, score);
         return score;
     }
-    pawnTTHits++;
+    else
+    {
+        pawnTTHits++;
+    }
+    
     return entry->score;
 }
 
