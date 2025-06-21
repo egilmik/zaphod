@@ -388,6 +388,7 @@ int Search::evaluatePawns(Board& board) {
         score = 0;
         score = Evaluation::evaluatePassedPawn(board, White);
         score += Evaluation::evaluatePassedPawn(board, Black);
+        score += Evaluation::evaluatePawnShield(board);
         pawnTable.put(hash, score);
         return score;
     }

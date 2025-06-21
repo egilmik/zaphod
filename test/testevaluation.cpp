@@ -124,3 +124,83 @@ TEST_F(EvaluationTest, DoubledPawn2) {
     // Passed pawn to black
     EXPECT_TRUE(whiteScore > blackScore * -1);
 }
+
+TEST_F(EvaluationTest, WhiteKingSidePawnShield) {
+    Board board;
+    board.parseFen("rnbqkbnr/8/8/8/8/8/PPPPPPPP/RNBQ2KR w KQkq - 0 1");
+    int expectedScore = Evaluation::PAWNSHIELD_RANK2_SCORE * 3;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, whiteKingSidePawnShieldF2G3H2) {
+    Board board;
+    board.parseFen("rnbqkbnr/8/8/8/8/6P1/3PPP1P/R2Q2KR w KQkq - 0 1");
+    int expectedScore = (Evaluation::PAWNSHIELD_RANK2_SCORE * 2) + Evaluation::PAWNSHIELD_RANK3_SCORE;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, WhiteKingSidePawnShieldMissing) {
+    Board board;
+    board.parseFen("rnbqkbnr/8/8/8/8/8/PPPPP3/RNBQ2KR w KQkq - 0 1");
+    int expectedScore = Evaluation::PAWNSHIELD_MISSING_SCORE * 3;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, WhiteQueenSidePawnShield) {
+    Board board;
+    board.parseFen("rnbqkbnr/8/8/8/8/8/PPPPPPPP/RK1Q3R w KQkq - 0 1");
+    int expectedScore = Evaluation::PAWNSHIELD_RANK2_SCORE * 3;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, WhiteQueenSidePawnShieldMissing) {
+    Board board;
+    board.parseFen("rnbqkbnr/8/8/8/8/8/3PPPPP/RK1Q3R w KQkq - 0 1");
+    int expectedScore = Evaluation::PAWNSHIELD_MISSING_SCORE * 3;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, BlackKingSidePawnShield) {
+    Board board;
+    board.parseFen("rnbq2k1/5ppp/8/8/8/8/PPPPP3/RNBQK2R w KQq - 0 1");
+    int expectedScore = -Evaluation::PAWNSHIELD_RANK2_SCORE * 3;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, BlackKingSidePawnShieldF2G3H2) {
+    Board board;
+    board.parseFen("rnbq2k1/5p1p/6p1/8/8/8/PPPPP3/RNBQK2R w KQq - 0 1");
+    int expectedScore = -((Evaluation::PAWNSHIELD_RANK2_SCORE * 2) + Evaluation::PAWNSHIELD_RANK3_SCORE);
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, BlackKingSidePawnShieldMissing) {
+    Board board;
+    board.parseFen("rnbq2k1/8/8/8/8/8/PPPPP3/RNBQK2R w KQq - 0 1");
+    int expectedScore = -Evaluation::PAWNSHIELD_MISSING_SCORE * 3;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, BlackQueenSidePawnShield) {
+    Board board;
+    board.parseFen("rk1q4/ppp5/8/8/8/8/PPPPP3/RNBQK2R w KQq - 0 1");
+    int expectedScore = -Evaluation::PAWNSHIELD_RANK2_SCORE * 3;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
+
+TEST_F(EvaluationTest, BlackQueenSidePawnShieldMissing) {
+    Board board;
+    board.parseFen("rk1q4/8/8/8/8/8/PPPPP3/RNBQK2R w KQq - 0 1");
+    int expectedScore = -Evaluation::PAWNSHIELD_MISSING_SCORE*3;
+
+    EXPECT_EQ(expectedScore, Evaluation::evaluatePawnShield(board));
+}
