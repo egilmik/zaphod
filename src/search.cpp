@@ -171,7 +171,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
 
         
-        if (i < 4 || depth < 4 || extension > 0 || moveIsCapture) {
+        if (i < 4 || depth < 3 || extension > 0 || moveIsCapture) {
             score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1);
         }
         else {
