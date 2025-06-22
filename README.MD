@@ -7,7 +7,9 @@ Maybe at some point it will get to a ELO 2000+, but not today
 Estimated ELO ~1630
 
 Change log:
-- Added LMR - basic implementation - Estimated +70 ELO gain
+- Added LMR - basic implementation - Estimated +70 ELO gain 
+- LMR depth from 4 to 3 - Estimated +30 ELO gain
+- 
 
 ### Version 1.4
 
