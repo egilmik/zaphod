@@ -2,6 +2,13 @@ Zaphod is just a hobby!
 
 Maybe at some point it will get to a ELO 2000+, but not today
 
+### Version 1.5
+
+Estimated ELO ~1630
+
+Change log:
+- Added LMR - basic implementation - Estimated +70 ELO gain
+
 ### Version 1.4
 
 Estimated ELO ~1560

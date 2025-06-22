@@ -15,6 +15,8 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     stopSearch = false;
     evaluatedNodes = 0;
     pawnTTHits = 0;
+    lmrHit = 0;
+    lmrResearchHit = 0;
     bestMoveIteration.depth = 0;
 
 
@@ -149,19 +151,50 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     
     for (int i = 0; i < moveList.counter; i++) {
         Move move = moveList.moves[i];
+
+        bool moveIsCapture = board.getPieceOnSquare(move.to()) != All;
+
         board.makeMove(move);
         int plyCheckExtension = ss[ply].checkExt;
+        //bool reducedSearch = ss[ply].isLMRReduced;
         int extension = 0;
 
+        ////////////
         // Check extension
+        ////////////
         BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
         if (board.isSquareAttacked(kingBB, board.getOtherSide()) && plyCheckExtension < 3 && depth > 1) {
            extension++;
         }
 
         ss[ply + 1].checkExt = plyCheckExtension + extension;
+        
 
-        score = -negamax(board, depth-1+extension, -beta, -alpha,ply+1);
+
+        
+        if (i < 4 || depth < 4 || extension > 0 || moveIsCapture) {
+            score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1);
+        }
+        else {
+            ////////////
+            // LMR
+            ////////////
+            score = -negamax(board, depth - 2, -(alpha + 1), -alpha, ply + 1);
+            lmrHit++;
+
+            if (score > alpha) {
+                lmrResearchHit++;
+                score = -negamax(board, depth - 1, -(alpha + 1), -alpha, ply + 1);
+                if (score > alpha && score < beta) {
+                    // Full re-search
+                    score = -negamax(board, depth - 1, -beta, -alpha, ply + 1);
+                }
+            } 
+        }
+
+
+
+        
         board.revertLastMove();
 
         if (score > alpha) {
