@@ -156,7 +156,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
         board.makeMove(move);
         int plyCheckExtension = ss[ply].checkExt;
-        //bool reducedSearch = ss[ply].isLMRReduced;
         int extension = 0;
 
         ////////////
