@@ -72,6 +72,7 @@ int main(int, char**) {
         std::cout << move.depth <<"/"<< search.maxQuinesenceDepthThisSearch << " NPS: " << nps << " Nodes: " << search.evaluatedNodes << " Playtime " << (duration.count()) << " ms" << std::endl;
         std::cout << "Best move " << Perft::getNotation(move.bestMove)  << " Expected best move " << def.bestMove << std::endl;
         std::cout << "TT stats " << " Upper bound hit: " << search.upperBoundHit << " Lower bound hit " << search.lowerBoundHit << " Exact hit " << search.exactHit << " Pawn tt hits: " << search.pawnTTHits << std::endl;
+        std::cout << "LMR stats " << " LMR hit: " << search.lmrHit << " LMR re-search: " << search.lmrResearchHit << std::endl;
         std::cout << "PV ";
         for (int i = 0; i < pvList.counter; i++) {
             std::cout << Perft::getNotation(pvList.moves[i]) << " ";
