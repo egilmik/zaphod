@@ -1,6 +1,7 @@
 #include "uci.h"
 #include <sstream>
 #include "perft.h"
+#include "material.h"
 
 void UCI::loop(/*int argc, char* argv[]*/) {
 
@@ -28,6 +29,7 @@ void UCI::loop(/*int argc, char* argv[]*/) {
         else if (token == "uci") sendID();
         else if (token == "position") setPosition(is);
         else if (token == "go") startSearch(is);
+        else if (token == "eval") staticEvaluation();
         else if (token == "isready") std::cout << "readyok" << std::endl;
         else if (token == "d") motherBoard.printBoard();
 
@@ -212,4 +214,36 @@ bool UCI::parseMove(std::string token)
         }
     }
     return false;
+}
+
+void UCI::staticEvaluation() {
+    
+    int mgScore = 0;
+    int egScore = 0;
+    int gamePhase = 0;
+    int materialScore = 0;
+    BitBoard allPieces = motherBoard.getBitboard(All);
+    int square = 0;
+    while (allPieces) {
+        square = motherBoard.popLsb(allPieces);
+        BitBoardEnum piece = motherBoard.getPieceOnSquare(square);
+        mgScore += Material::getPieceSquareScoreMG(piece, square);
+        egScore += Material::getPieceSquareScoreEG(piece, square);
+        gamePhase += Material::gamePhaseArray[piece];
+        materialScore += Material::materialScoreArray[piece];
+    }
+
+    //Pesto gamephase handling
+    int mgPhase = gamePhase;
+    if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
+    int egPhase = 24 - mgPhase;
+    int psqt = (mgScore * mgPhase + egScore * egPhase) / 24;
+    int score = materialScore + psqt;
+    
+
+
+    if (motherBoard.getSideToMove() == BitBoardEnum::Black) {
+        score *= -1;
+    }
+    std::cout << "eval " << score << std::endl;
 }
