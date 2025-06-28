@@ -17,6 +17,7 @@ class UCI {
         void setPosition(std::istringstream &is);
         bool parseMove(std::string token);
         void startSearch(std::istringstream &is);
+        void staticEvaluation();
         void sendID();
 
         Board motherBoard;
