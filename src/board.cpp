@@ -547,6 +547,9 @@ BitBoard Board::generateHashKey(){
             }
         }
     }
+
+    key ^= sideToMove;
+
     if(getCastleRightsWK()){
         key ^= ttable.castlingRightsKeys[0];
     }
@@ -717,11 +720,13 @@ BitBoard Board::getOwnBoard()
 
 void Board::changeSideToMove()
 {
+    hashKey ^= sideToMove;
     if(sideToMove == BitBoardEnum::White){
        sideToMove = BitBoardEnum::Black;     
     } else {
         sideToMove = BitBoardEnum::White;
     }
+    hashKey ^= sideToMove;
 }
 
 BitBoardEnum Board::getSideToMove()
