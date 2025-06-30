@@ -2,6 +2,13 @@ Zaphod is just a hobby!
 
 Maybe at some point it will get to a ELO 2000+, but not today
 
+### Version 1.6
+
+Estimated ELO ~1650
+
+Changelog:
+- Removed pawn and piece pair evaluation.  Only PSQT and material - Estimated 30+ ELO gain
+
 ### Version 1.5
 
 Estimated ELO ~1620
