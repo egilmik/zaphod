@@ -186,8 +186,10 @@ class Board {
         int popLsb(BitBoard& board);
         int countSetBits(BitBoardEnum piece);
         static int countSetBits(unsigned long long board);
-        bool makeMove(Move move);
+        bool makeMove(Move move);       
         void revertLastMove();
+        void makeNullMove();
+        void revertNullMove();
         bool isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker);
         BitBoardEnum getPieceOnSquare(int sq);
 

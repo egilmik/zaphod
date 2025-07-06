@@ -69,7 +69,7 @@ class Tuner {
         float tunePSQT(std::vector<FenEvalStruct>* positions, Board& board, float bestError) {
             for (int i = 1; i < 7; i++) {
                 for (int x = 0; x < 64; x++) {
-                    Material::pieceSquareScoreArray[i][x] += 1;
+                    Material::pieceSquareScoreArrayMG[i][x] += 1;
 
                     float newError = calculateMSE(positions, board);
 
@@ -77,7 +77,7 @@ class Tuner {
                         bestError = newError;
                     }
                     else {
-                        Material::pieceSquareScoreArray[i][x] -= 2;
+                        Material::pieceSquareScoreArrayMG[i][x] -= 2;
                         newError = calculateMSE(positions, board);
 
                         if (newError < bestError) {
@@ -85,7 +85,7 @@ class Tuner {
                         }
                         else {
                             // No improvement, back to normal
-                            Material::pieceSquareScoreArray[i][x] += 1;
+                            Material::pieceSquareScoreArrayMG[i][x] += 1;
                         }
                     }
 

@@ -21,6 +21,7 @@ struct SortStruct {
 
 struct SearchStack {
     int checkExt;
+    bool isNullMove = false;
 };
 
 class Search {
