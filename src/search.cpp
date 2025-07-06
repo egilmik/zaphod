@@ -19,7 +19,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     lmrResearchHit = 0;
     bestMoveIteration.depth = 0;
 
-
+    
 
     bool inIteration = true;
     Score bestScore;
@@ -148,12 +148,34 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     sortMoveList(board, moveList);
     
     int validMoves = moveList.counter;
+
+    //bool isInCheck = board.countSetBits(moveList.checkers) > 0;
+    //bool hasNonPawnMaterial = (board.getBitboard(board.getSideToMove() + BitBoardEnum::R) && board.getBitboard(board.getSideToMove() + BitBoardEnum::B) && board.getBitboard(board.getSideToMove() + BitBoardEnum::Q) && board.getBitboard(board.getSideToMove() + BitBoardEnum::N)) > 0;
+
+    //int eval = evaluate(board);
+
+
+    /*
+
+    if (!isInCheck && hasNonPawnMaterial && eval >= beta && depth > 3 && ply > 0) {
+        int r = depth > 6 ? 4 : 3;
+        board.makeNullMove();
+        ss[ply].isNullMove = true;
+        int nullScore = -negamax(board, depth - 1 - r, -beta, -beta + 1, ply + 1);
+        board.revertNullMove();
+        if (nullScore >= beta) {
+            return nullScore;
+        }
+    }
+
+    */
+
     
     for (int i = 0; i < moveList.counter; i++) {
         Move move = moveList.moves[i];
 
         bool moveIsCapture = board.getPieceOnSquare(move.to()) != All;
-
+        
         board.makeMove(move);
         int plyCheckExtension = ss[ply].checkExt;
         int extension = 0;
@@ -167,9 +189,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
         }
 
         ss[ply + 1].checkExt = plyCheckExtension + extension;
+
         
-
-
+        
         
         if (i < 4 || depth < 3 || extension > 0 || moveIsCapture) {
             score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1);
@@ -388,8 +410,8 @@ int Search::evaluate(Board &board)
     while (allPieces) {
         square = board.popLsb(allPieces);
         BitBoardEnum piece = board.getPieceOnSquare(square);
-        mgScore += Material::getPieceSquareScoreMG(piece, square);
-        egScore += Material::getPieceSquareScoreEG(piece, square);
+        mgScore += Material::pieceSquareScoreArrayMG[piece][square];
+        egScore += Material::pieceSquareScoreArrayEG[piece][square];
         gamePhase += Material::gamePhaseArray[piece];
         materialScore += Material::materialScoreArray[piece];
     }

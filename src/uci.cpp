@@ -227,8 +227,8 @@ void UCI::staticEvaluation() {
     while (allPieces) {
         square = motherBoard.popLsb(allPieces);
         BitBoardEnum piece = motherBoard.getPieceOnSquare(square);
-        mgScore += Material::getPieceSquareScoreMG(piece, square);
-        egScore += Material::getPieceSquareScoreEG(piece, square);
+        mgScore += Material::pieceSquareScoreArrayMG[piece][square];
+        egScore += Material::pieceSquareScoreArrayEG[piece][square];
         gamePhase += Material::gamePhaseArray[piece];
         materialScore += Material::materialScoreArray[piece];
     }

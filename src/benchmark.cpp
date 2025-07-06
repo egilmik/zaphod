@@ -13,7 +13,7 @@ struct BenchmarkDefinition {
     std::string bestMove;
 };
 
-int main(int, char**) {
+ int main(int, char**) {
 
     std::vector<BenchmarkDefinition> benchVector;
     
@@ -27,6 +27,17 @@ int main(int, char**) {
     benchVector.push_back({ "CCR07","r4rk1/3nppbp/bq1p1np1/2pP4/8/2N2NPP/PP2PPB1/R1BQR1K1 b - - 1 12","f8b8" });
     benchVector.push_back({ "CCR08","rn1qkb1r/pb1p1ppp/1p2pn2/2p5/2PP4/5NP1/PP2PPBP/RNBQK2R w KQkq c6 1 6","d4d5" });
     benchVector.push_back({ "CCR09","r1bq1rk1/1pp2pbp/p1np1np1/3Pp3/2P1P3/2N1BP2/PP4PP/R1NQKB1R b KQ - 1 9","c6d4" });
+    /*
+    benchVector.push_back({ "CCR10","rnbqr1k1/1p3pbp/p2p1np1/2pP4/4P3/2N5/PP1NBPPP/R1BQ1RK1 w - - 1 11","a2a4" });
+    benchVector.push_back({ "","","" });
+    benchVector.push_back({ "","","" });
+    benchVector.push_back({ "","","" });
+    benchVector.push_back({ "","","" });
+    benchVector.push_back({ "","","" });
+    benchVector.push_back({ "","","" });
+    benchVector.push_back({ "","","" });
+    benchVector.push_back({ "","","" });
+    */
 
 
 

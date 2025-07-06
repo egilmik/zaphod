@@ -1084,6 +1084,40 @@ void Board::revertLastMove()
     setBoardState(*move);
 }
 
+void Board::makeNullMove() {
+    MoveStruct* histMove = &moveHistory[historyPly];
+
+    int sizeBB = 15 * sizeof(bitBoardArray[0]);
+    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
+    std::memcpy(&histMove->bitBoardArrayCopy, &bitBoardArray, sizeBB);
+    std::memcpy(&histMove->mailBox, &mailBoxBoard, sizeMB);
+    histMove->halfMoveClock = halfMoveClock;
+    histMove->sideToMoveCopy = sideToMove;
+    histMove->enPassantSqCopy = enPassantSq;
+    histMove->castleWKCopy = castleWK;
+    histMove->castleWQCopy = castleWQ;
+    histMove->castleBKCopy = castleBK;
+    histMove->castleBQCopy = castleBQ;
+    histMove->hashKeyCopy = hashKey;
+    histMove->pawnHashCopy = pawnHash;
+
+    if (enPassantSq != noSq) {
+        hashKey ^= ttable.enPassantKeys[enPassantSq];
+    }
+    enPassantSq = noSq;
+
+    historyPly++;
+
+    changeSideToMove();
+}
+
+void Board::revertNullMove() {
+    historyPly--;
+    MoveStruct* move = &moveHistory[historyPly];
+
+    setBoardState(*move);
+}
+
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
 {
     BitBoard empty = ~bitBoardArray[All];
