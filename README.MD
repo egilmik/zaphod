@@ -8,6 +8,7 @@ Maybe at some point it will get to a ELO 2000+, but not today
 
 | Version	| Estimated ELO		| Change log |
 | -------	| -------------		| ---------- |
+| 1.7		| ~1670				| Improved calculating PSQT score. Est Elo gain +20 |
 | 1.6		| ~1650				| Removed pawn and piece pair evaluation. Only psqt and material left. Est ELO gain +30|
 | 1.5		| ~1620				| Adde LMR. - Est ELO gain +60 |
 | 1.4		| ~1560				| Check extension in search. Est Elo gain +40. <br><br> Testing: <br> TC 10+0.1 and 120+1, 200 games per engine per tc. <br> Reference engines <br> - Pulse 1.7.2 64-bit ELO 1518 <br> - Cicada 0.1 64-bit ELO 1443 <br> - Zaphod 1.3.1 ELO ~1520 |
