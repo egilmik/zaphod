@@ -54,6 +54,8 @@ struct BenchmarkDefinition {
     std::ofstream csvFile("benchmark.csv");
     csvFile << "id,status,expMove,selMove,depth,qdepth,score,elapsedtime,nps,nodes\n";
 
+    int64_t npsTotal = 0;
+    int64_t nodesTotal = 0;
     
     Search search;
     for (BenchmarkDefinition def : benchVector) {
@@ -97,7 +99,12 @@ struct BenchmarkDefinition {
         std::cout << "Playtime " << (duration.count()) << " ms" << std::endl;
         std::cout << std::endl;
 
+        npsTotal += nps;
+        nodesTotal += search.evaluatedNodes;
+
     }
+
+    std::cout << "Average NPS: " << (npsTotal / benchVector.size()) << " Average nodes: " << (nodesTotal/benchVector.size()) << std::endl;
 
     csvFile.close();
 
