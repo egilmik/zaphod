@@ -252,6 +252,14 @@ class Board {
             return halfMoveClock;
         }
 
+        void setGamePhase(int gamePhase) {
+            this->gamePhase = gamePhase;
+        }
+
+        int getGamePhase() {
+            return gamePhase;
+        }
+
     private:
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
@@ -273,6 +281,8 @@ class Board {
         int legalMovesBlack = 0;
         BitBoard hashKey = 0;
         BitBoard pawnHash = 0;
+
+        int gamePhase = 24;
         
 
         inline static const int fenToBitMapping[64] = { 56,57,58,59,60,61,62,63,
