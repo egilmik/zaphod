@@ -53,8 +53,9 @@ struct BenchmarkDefinition {
 
     std::ofstream csvFile("benchmark.csv");
     csvFile << "id,status,expMove,selMove,depth,qdepth,score,elapsedtime,nps,nodes\n";
+
     
-    
+    Search search;
     for (BenchmarkDefinition def : benchVector) {
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -62,7 +63,7 @@ struct BenchmarkDefinition {
         Board board;
         board.parseFen(def.fen);
         int depth = 9;
-        Search search;        
+                
         Score move = search.search(board, depth,1000000);
 
         MoveList pvList = search.reconstructPV(board,depth);

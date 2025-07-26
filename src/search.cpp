@@ -150,25 +150,22 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     int validMoves = moveList.counter;
 
     //bool isInCheck = board.countSetBits(moveList.checkers) > 0;
-    //bool hasNonPawnMaterial = (board.getBitboard(board.getSideToMove() + BitBoardEnum::R) && board.getBitboard(board.getSideToMove() + BitBoardEnum::B) && board.getBitboard(board.getSideToMove() + BitBoardEnum::Q) && board.getBitboard(board.getSideToMove() + BitBoardEnum::N)) > 0;
 
     //int eval = evaluate(board);
 
 
-    /*
 
-    if (!isInCheck && hasNonPawnMaterial && eval >= beta && depth > 3 && ply > 0) {
-        int r = depth > 6 ? 4 : 3;
-        board.makeNullMove();
-        ss[ply].isNullMove = true;
-        int nullScore = -negamax(board, depth - 1 - r, -beta, -beta + 1, ply + 1);
-        board.revertNullMove();
-        if (nullScore >= beta) {
-            return nullScore;
-        }
-    }
+    //if (!isInCheck && board.getGamePhase() > 12 && /*eval >= beta &&*/ depth > 3 && ply > 0) {
+    //    int r = depth > 6 ? 4 : 3;
+    //    board.makeNullMove();
+    //    ss[ply].isNullMove = true;
+    //    int nullScore = -negamax(board, depth - 1 - r, -beta, -beta + 1, ply + 1);
+    //   board.revertNullMove();
+    //    if (nullScore >= beta) {
+    //        return nullScore;
+    //   }
+    //}
 
-    */
 
     
     for (int i = 0; i < moveList.counter; i++) {
@@ -417,6 +414,7 @@ int Search::evaluate(Board &board)
     }
 
     //Pesto gamephase handling
+    board.setGamePhase(gamePhase);
     int mgPhase = gamePhase;
     if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
     int egPhase = 24 - mgPhase;
