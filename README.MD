@@ -8,6 +8,7 @@ Maybe at some point it will get to a ELO 2000+, but not today
 
 | Version	| Estimated ELO		| Change log |
 | -------	| -------------		| ---------- |
+| 1.8		| ~1730				| Reintroduced move ordering in qsearch +60 Elo.
 | 1.7		| ~1670				| Improved calculating PSQT score. Est Elo gain +20 |
 | 1.6		| ~1650				| Removed pawn and piece pair evaluation. Only psqt and material left. Est ELO gain +30|
 | 1.5		| ~1620				| Adde LMR. - Est ELO gain +60 |
