@@ -317,7 +317,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
         }
     }
 
-    //sortMoveList(board, moveListReduced);
+    sortMoveList(board, moveListReduced);
 
     int score = 0;
     for(int i = 0; i < moveListReduced.counter; i++){
