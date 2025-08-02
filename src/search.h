@@ -42,6 +42,7 @@ class Search {
         bool equal(Move &a, Move &b);
         MoveList reconstructPV(Board& board, int depth);
         bool isSearchStopped();
+        int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove);
         
         int currentFinishedDepth = 0;
         int maxQuinesenceDepthThisSearch = 0;

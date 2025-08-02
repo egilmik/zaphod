@@ -322,6 +322,15 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
     int score = 0;
     for(int i = 0; i < moveListReduced.counter; i++){
         Move move = moveListReduced.moves[i];
+        /*
+        if (board.getPieceOnSquare(move.to()) != All) {
+            int seeScore = see(board, move.from(), move.to(), board.getSideToMove());
+            if (seeScore < -500) {
+                continue;
+            }
+        }
+        */
+        
         bool valid = board.makeMove(move);
         score = -quinesence(board,-beta,-alpha,depth+1, ply+1);
 
@@ -352,6 +361,158 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
     return alpha;
 }
 
+int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
+
+    BitBoardEnum us = sideToMove;
+    BitBoardEnum otherSide = White;
+    if (sideToMove == White) {
+        otherSide = Black;
+    }
+
+    // We only want positive values, so subtracting side to move so we only get white values.    
+    int result = Material::materialScoreArray[board.getPieceOnSquare(toSq)-otherSide];
+    result = Material::materialScoreArray[board.getPieceOnSquare(fromSq) - sideToMove]- result;
+    if (result > 0) {
+        return result;
+    }
+
+    BitBoard occupied = board.getBitboard(All);
+
+    //Remove pieces
+    occupied &= ~board.sqBB[fromSq];
+    occupied &= ~board.sqBB[toSq];
+
+
+    BitBoard attackersTo = 0;
+
+    
+    uint64_t magic = ((board.getBitboard(All) & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
+    attackersTo |= (*board.magicMovesRook)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(R));
+    attackersTo |= (*board.magicMovesRook)[toSq][magic] & (board.getBitboard(q) | board.getBitboard(r));
+        
+    magic = ((board.getBitboard(All) & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
+    attackersTo |= (*board.magicMovesBishop)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(B));
+    attackersTo |= (*board.magicMovesBishop)[toSq][magic] & (board.getBitboard(q) | board.getBitboard(b));
+
+    attackersTo |= board.getKnightMask(toSq) & board.getBitboard(N);
+    attackersTo |= board.getKnightMask(toSq) & board.getBitboard(n);
+
+    attackersTo |= ((board.getBitboard(k) & ~board.FileHMask) << 7) & board.getBitboard(P);
+    attackersTo |= ((board.getBitboard(k) & ~board.FileAMask) << 9) & board.getBitboard(P);
+
+    attackersTo |= ((board.getBitboard(K) & ~board.FileHMask) << 7) & board.getBitboard(p);
+    attackersTo |= ((board.getBitboard(K) & ~board.FileAMask) << 9) & board.getBitboard(p);
+
+    //Remove the already capture pieces
+    attackersTo &= occupied;
+        
+
+    BitBoard king = board.getBitboard(K + sideToMove);
+    int kingSquare = board.popLsb(king);
+    king = board.getBitboard(K + sideToMove);
+    BitBoard snipers = board.getSnipers(kingSquare, otherSide);
+    BitBoard sniperCopy = snipers;
+
+    BitBoard pinned = 0;
+    BitBoard potentialPinned = 0;
+
+
+    while (sniperCopy) {
+        int sniperSquare = board.popLsb(sniperCopy);
+        potentialPinned = board.sqBetween[kingSquare][sniperSquare] & board.getBitboard(All);
+        if (board.countSetBits(potentialPinned) == 1) {
+            pinned |= potentialPinned & board.getBitboard(board.getSideToMove());
+        }
+    }
+
+
+    /*
+    bool attackersLeft = true;
+    
+    
+    int balance = Material::getMaterialScore(board.getPieceOnSquare(toSq));
+    BitBoard whitePawnAttackers = attackersTo & board.getBitboard(P);
+    BitBoard whiteKnightAttackers = attackersTo & board.getBitboard(N);
+    BitBoard whiteBishopAttackers = attackersTo & board.getBitboard(B);
+    BitBoard whiteRookAttackers = attackersTo & board.getBitboard(R);
+    BitBoard whiteQueensAttackers = attackersTo & board.getBitboard(Q);
+    BitBoard whiteKingAttackers = attackersTo & board.getBitboard(K);
+
+    BitBoard blackPawnAttackers = attackersTo & board.getBitboard(p);
+    BitBoard blackKnightAttackers = attackersTo & board.getBitboard(n);
+    BitBoard blackBishopAttackers = attackersTo & board.getBitboard(b);
+    BitBoard blackRookAttackers = attackersTo & board.getBitboard(r);
+    BitBoard blackQueensAttackers = attackersTo & board.getBitboard(q);
+    BitBoard blackKingAttackers = attackersTo & board.getBitboard(k);
+
+    BitBoardEnum attacker = All;
+    BitBoardEnum toBeCaptured = board.getPieceOnSquare(toSq);
+    */
+
+    BitBoard attacker = 0;
+    while (true) {
+
+        if (sideToMove == White) {
+            sideToMove = Black;
+            otherSide = White;
+        }
+        else {
+            sideToMove = White;
+            otherSide = Black;
+        }
+        if (attackersTo & board.getBitboard(sideToMove)) {
+            break;
+        }
+
+        if ((attacker = attackersTo & board.getBitboard(P + sideToMove))) {
+            attackersTo &= board.sqBB[board.popLsb(attacker)];
+            occupied &= board.sqBB[board.popLsb(attacker)];
+            result = Material::materialScoreArray[P] - result;
+
+
+            //TODO: we have removed a piece, we need to check if there are changes to pins!
+
+        }
+        else if ((attacker = attackersTo & board.getBitboard(N + sideToMove))) {
+            attackersTo &= board.sqBB[board.popLsb(attacker)];
+            occupied &= board.sqBB[board.popLsb(attacker)];
+            result = Material::materialScoreArray[N] - result;
+
+        }
+        else if ((attacker = attackersTo & board.getBitboard(B + sideToMove))) {
+            attackersTo &= board.sqBB[board.popLsb(attacker)];
+            occupied &= board.sqBB[board.popLsb(attacker)];
+            result = Material::materialScoreArray[B] - result;
+
+        }
+        else if ((attacker = attackersTo & board.getBitboard(R + sideToMove))) {
+            attackersTo &= board.sqBB[board.popLsb(attacker)];
+            occupied &= board.sqBB[board.popLsb(attacker)];
+            result = Material::materialScoreArray[R] - result;
+
+        }
+        else if ((attacker = attackersTo & board.getBitboard(Q + sideToMove))) {
+            attackersTo &= board.sqBB[board.popLsb(attacker)];
+            occupied &= board.sqBB[board.popLsb(attacker)];
+            result = Material::materialScoreArray[Q] - result;
+        }
+        else if ((attacker = attackersTo & board.getBitboard(K + sideToMove))) {
+            attackersTo &= board.sqBB[board.popLsb(attacker)];
+            if (attackersTo) {
+                
+                return -1000;
+            }
+
+        }
+        if (attackersTo == 0) {
+            break;
+        }
+    }
+
+    return result;
+
+}
+
 
 
 bool compare(SortStruct a, SortStruct b)
@@ -374,6 +535,7 @@ void Search::sortMoveList(Board &board, MoveList &list)
         } else if(entry.move.getMoveType() == PROMOTION) {
             entry.score = 1000;
         } else if(board.getPieceOnSquare(entry.move.to()) != All ){
+            
             BitBoardEnum capturedPiece = board.getPieceOnSquare(entry.move.to());
             BitBoardEnum attacker = board.getPieceOnSquare(entry.move.from());
             if (entry.move.getMoveType() == EN_PASSANT) {
@@ -381,10 +543,31 @@ void Search::sortMoveList(Board &board, MoveList &list)
             }
             int Mvv = Material::getMaterialScore(capturedPiece);
             int lva = Material::getMaterialScore(attacker);
-            entry.score = 100 + (Mvv - lva)/100;
+            int mvv = 100 + (Mvv - lva)/100;
+            
+            int score = see(board, entry.move.from(), entry.move.to(), board.getSideToMove());
+            entry.score = 100 - (score / 100);
+            /*
+            if (score >= 0) {
+                
+            }
+            else {
+                entry.score = 100 + (score/100);
+            }
+
+            */
+
+            if (mvv != entry.score) {
+                int x = 0;
+                //board.printBoard();
+            }
+            
+
         } else{
             entry.score = 0;
         }
+
+
         sortArray[i] = entry;
     }
     // MVV-LVA sorting
