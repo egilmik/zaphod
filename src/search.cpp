@@ -325,11 +325,13 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
         /*
         if (board.getPieceOnSquare(move.to()) != All) {
             int seeScore = see(board, move.from(), move.to(), board.getSideToMove());
-            if (seeScore < -500) {
+            if (seeScore < -800) {
                 continue;
             }
         }
         */
+        
+        
         
         bool valid = board.makeMove(move);
         score = -quinesence(board,-beta,-alpha,depth+1, ply+1);
@@ -372,44 +374,150 @@ int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
     // We only want positive values, so subtracting side to move so we only get white values.    
     int result = Material::materialScoreArray[board.getPieceOnSquare(toSq)-otherSide];
     result = Material::materialScoreArray[board.getPieceOnSquare(fromSq) - sideToMove]- result;
-    if (result > 0) {
+    if (result < 0) {
         return result;
     }
 
     BitBoard occupied = board.getBitboard(All);
+    BitBoard toSqBB = board.sqBB[toSq];
+
 
     //Remove pieces
     occupied &= ~board.sqBB[fromSq];
-    occupied &= ~board.sqBB[toSq];
+    occupied &= ~toSqBB;
 
 
     BitBoard attackersTo = 0;
 
     
     uint64_t magic = ((board.getBitboard(All) & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
-    attackersTo |= (*board.magicMovesRook)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(R));
-    attackersTo |= (*board.magicMovesRook)[toSq][magic] & (board.getBitboard(q) | board.getBitboard(r));
+    attackersTo |= (*board.magicMovesRook)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r));
         
     magic = ((board.getBitboard(All) & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
-    attackersTo |= (*board.magicMovesBishop)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(B));
-    attackersTo |= (*board.magicMovesBishop)[toSq][magic] & (board.getBitboard(q) | board.getBitboard(b));
+    attackersTo |= (*board.magicMovesBishop)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b));
 
-    attackersTo |= board.getKnightMask(toSq) & board.getBitboard(N);
-    attackersTo |= board.getKnightMask(toSq) & board.getBitboard(n);
+    attackersTo |= board.getKnightMask(toSq) & (board.getBitboard(N) | board.getBitboard(n));
 
-    attackersTo |= ((board.getBitboard(k) & ~board.FileHMask) << 7) & board.getBitboard(P);
-    attackersTo |= ((board.getBitboard(k) & ~board.FileAMask) << 9) & board.getBitboard(P);
+    attackersTo |= ((toSqBB & ~board.FileHMask) << 7) & board.getBitboard(P);
+    attackersTo |= ((toSqBB & ~board.FileAMask) << 9) & board.getBitboard(P);
 
-    attackersTo |= ((board.getBitboard(K) & ~board.FileHMask) << 7) & board.getBitboard(p);
-    attackersTo |= ((board.getBitboard(K) & ~board.FileAMask) << 9) & board.getBitboard(p);
+    attackersTo |= ((toSqBB & ~board.FileAMask) >> 7) & board.getBitboard(p);
+    attackersTo |= ((toSqBB & ~board.FileHMask) >> 9) & board.getBitboard(p);
 
     //Remove the already capture pieces
     attackersTo &= occupied;
         
 
+    BitBoard attacker = 0;
+    BitBoard sideToMoveAttackers = 0;
+    while (true) {
+
+        if (sideToMove == White) {
+            sideToMove = Black;
+            otherSide = White;
+        }
+        else {
+            sideToMove = White;
+            otherSide = Black;
+        }
+
+        if ((sideToMoveAttackers = attackersTo & board.getBitboard(sideToMove)) == 0) {
+            break;
+        }
+
+        if ((attacker = sideToMoveAttackers & board.getBitboard(P + sideToMove))) {
+            attackersTo &= board.sqBB[board.popLsb(attacker)];
+            occupied &= board.sqBB[board.popLsb(attacker)];
+            result = Material::materialScoreArray[P] - result;
+            if (result < 0) {
+                break;
+            }
+            //TODO: we have removed a piece, we need to check if there are changes to pins!
+            magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
+            attackersTo |= (*board.magicMovesBishop)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b)) & occupied);
+
+
+        }
+        else if ((attacker = sideToMoveAttackers & board.getBitboard(N + sideToMove))) {
+            BitBoard bb = board.sqBB[board.popLsb(attacker)];
+            attackersTo &= bb;
+            occupied &= bb;
+            result = Material::materialScoreArray[N] - result;
+            if (result < 0) {
+                break;
+            }
+        }
+        else if ((attacker = sideToMoveAttackers & board.getBitboard(B + sideToMove))) {
+            BitBoard bb = board.sqBB[board.popLsb(attacker)];
+            attackersTo &= bb;
+            occupied &= bb;
+            result = Material::materialScoreArray[B] - result;
+
+            magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
+            attackersTo |= (*board.magicMovesBishop)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b)) & occupied);
+            
+            if (result < 0) {
+                break;
+            }
+
+        }
+        else if ((attacker = sideToMoveAttackers & board.getBitboard(R + sideToMove))) {
+            BitBoard bb = board.sqBB[board.popLsb(attacker)];
+            attackersTo &= bb;
+            occupied &= bb;
+            result = Material::materialScoreArray[R] - result;
+            magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
+            attackersTo |= (*board.magicMovesRook)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r)) & occupied);
+
+            if (result < 0) {
+                break;
+            }
+
+        }
+        else if ((attacker = sideToMoveAttackers & board.getBitboard(Q + sideToMove))) {
+            BitBoard bb = board.sqBB[board.popLsb(attacker)];
+            attackersTo &= bb;
+            occupied &= bb;
+            result = Material::materialScoreArray[Q] - result;
+
+            magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
+            attackersTo |= (*board.magicMovesBishop)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b)) & occupied);
+
+            magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
+            attackersTo |= (*board.magicMovesRook)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r)) & occupied);
+
+            if (result < 0) {
+                break;
+            }
+        }
+        else if ((attacker = sideToMoveAttackers & board.getBitboard(K + sideToMove))) {
+            BitBoard bb = board.sqBB[board.popLsb(attacker)];
+            attackersTo &= bb;
+            occupied &= bb;
+            if (attackersTo) {
+                
+                return 1000;
+            }
+
+        }
+        if (attackersTo == 0) {
+            break;
+        }
+    }
+
+    return result;
+
+}
+
+BitBoard Search::getPinned(Board& board, BitBoardEnum sideToMove) {
     BitBoard king = board.getBitboard(K + sideToMove);
     int kingSquare = board.popLsb(king);
     king = board.getBitboard(K + sideToMove);
+    BitBoardEnum otherSide = White;
+    if (sideToMove == White) {
+        otherSide = Black;
+    }
+
     BitBoard snipers = board.getSnipers(kingSquare, otherSide);
     BitBoard sniperCopy = snipers;
 
@@ -424,93 +532,7 @@ int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
             pinned |= potentialPinned & board.getBitboard(board.getSideToMove());
         }
     }
-
-
-    /*
-    bool attackersLeft = true;
-    
-    
-    int balance = Material::getMaterialScore(board.getPieceOnSquare(toSq));
-    BitBoard whitePawnAttackers = attackersTo & board.getBitboard(P);
-    BitBoard whiteKnightAttackers = attackersTo & board.getBitboard(N);
-    BitBoard whiteBishopAttackers = attackersTo & board.getBitboard(B);
-    BitBoard whiteRookAttackers = attackersTo & board.getBitboard(R);
-    BitBoard whiteQueensAttackers = attackersTo & board.getBitboard(Q);
-    BitBoard whiteKingAttackers = attackersTo & board.getBitboard(K);
-
-    BitBoard blackPawnAttackers = attackersTo & board.getBitboard(p);
-    BitBoard blackKnightAttackers = attackersTo & board.getBitboard(n);
-    BitBoard blackBishopAttackers = attackersTo & board.getBitboard(b);
-    BitBoard blackRookAttackers = attackersTo & board.getBitboard(r);
-    BitBoard blackQueensAttackers = attackersTo & board.getBitboard(q);
-    BitBoard blackKingAttackers = attackersTo & board.getBitboard(k);
-
-    BitBoardEnum attacker = All;
-    BitBoardEnum toBeCaptured = board.getPieceOnSquare(toSq);
-    */
-
-    BitBoard attacker = 0;
-    while (true) {
-
-        if (sideToMove == White) {
-            sideToMove = Black;
-            otherSide = White;
-        }
-        else {
-            sideToMove = White;
-            otherSide = Black;
-        }
-        if (attackersTo & board.getBitboard(sideToMove)) {
-            break;
-        }
-
-        if ((attacker = attackersTo & board.getBitboard(P + sideToMove))) {
-            attackersTo &= board.sqBB[board.popLsb(attacker)];
-            occupied &= board.sqBB[board.popLsb(attacker)];
-            result = Material::materialScoreArray[P] - result;
-
-
-            //TODO: we have removed a piece, we need to check if there are changes to pins!
-
-        }
-        else if ((attacker = attackersTo & board.getBitboard(N + sideToMove))) {
-            attackersTo &= board.sqBB[board.popLsb(attacker)];
-            occupied &= board.sqBB[board.popLsb(attacker)];
-            result = Material::materialScoreArray[N] - result;
-
-        }
-        else if ((attacker = attackersTo & board.getBitboard(B + sideToMove))) {
-            attackersTo &= board.sqBB[board.popLsb(attacker)];
-            occupied &= board.sqBB[board.popLsb(attacker)];
-            result = Material::materialScoreArray[B] - result;
-
-        }
-        else if ((attacker = attackersTo & board.getBitboard(R + sideToMove))) {
-            attackersTo &= board.sqBB[board.popLsb(attacker)];
-            occupied &= board.sqBB[board.popLsb(attacker)];
-            result = Material::materialScoreArray[R] - result;
-
-        }
-        else if ((attacker = attackersTo & board.getBitboard(Q + sideToMove))) {
-            attackersTo &= board.sqBB[board.popLsb(attacker)];
-            occupied &= board.sqBB[board.popLsb(attacker)];
-            result = Material::materialScoreArray[Q] - result;
-        }
-        else if ((attacker = attackersTo & board.getBitboard(K + sideToMove))) {
-            attackersTo &= board.sqBB[board.popLsb(attacker)];
-            if (attackersTo) {
-                
-                return -1000;
-            }
-
-        }
-        if (attackersTo == 0) {
-            break;
-        }
-    }
-
-    return result;
-
+    return pinned;
 }
 
 
@@ -534,35 +556,23 @@ void Search::sortMoveList(Board &board, MoveList &list)
             entry.score = 10000;
         } else if(entry.move.getMoveType() == PROMOTION) {
             entry.score = 1000;
+
         } else if(board.getPieceOnSquare(entry.move.to()) != All ){
             
             BitBoardEnum capturedPiece = board.getPieceOnSquare(entry.move.to());
             BitBoardEnum attacker = board.getPieceOnSquare(entry.move.from());
+            
             if (entry.move.getMoveType() == EN_PASSANT) {
                 capturedPiece = P;
             }
             int Mvv = Material::getMaterialScore(capturedPiece);
             int lva = Material::getMaterialScore(attacker);
-            int mvv = 100 + (Mvv - lva)/100;
-            
-            int score = see(board, entry.move.from(), entry.move.to(), board.getSideToMove());
-            entry.score = 100 - (score / 100);
-            /*
-            if (score >= 0) {
+            entry.score = 100 + (Mvv - lva) / 100;
                 
-            }
-            else {
-                entry.score = 100 + (score/100);
-            }
-
-            */
-
-            if (mvv != entry.score) {
-                int x = 0;
-                //board.printBoard();
-            }
+            //int score = see(board, entry.move.from(), entry.move.to(), board.getSideToMove());
+            //entry.score = 100 - (score / 100);               
             
-
+            
         } else{
             entry.score = 0;
         }
