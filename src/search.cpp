@@ -9,6 +9,11 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 {   
     tt.clear();
     pawnTable.clear();
+
+    for (int i = 0; i < 100; i++) {
+        ss[i].checkExt = 0;
+        ss[i].isNullMove = false;
+    }
     
     maxSearchTime = maxTime;
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();;
@@ -18,6 +23,8 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     lmrHit = 0;
     lmrResearchHit = 0;
     bestMoveIteration.depth = 0;
+    bestMoveIteration.score = 0;
+    bestMoveIteration.bestMove = 0;
 
     
 
