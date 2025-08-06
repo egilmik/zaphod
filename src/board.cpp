@@ -348,9 +348,6 @@ void Board::clearBoard()
 
 void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 {
-    if (sq > 63) {
-        std::cout << "How did this happen" << std::endl;
-    }
     mailBoxBoard[sq] = piece;
     bitBoardArray[All] |= sqBB[sq];
     bitBoardArray[piece] |= sqBB[sq];
