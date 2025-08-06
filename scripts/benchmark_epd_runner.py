@@ -1,8 +1,9 @@
 import chess
 import chess.engine
-import chess.pgn
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
 import statistics
+import time
 import sys
 
 def load_epd_positions(epd_path):
@@ -37,7 +38,6 @@ def run_tests(engine_path, positions, depth=None, movetime=None):
                 info = engine.analyse(board, chess.engine.Limit(time=movetime / 1000.0), info=chess.engine.INFO_ALL)
                 actual_move = info.get("pv", [None])[0]
 
-            
             nodes = info.get("nodes", 0)
             nps = info.get("nps", 0)
 
@@ -68,6 +68,85 @@ def run_tests(engine_path, positions, depth=None, movetime=None):
     print(f"Avg NPS: {int(statistics.mean(nps_list)) if nps_list else 0}")
     print(f"Avg Nodes: {int(statistics.mean(nodes_list)) if nodes_list else 0}")
 
+
+def run_tests_multithreaded(engine_path, positions, depth=None, movetime=None, threads=4):
+    start = time.time()
+
+    chunk_size = len(positions) // threads + 1
+    print(f"Chunk size {chunk_size}")
+    chunks = [positions[i:i + chunk_size] for i in range(0, len(positions), chunk_size)]
+
+    def run_chunk(chunk, thread_id):
+        results = []
+        try:
+            engine = chess.engine.SimpleEngine.popen_uci(engine_path)
+        except Exception as e:
+            print(f"[Thread {thread_id}] Failed to launch engine: {e}")
+            return results
+
+        for idx, (board, expected_move) in enumerate(chunk):
+            try:
+                if depth:
+                    result = engine.play(board, chess.engine.Limit(depth=depth))
+                    info = engine.analyse(board, chess.engine.Limit(depth=depth), info=chess.engine.INFO_ALL)
+                else:
+                    result = engine.play(board, chess.engine.Limit(time=movetime / 1000.0))
+                    info = engine.analyse(board, chess.engine.Limit(time=movetime / 1000.0), info=chess.engine.INFO_ALL)
+
+                actual_move = result.move
+                nodes = info.get("nodes", 0)
+                nps = info.get("nps", 0)
+                passed = actual_move == expected_move
+
+                #result_str = "PASS" if passed else "FAIL"
+                #print(f"{idx+1:03d}: {result_str} — Expected: {expected_move.uci()}, Got: {actual_move.uci()} | Nodes: {nodes}, NPS: {nps}")
+                results.append({
+                    "passed": passed,
+                    "nodes": nodes,
+                    "nps": nps,
+                    "expected": expected_move.uci(),
+                    "actual": actual_move.uci(),
+                })
+
+            except Exception as e:
+                print(f"[Thread {thread_id}] Error on position: {e}")
+                results.append({
+                    "passed": False,
+                    "nodes": 0,
+                    "nps": 0,
+                    "expected": expected_move.uci(),
+                    "actual": "error",
+                })
+
+        engine.quit()
+        return results
+
+    # Start threads
+    all_results = []
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = [executor.submit(run_chunk, chunk, i) for i, chunk in enumerate(chunks)]
+        for f in as_completed(futures):
+            all_results.extend(f.result())
+
+    # Aggregate stats
+    passed = sum(1 for r in all_results if r["passed"])
+    failed = len(all_results) - passed
+    avg_nps = int(statistics.mean([r["nps"] for r in all_results if r["nps"]])) if all_results else 0
+    avg_nodes = int(statistics.mean([r["nodes"] for r in all_results if r["nodes"]])) if all_results else 0
+
+    for i, r in enumerate(all_results):
+        status = "PASS" if r["passed"] else "FAIL"
+        print(f"{i+1:03d}: {status} — Expected: {r['expected']}, Got: {r['actual']}, Nodes: {r['nodes']}, NPS: {r['nps']}")
+
+    print("\n=== Summary ===")
+    print(f"Total positions: {len(all_results)}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
+    print(f"Avg NPS: {avg_nps}")
+    print(f"Avg Nodes: {avg_nodes}")
+    end = time.time()
+    print(f"\n⏱️ Total elapsed time: {end - start:.2f} seconds")
+
 # ------------------------------
 # CLI
 # ------------------------------
@@ -89,4 +168,4 @@ if __name__ == "__main__":
     epd_positions = load_epd_positions(args.epd)
     print(f"Loaded {len(epd_positions)} positions.")
 
-    run_tests(args.engine, epd_positions, depth=args.depth, movetime=args.movetime)
+    run_tests_multithreaded(args.engine, epd_positions, depth=args.depth, movetime=args.movetime)
