@@ -20,7 +20,7 @@ struct SortStruct {
 };
 
 struct SearchStack {
-    int checkExt;
+    int checkExt = 0;
     bool isNullMove = false;
 };
 
