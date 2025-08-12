@@ -22,6 +22,21 @@ struct MoveStruct {
     BitBoard pawnHashCopy = 0;
 };
 
+struct MoveUndoInfo {
+    Move move = 0;
+    BitBoardEnum sideToMoveCopy = BitBoardEnum::White;
+    BitBoardEnum capturedPiece = All;
+    BitBoardEnum movedPiece = All;    
+    int halfMoveClock = 0;
+    int enPassantSqCopy = -1;
+    bool castleWKCopy = true;
+    bool castleWQCopy = true;
+    bool castleBKCopy = true;
+    bool castleBQCopy = true;
+    BitBoard hashKeyCopy = 0;
+    BitBoard pawnHashCopy = 0;
+};
+
 
 class Board {
 
@@ -264,7 +279,7 @@ class Board {
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
 
-        MoveStruct moveHistory[1024];
+        MoveUndoInfo moveHistory[1024];
         int historyPly = 0;
 
         int halfMoveClock = 0;
