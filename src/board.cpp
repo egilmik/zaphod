@@ -846,12 +846,8 @@ int Board::popLsb(BitBoard& board)
 bool Board::makeMove(Move move) {
 
     
-    MoveStruct *histMove = &moveHistory[historyPly];
+    MoveUndoInfo *histMove = &moveHistory[historyPly];
     
-    int sizeBB = 15*sizeof(bitBoardArray[0]);
-    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
-    std::memcpy(&histMove->bitBoardArrayCopy,&bitBoardArray,sizeBB);    
-    std::memcpy(&histMove->mailBox, &mailBoxBoard, sizeMB);
     histMove->halfMoveClock = halfMoveClock;
     histMove->sideToMoveCopy = sideToMove;
     histMove->enPassantSqCopy = enPassantSq;
@@ -861,6 +857,7 @@ bool Board::makeMove(Move move) {
     histMove->castleBQCopy = castleBQ;
     histMove->hashKeyCopy = hashKey;
     histMove->pawnHashCopy = pawnHash;
+    histMove->move = move;
 
     historyPly++;
 
@@ -868,6 +865,9 @@ bool Board::makeMove(Move move) {
     int fromSq = move.from();
     BitBoardEnum piece = mailBoxBoard[fromSq];
     BitBoardEnum capturedPiece = mailBoxBoard[toSq];
+    histMove->movedPiece = piece;
+    histMove->capturedPiece = capturedPiece;
+
     MoveType moveType = move.getMoveType();
     bool enpassant = (moveType == EN_PASSANT);
     bool capture = (capturedPiece != All) || enpassant;
@@ -1076,12 +1076,68 @@ bool Board::makeMove(Move move) {
 void Board::revertLastMove()
 {
     historyPly--;
-    MoveStruct *move = &moveHistory[historyPly];    
+    MoveUndoInfo *info = &moveHistory[historyPly];
 
-    setBoardState(*move);
+    sideToMove = info->sideToMoveCopy;
+    halfMoveClock = info->halfMoveClock;
+    enPassantSq = info->enPassantSqCopy;
+    castleBK = info->castleBKCopy;
+    castleBQ = info->castleBQCopy;
+    castleWK = info->castleWKCopy;
+    castleWQ = info->castleWQCopy;
+
+    if (info->move.getMoveType() == CASTLING) {
+        if (sideToMove == White) {
+            if (info->move.to() == 2) {
+                removePiece(3, White);
+                addPiece(0, R, White);
+            }
+            else {
+                removePiece(5, White);
+                addPiece(7, R, White);
+            }
+        }
+        else {
+            if (info->move.to() == 58) {
+                removePiece(59, Black);
+                addPiece(56, r, Black);
+            }
+            else {
+                removePiece(61, Black);
+                addPiece(63, r, Black);
+            }
+        }
+    }
+
+    if (info->move.getMoveType() == PROMOTION) {
+        removePiece(info->move.to(), sideToMove);
+        addPiece(info->move.from(), static_cast<BitBoardEnum>(P + sideToMove), sideToMove);
+    }
+    else {
+        removePiece(info->move.to(), sideToMove);
+        addPiece(info->move.from(), info->movedPiece, sideToMove);
+    }
+
+    if (info->move.getMoveType() == EN_PASSANT) {
+        int enpassantModifier = -8;
+        if (sideToMove == White) {
+            enpassantModifier = 8;
+        }
+        addPiece(info->move.to() - enpassantModifier, static_cast<BitBoardEnum>(P + getOtherSide()), getOtherSide());
+
+    }
+
+    if (info->capturedPiece != All) {     
+        addPiece(info->move.to(), info->capturedPiece, getOtherSide());
+    }
+
+    hashKey = info->hashKeyCopy;
+    pawnHash = info->pawnHashCopy;
+    
 }
 
 void Board::makeNullMove() {
+    /*
     MoveStruct* histMove = &moveHistory[historyPly];
 
     int sizeBB = 15 * sizeof(bitBoardArray[0]);
@@ -1106,13 +1162,16 @@ void Board::makeNullMove() {
     historyPly++;
 
     changeSideToMove();
+    */
 }
 
 void Board::revertNullMove() {
+    /*
     historyPly--;
     MoveStruct* move = &moveHistory[historyPly];
 
     setBoardState(*move);
+    */
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
