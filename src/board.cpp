@@ -348,6 +348,10 @@ void Board::clearBoard()
 
 void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 {
+    if (piece == All) {
+        int x = 0;
+    }
+
     mailBoxBoard[sq] = piece;
     bitBoardArray[All] |= sqBB[sq];
     bitBoardArray[piece] |= sqBB[sq];
@@ -374,46 +378,6 @@ bool Board::hasPositionRepeated() {
     }
 
     return moveCounter > 1;
-}
-
-MoveStruct Board::getBoardState() {
-
-    MoveStruct moveStruct;
-
-    int sizeBB = 15 * sizeof(bitBoardArray[0]);
-    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
-    std::memcpy(moveStruct.bitBoardArrayCopy, &bitBoardArray, sizeBB);
-    std::memcpy(moveStruct.mailBox, &mailBoxBoard, sizeMB);
-    moveStruct.halfMoveClock = halfMoveClock;
-    moveStruct.sideToMoveCopy = sideToMove;
-    moveStruct.enPassantSqCopy = enPassantSq;
-    moveStruct.castleWKCopy = castleWK;
-    moveStruct.castleWQCopy = castleWQ;
-    moveStruct.castleBKCopy = castleBK;
-    moveStruct.castleBQCopy = castleBQ;
-    moveStruct.hashKeyCopy = hashKey;
-    moveStruct.pawnHashCopy = pawnHash;
-
-    return moveStruct;
-}
-
-void Board::setBoardState(MoveStruct& move) {
-
-
-    int sizeBB = 15 * sizeof(bitBoardArray[0]);
-    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
-    std::memcpy(&bitBoardArray, move.bitBoardArrayCopy, sizeBB);
-    std::memcpy(&mailBoxBoard, move.mailBox, sizeMB);
-    sideToMove = move.sideToMoveCopy;
-    halfMoveClock = move.halfMoveClock;
-    enPassantSq = move.enPassantSqCopy;
-    castleWK = move.castleWKCopy;
-    castleWQ = move.castleWQCopy;
-    castleBK = move.castleBKCopy;
-    castleBQ = move.castleBQCopy;
-    hashKey = move.hashKeyCopy;
-    pawnHash = move.pawnHashCopy;
-
 }
 
 void Board::parseFen(std::string fen){
@@ -849,12 +813,9 @@ bool Board::makeMove(Move move) {
     MoveUndoInfo *histMove = &moveHistory[historyPly];
     
     histMove->halfMoveClock = halfMoveClock;
-    histMove->sideToMoveCopy = sideToMove;
+    histMove->sideToMove = static_cast<uint8_t>(sideToMove);
     histMove->enPassantSqCopy = enPassantSq;
-    histMove->castleWKCopy = castleWK;
-    histMove->castleWQCopy= castleWQ;
-    histMove->castleBKCopy = castleBK;
-    histMove->castleBQCopy = castleBQ;
+    histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
     histMove->hashKeyCopy = hashKey;
     histMove->pawnHashCopy = pawnHash;
     histMove->move = move;
@@ -865,8 +826,8 @@ bool Board::makeMove(Move move) {
     int fromSq = move.from();
     BitBoardEnum piece = mailBoxBoard[fromSq];
     BitBoardEnum capturedPiece = mailBoxBoard[toSq];
-    histMove->movedPiece = piece;
-    histMove->capturedPiece = capturedPiece;
+    histMove->movedPiece = static_cast<uint8_t>(piece);
+    histMove->capturedPiece = static_cast<uint8_t>(capturedPiece);
 
     MoveType moveType = move.getMoveType();
     bool enpassant = (moveType == EN_PASSANT);
@@ -1078,13 +1039,20 @@ void Board::revertLastMove()
     historyPly--;
     MoveUndoInfo *info = &moveHistory[historyPly];
 
-    sideToMove = info->sideToMoveCopy;
+    sideToMove = static_cast<BitBoardEnum>(info->sideToMove);
     halfMoveClock = info->halfMoveClock;
     enPassantSq = info->enPassantSqCopy;
-    castleBK = info->castleBKCopy;
-    castleBQ = info->castleBQCopy;
-    castleWK = info->castleWKCopy;
-    castleWQ = info->castleWQCopy;
+
+    castleWK = (info->castleMask & 1) != 0;
+    castleWQ = (info->castleMask & 2) != 0;
+    castleBK = (info->castleMask & 4) != 0;
+    castleBQ = (info->castleMask & 8) != 0;
+
+    MoveType moveType = info->move.getMoveType();
+
+    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(info->movedPiece);
+    BitBoardEnum capturedPiece = static_cast<BitBoardEnum>(info->capturedPiece);
+    
 
     if (info->move.getMoveType() == CASTLING) {
         if (sideToMove == White) {
@@ -1115,7 +1083,7 @@ void Board::revertLastMove()
     }
     else {
         removePiece(info->move.to(), sideToMove);
-        addPiece(info->move.from(), info->movedPiece, sideToMove);
+        addPiece(info->move.from(), movedPiece, sideToMove);
     }
 
     if (info->move.getMoveType() == EN_PASSANT) {
@@ -1127,8 +1095,8 @@ void Board::revertLastMove()
 
     }
 
-    if (info->capturedPiece != All) {     
-        addPiece(info->move.to(), info->capturedPiece, getOtherSide());
+    if (capturedPiece != All) {     
+        addPiece(info->move.to(), capturedPiece, getOtherSide());
     }
 
     hashKey = info->hashKeyCopy;

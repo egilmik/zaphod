@@ -7,36 +7,24 @@
 #include "move.h"
 #include "transpositiontable.h"
 #include <array>
+#include <format>
 
-struct MoveStruct {
-    BitBoard bitBoardArrayCopy[15];
-    BitBoardEnum mailBox[64];
-    BitBoardEnum sideToMoveCopy = BitBoardEnum::White;
-    int halfMoveClock = 0;
-    int enPassantSqCopy = -1;
-    bool castleWKCopy = true;
-    bool castleWQCopy = true;
-    bool castleBKCopy = true;
-    bool castleBQCopy = true;
-    BitBoard hashKeyCopy = 0;
-    BitBoard pawnHashCopy = 0;
+struct alignas(32) MoveUndoInfo {
+    BitBoard hashKeyCopy = 0; // 8 byte
+    BitBoard pawnHashCopy = 0; // 8 byte    
+    Move move = 0; // 2 byte
+
+    uint8_t sideToMove = static_cast<uint8_t>(BitBoardEnum::White); // 1 byte
+    uint8_t capturedPiece = static_cast<uint8_t>(BitBoardEnum::All); // 1 byte
+    uint8_t movedPiece = static_cast<uint8_t>(BitBoardEnum::All); // 1 byte
+    uint8_t castleMask = 0; // 1 byte
+
+    int8_t halfMoveClock = 0; // 1 byte
+    int8_t enPassantSqCopy = -1; // 1 byte
+    
+    uint8_t _pad[8];
+    
 };
-
-struct MoveUndoInfo {
-    Move move = 0;
-    BitBoardEnum sideToMoveCopy = BitBoardEnum::White;
-    BitBoardEnum capturedPiece = All;
-    BitBoardEnum movedPiece = All;    
-    int halfMoveClock = 0;
-    int enPassantSqCopy = -1;
-    bool castleWKCopy = true;
-    bool castleWQCopy = true;
-    bool castleBKCopy = true;
-    bool castleBQCopy = true;
-    BitBoard hashKeyCopy = 0;
-    BitBoard pawnHashCopy = 0;
-};
-
 
 class Board {
 
@@ -186,8 +174,6 @@ class Board {
         void removePiece(int sq, BitBoardEnum color);
 
         void parseFen(std::string fen);
-        void setBoardState(MoveStruct& moveInfo);
-        MoveStruct getBoardState();
         void printBoard();
         void printBoard(BitBoard board);
         void printBoard(BitBoard board, int origin);
