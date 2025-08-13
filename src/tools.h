@@ -22,6 +22,20 @@ public:
 		return isConsistent;
 	};
 
+	static bool isMailBoxConsistent(Board& board) {
+		BitBoard allPieces = board.getBitboard(All);
+		int square = 0;
+		while (allPieces) {
+			square = board.popLsb(allPieces);
+			BitBoardEnum piece = board.getPieceOnSquare(square);
+			if (piece == All) {
+				return false;
+			}
+		}
+		return true;
+
+	}
+
 	static bool checkPiecesAgainstColorBoard(Board& board, BitBoardEnum color) {
 		BitBoard colorBoard = board.getBitboard(color);
 		BitBoard pawnBoard = board.getBitboard(P + color);
