@@ -108,20 +108,42 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
         }
     }
     
-    bool isTTValid = false;
-    TTEntry* tte = tt.probe(key, isTTValid);
+    auto tte = tt.probe(key);
 
-    if (isTTValid && tte->depth >= depth) {
-        TType entryType = tte->type;
-        if (entryType == EXACT) {
+    if (tte && tte->depth >= depth) {
+        if (tte->type == EXACT) {
             exactHit++;
             if (isRoot) {
                 bestMoveIteration.bestMove = tte->bestMove;
-                bestMoveIteration.score = alpha;
-                bestMoveIteration.depth = depth;
+                bestMoveIteration.score = tte->score;
+                bestMoveIteration.depth = tte->depth;
             }
             return tte->score;
         }/*
+        else if (tte->type == LOWER && tte->score >= beta) {
+            lowerBoundHit++;
+            return tte->score;
+        }
+        else if (tte->type == UPPER && tte->score <= alpha) {
+            upperBoundHit++;
+            return tte->score;
+        }
+        */
+            
+        /*
+        if (tte->type == LOWER) {
+            alpha = std::max(alpha, tte->score);
+        }
+        if (tte->type == UPPER) {
+            beta = std::min(beta, tte->score);
+        }
+        if (alpha >= beta) {
+            return alpha;
+        }
+
+        */
+
+            /*
         else if (entryType == TEType::lower) {
             lowerBoundHit++;
             alpha = std::max(it->second.score, alpha);
@@ -260,7 +282,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
     
     //Replace if depth is higher
-    if (!isTTValid || (isTTValid && tte->depth < depth)) {
+    if (!tte || (tte && tte->depth < depth)) {
         if (alpha <= alphaOrginal) {
             tt.put(key, alpha, depth, alphaMove, UPPER);
         }
@@ -552,14 +574,14 @@ bool compare(SortStruct a, SortStruct b)
 void Search::sortMoveList(Board &board, MoveList &list)
 {
 
-    bool isTTValid = false;
-    TTEntry* tte = tt.probe(board.getHashKey(), isTTValid);
+    
+    auto tte = tt.probe(board.getHashKey());
     
     SortStruct sortArray[256];
     for(int i = 0; i< list.counter; i++){
         SortStruct entry;
         entry.move = list.moves[i];
-        if(isTTValid && equal(list.moves[i], tte->bestMove)){
+        if(tte && equal(list.moves[i], tte->bestMove)){
             entry.score = 10000;
         } else if(entry.move.getMoveType() == PROMOTION) {
             entry.score = 1000;
@@ -634,14 +656,14 @@ int Search::evaluatePawns(Board& board) {
     uint64_t hash = board.getPawnHashKey();
     bool isValid = false;
     int score = 0;
-    TTEntry* entry = pawnTable.probe(hash, isValid);
+    auto entry = pawnTable.probe(hash);
 
     if (!isValid) {
         score = 0;
         score = Evaluation::evaluatePassedPawn(board, White);
         score += Evaluation::evaluatePassedPawn(board, Black);
         score += Evaluation::evaluatePawnShield(board);
-        pawnTable.put(hash, score);
+        pawnTable.put(hash, score,0,0,EXACT);
         return score;
     }
     else
@@ -666,10 +688,10 @@ MoveList Search::reconstructPV(Board& board, int depth)
     MoveList list;
 
     for (int i = 0; i < depth; i++) {
-        bool isTTValid = false;
-        TTEntry* tte = tt.probe(board.getHashKey(), isTTValid);
+        
+        auto tte = tt.probe(board.getHashKey());
 
-        if (isTTValid && tte->type == EXACT) {
+        if (tte && tte->type == EXACT) {
             board.makeMove(tte->bestMove);
             list.moves[list.counter++] = tte->bestMove;
         }
