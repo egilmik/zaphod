@@ -22,6 +22,7 @@ struct SortStruct {
 struct SearchStack {
     int checkExt = 0;
     bool isNullMove = false;
+    Move killerMove[2] = {0};
 };
 
 class Search {
@@ -36,7 +37,7 @@ class Search {
         Score search(Board &board, int maxDepth, int maxTime);
         int negamax(Board &board, int depth, int alpha, int beta, int ply);
         int quinesence(Board &board, int alpha, int beta, int depth, int ply);
-        void sortMoveList(Board &board,MoveList &list);
+        void sortMoveList(Board &board,MoveList &list, int ply);
         int evaluate(Board &board);
         int evaluatePawns(Board& board);
         bool equal(Move &a, Move &b);

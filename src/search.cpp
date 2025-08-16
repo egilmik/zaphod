@@ -77,7 +77,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         MoveList list;
         MoveGenerator::generateMoves(board, list);
         // Lets try sorting to perhaps hit something in TT
-        sortMoveList(board, list);
+        sortMoveList(board, list,0);
         bestScore = { 0,0, list.moves[0] }; 
     }
     
@@ -174,7 +174,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     int alphaOrginal = alpha;
     Move alphaMove{};
     
-    sortMoveList(board, moveList);
+    sortMoveList(board, moveList,ply);
     
     int validMoves = moveList.counter;
 
@@ -256,6 +256,16 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
         if (score >= beta) {
             
+            if (!moveIsCapture) {
+                if (move.value != ss[ply].killerMove[0].value) {
+                    ss[ply].killerMove[0] = move;
+                }
+                else {
+                    ss[ply].killerMove[1] = move;
+                }
+
+            }
+
             /*if (it == transpositionMap.end() || it->second.depth < depth) {
                 transpositionMap[key] = { move, TEType::lower, depth, beta };
             }*/
@@ -346,7 +356,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
         }
     }
 
-    sortMoveList(board, moveListReduced);
+    sortMoveList(board, moveListReduced,ply);
 
     int score = 0;
     for(int i = 0; i < moveListReduced.counter; i++){
@@ -571,7 +581,7 @@ bool compare(SortStruct a, SortStruct b)
     return a.score > b.score;
 }
 
-void Search::sortMoveList(Board &board, MoveList &list)
+void Search::sortMoveList(Board &board, MoveList &list, int ply)
 {
 
     
@@ -602,8 +612,17 @@ void Search::sortMoveList(Board &board, MoveList &list)
             //entry.score = 100 - (score / 100);               
             
             
-        } else{
-            entry.score = 0;
+        } else {
+            // Killer moves
+            if (ss[ply].killerMove[0].value == entry.move.value ||
+                ss[ply].killerMove[1].value == entry.move.value) {
+                entry.score = 50;
+            }
+            else {
+                entry.score = 0;
+            }
+
+            
         }
 
 

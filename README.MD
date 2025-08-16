@@ -8,7 +8,8 @@ Maybe at some point it will get to a ELO 2000+, but not today
 
 | Version	| Estimated ELO		| Change log |
 | -------	| -------------		| ---------- |
-| 1.8		| ~1790				| Reintroduced move ordering in qsearch +60 Elo. <br> Added compiler flags for optimization +60 Elo.
+| 1.9		| ~1850				| Optimized make move. <br> Made tt thread safe <br> Introduced killer move in move ordering |
+| 1.8		| ~1790				| Reintroduced move ordering in qsearch +60 Elo. <br> Added compiler flags for optimization +60 Elo.|
 | 1.7		| ~1670				| Improved calculating PSQT score. Est Elo gain +20 |
 | 1.6		| ~1650				| Removed pawn and piece pair evaluation. Only psqt and material left. Est ELO gain +30|
 | 1.5		| ~1620				| Adde LMR. - Est ELO gain +60 |
