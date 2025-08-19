@@ -22,6 +22,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     pawnTTHits = 0;
     lmrHit = 0;
     lmrResearchHit = 0;
+    exactHit = 0;
     bestMoveIteration.depth = 0;
     bestMoveIteration.score = 0;
     bestMoveIteration.bestMove = 0;
@@ -40,17 +41,6 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         currentTargetDepth = i;
         maxQuinesenceDepthThisSearch = 0;
         maxPlyThisIteration = 0;
-
-        /////////////////////////////////
-        // Limit quiesence the first 2 iterations,
-        // to make sure we have a decent score fast. 
-        // Make sure it does not make illegal moves due to missing best move.
-        if (i < 3) {
-            currentQuiesenceTargetDepth = 2;
-        }
-        else {
-            currentQuiesenceTargetDepth = 10;
-        }
 
         //Reset search stack check extension
         ss[0].checkExt = 0;
@@ -335,16 +325,12 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
     if ((evaluatedNodes % 1000) > 0 && isSearchStopped()) {
         return beta;
     }
-
+    
     
     if (standPat >= beta) {
         return beta;
     } else if(alpha < standPat) {
         alpha = standPat;
-    }
-
-    if (depth >= currentQuiesenceTargetDepth) {
-        return standPat;
     }
 
     MoveList moveList;

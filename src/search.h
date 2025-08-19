@@ -57,7 +57,6 @@ class Search {
         TTable pawnTable = TTable(64); 
         TTable tt = TTable(256);
         int currentTargetDepth;
-        int currentQuiesenceTargetDepth = 0;
         int64_t startTime = 0;
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
