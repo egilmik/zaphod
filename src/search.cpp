@@ -167,8 +167,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     sortMoveList(board, moveList,ply);
     
     int validMoves = moveList.counter;
-
-    //bool isInCheck = board.countSetBits(moveList.checkers) > 0;
+    bool inCheck = moveList.checkers > 0;
 
     //int eval = evaluate(board);
 
@@ -269,8 +268,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
     if (validMoves == 0) {
 
-        BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
-        if (board.isSquareAttacked(kingBB, board.getOtherSide())) {
+        if (inCheck) {
             // We are check mate
             alpha = -300000+(currentTargetDepth-depth);
         }
@@ -344,7 +342,9 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
 
     sortMoveList(board, moveListReduced,ply);
 
+
     int score = 0;
+    bool inCheck = moveList.checkers > 0;
     for(int i = 0; i < moveListReduced.counter; i++){
         Move move = moveListReduced.moves[i];
         /*
@@ -374,8 +374,8 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
     }
 
     if (moveList.counter == 0) {
-        BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
-        if (board.isSquareAttacked(kingBB, board.getOtherSide())) {
+        
+        if (inCheck) {
             // We are check mate
             alpha = -300000 + (currentTargetDepth - depth);
         }
