@@ -67,7 +67,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         MoveList list;
         MoveGenerator::generateMoves(board, list);
         // Lets try sorting to perhaps hit something in TT
-        sortMoveList(board, list,0);
+        sortMoveList(board, list,0,0);
         bestScore = { 0,0, list.moves[0] }; 
     }
     
@@ -78,6 +78,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 {
+
     if (depth == 0) return quinesence(board, alpha, beta, 1,ply);
     BitBoard key = board.getHashKey();
     bool isRoot = ply == 0;
@@ -164,8 +165,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     int alphaOrginal = alpha;
     Move alphaMove{};
     
-    sortMoveList(board, moveList,ply);
     
+    sortMoveList(board, moveList, ply, tte ? tte->bestMove : 0);
+
     int validMoves = moveList.counter;
     bool inCheck = moveList.checkers > 0;
 
@@ -206,16 +208,16 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
         ss[ply + 1].checkExt = plyCheckExtension + extension;
 
         
-        
-        
-        if (i < 4 || depth < 3 || extension > 0 || moveIsCapture) {
+        if (i < 2 || depth < 4 || extension > 0 || moveIsCapture) {
             score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1);
         }
         else {
+            int reduction = 0.5 + (std::log(depth) * std::log(i) / 3);
+
             ////////////
             // LMR
             ////////////
-            score = -negamax(board, depth - 2, -(alpha + 1), -alpha, ply + 1);
+            score = -negamax(board, depth -1 - reduction, -(alpha + 1), -alpha, ply + 1);
             lmrHit++;
 
             if (score > alpha) {
@@ -340,7 +342,9 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
         }
     }
 
-    sortMoveList(board, moveListReduced,ply);
+    auto tte = tt.probe(board.getHashKey());
+
+    sortMoveList(board, moveListReduced,ply,tte? tte->bestMove:0);
 
 
     int score = 0;
@@ -567,17 +571,13 @@ bool compare(SortStruct a, SortStruct b)
     return a.score > b.score;
 }
 
-void Search::sortMoveList(Board &board, MoveList &list, int ply)
-{
-
-    
-    auto tte = tt.probe(board.getHashKey());
-    
+void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
+{    
     SortStruct sortArray[256];
     for(int i = 0; i< list.counter; i++){
         SortStruct entry;
         entry.move = list.moves[i];
-        if(tte && equal(list.moves[i], tte->bestMove)){
+        if(equal(list.moves[i], bestMove)){
             entry.score = 10000;
         } else if(entry.move.getMoveType() == PROMOTION) {
             entry.score = 1000;
