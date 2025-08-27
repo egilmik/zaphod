@@ -61,6 +61,8 @@ class Search {
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
         SearchStack ss[100];
+        const int mateScore = 30000;
+        const int maxPly = 1024;
           
 };
 #endif
