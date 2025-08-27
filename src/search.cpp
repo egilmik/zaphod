@@ -31,8 +31,8 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
     bool inIteration = true;
     Score bestScore;
-    int lowerBound = -100000;
-    int upperBound = 100000;
+    constexpr int lowerBound = -std::numeric_limits<int>::max();
+    constexpr int upperBound = std::numeric_limits<int>::max();
 
     auto start = std::chrono::high_resolution_clock::now();
     
@@ -53,7 +53,17 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000);
 
-        std::cout << "info depth " << i << " seldepth " << maxPlyThisIteration << " score cp " << score << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
+
+        std::string scoreString = " score cp " + std::to_string(score);
+        if (score > mateScore - maxPly) {
+            scoreString = " score mate " + std::to_string((mateScore - score));
+        }
+        else if (score < -(mateScore - maxPly)) {
+            scoreString = " score mate " + std::to_string((-(mateScore + score)));
+        }
+
+
+        std::cout << "info depth " << i << " seldepth " << maxPlyThisIteration << scoreString << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
         currentFinishedDepth = i;
         bestScore = bestMoveIteration;
     } 
@@ -272,7 +282,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
         if (inCheck) {
             // We are check mate
-            alpha = -300000+(currentTargetDepth-depth);
+            alpha = -mateScore+ply;
         }
         else {
             // Stalemate
@@ -381,7 +391,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
         
         if (inCheck) {
             // We are check mate
-            alpha = -300000 + (currentTargetDepth - depth);
+            alpha = -mateScore + ply;
         }
         else {
             // Stalemate
