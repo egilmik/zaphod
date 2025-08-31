@@ -2,12 +2,9 @@
 #include "nnue_test.h"
 
 int main(int argc, char** argv) {
-    if (argc < 3) {
-        std::cerr << "usage: " << argv[0] << " weights.nnue \"<FEN>\"\n";
-        return 1;
-    }
-    const std::string wpath = argv[1];
-    const std::string fen = argv[2];
+    
+    const std::string wpath = "D:\\weights.nnue";
+    const std::string fen = "rn1qkb1r/pp2pppp/5n2/3p1b2/3P4/2N1P3/PP3PPP/R1BQKBNR w KQkq - 0 1";
 
     NNUE768x32x1 net;
     if (!net.load(wpath)) {

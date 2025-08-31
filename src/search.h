@@ -7,6 +7,7 @@
 #include <iostream>
 #include <chrono>
 #include "ttable.h"
+#include "nnue.h"
 
 struct Score {
     int depth = 0;
@@ -27,6 +28,7 @@ struct SearchStack {
 
 class Search {
     public:
+        Search();
         unsigned long long evaluatedNodes = 0;
         unsigned long long pawnTTHits = 0;
         int64_t lowerBoundHit = 0;
@@ -56,13 +58,14 @@ class Search {
         Score bestMoveIteration;        
         TTable pawnTable = TTable(64); 
         TTable tt = TTable(256);
-        int currentTargetDepth;
+        int currentTargetDepth = 0;
         int64_t startTime = 0;
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
         SearchStack ss[100];
         const int mateScore = 30000;
         const int maxPly = 1024;
+        NNUE nnue;
           
 };
 #endif

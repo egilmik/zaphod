@@ -130,6 +130,7 @@ def main():
     opt = torch.optim.Adam(model.parameters(), lr=LR)
     loss_fn = nn.MSELoss()
 
+    print("Starting training")
     best_va = float('inf')
     for ep in range(1, EPOCHS + 1):
         model.train()
