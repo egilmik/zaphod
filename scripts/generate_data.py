@@ -1,5 +1,6 @@
 import os, sys, argparse, numpy as np, chess, chess.pgn, chess.engine, hashlib, random
 from pathlib import Path
+import time
 
 def main():
     ap = argparse.ArgumentParser()
@@ -14,7 +15,7 @@ def main():
     ap.add_argument("--skip_opening", type=int, default=6, help="ignore first N plies")
     args = ap.parse_args()
 
-
+    start_time = time.time()
     
     engine = chess.engine.SimpleEngine.popen_uci(args.engine)
     limit = chess.engine.Limit(time=args.movetime_ms/1000.0) if args.depth is None else chess.engine.Limit(depth=args.depth)
@@ -30,14 +31,17 @@ def main():
             break
         board = game.board()
         for move in game.mainline_moves():
+            notCapture = not board.is_capture(move)            
             board.push(move)
-            if not board.is_checkmate():
+            if notCapture and not board.is_check() and board.ply() > 10 and not board.is_checkmate() and not board.is_stalemate():
                 try:
                     info = engine.analyse(board, limit, info=chess.engine.INFO_ALL)
                     sc = info["score"].pov(board.turn)
-                    outputFile.write((board.fen() + " ; " + str(sc.score())) + "\n")
-                    posCounter += 1
-        #                positions.append(board,sc)
+                    if sc.score() != None:
+                        outputFile.write((board.fen() + " ; " + str(sc.score())) + "\n")
+                        posCounter += 1
+                    else:
+                        break
                 except Exception as e:
                     print(e)
             if args.max_pos is not None and args.max_pos <= posCounter:
@@ -47,6 +51,11 @@ def main():
 
     outputFile.close()
     engine.close()
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed Time: {elapsed_time:.4f} seconds")
+
 
 
 if __name__ == "__main__":
