@@ -174,17 +174,10 @@ void UCI::startSearch(std::istringstream &is)
     /////////////////////
     if(!fixedSearchTime){
         if (motherBoard.getSideToMove() == White) {
-            searchTime = std::min(searchTime, wTime / 30);
-
-            if (wIncrement > 0) {
-                searchTime = std::max(searchTime, (int)(wIncrement*0.95));
-            }
+            searchTime = wTime / 20 + wIncrement / 2;
         }
         else {
-            searchTime = std::min(searchTime, bTime / 30);
-            if (bIncrement > 0) {
-                searchTime = std::max(searchTime, (int)(bIncrement*0.95));
-            }
+            searchTime = bTime / 20 + bIncrement / 2;
         }
     }
     
