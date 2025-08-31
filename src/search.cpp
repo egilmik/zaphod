@@ -7,8 +7,9 @@
 
 Score Search::search(Board &board, int maxDepth, int maxTime)
 {   
-    tt.clear();
-    pawnTable.clear();
+    startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+    //tt.clear();
+    //pawnTable.clear();
 
     for (int i = 0; i < 100; i++) {
         ss[i].checkExt = 0;
@@ -16,7 +17,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     }
     
     maxSearchTime = maxTime;
-    startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();;
+    
     stopSearch = false;
     evaluatedNodes = 0;
     pawnTTHits = 0;
@@ -38,6 +39,12 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     
 
     for (int i = 1; i <= maxDepth; i++) {
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+        if (maxSearchTime / 2 < duration.count()) {
+            break;
+        }
+
+
         currentTargetDepth = i;
         maxQuinesenceDepthThisSearch = 0;
         maxPlyThisIteration = 0;
@@ -50,7 +57,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         }
 
         auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
         int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000);
 
 
@@ -218,7 +225,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
         ss[ply + 1].checkExt = plyCheckExtension + extension;
 
         
-        if (i < 2 || depth < 4 || extension > 0 || moveIsCapture) {
+        if (i < 4 || depth < 3 || extension > 0 || moveIsCapture) {
             score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1);
         }
         else {
