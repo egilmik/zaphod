@@ -7,7 +7,7 @@
 
 
 Search::Search() {
-    nnue.load("D:\\weights.nnue");
+    //nnue.load("D:\\weights.nnue");
 }
 
 Score Search::search(Board &board, int maxDepth, int maxTime)
@@ -647,8 +647,7 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 int Search::evaluate(Board &board)
 {
     evaluatedNodes++;
-    float score = nnue.forward(board);
-    /*
+    //float score = nnue.forward(board);
 
     int mgScore = 0;
     int egScore = 0;
@@ -668,11 +667,10 @@ int Search::evaluate(Board &board)
     //Pesto gamephase handling
     board.setGamePhase(gamePhase);
     int mgPhase = gamePhase;
-    */
-    //if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
-    //int egPhase = 24 - mgPhase;
-    //int psqt = (mgScore * mgPhase + egScore * egPhase) / 24;
-    //int score = materialScore+psqt;
+    if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
+    int egPhase = 24 - mgPhase;
+    int psqt = (mgScore * mgPhase + egScore * egPhase) / 24;
+    int score = materialScore+psqt;
     //score += evaluatePawns(board);
     //score += Evaluation::evaluatePiecePairs(board);
 
