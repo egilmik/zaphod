@@ -2,7 +2,9 @@
 
 float NNUE::forward(Board& board) {
 	
-	float input[768] = {};
+	
+    int active[48] = {};
+    int nActive = 0;
 
     BitBoard allPieces = board.getBitboard(All);
     int square = 0;
@@ -10,8 +12,7 @@ float NNUE::forward(Board& board) {
         square = board.popLsb(allPieces);
         BitBoardEnum piece = board.getPieceOnSquare(square);
         int plane = plane_index_from_piece(piece);
-
-        input[plane * 64 + square] = 1.f;
+        active[nActive++] = plane * 64 + square;
     }
 
     float hidden[32] = {};
@@ -22,8 +23,8 @@ float NNUE::forward(Board& board) {
         // Init hidden node with bias
         float value = B1[i]; 
 
-        for (int j = 0; j < 768; j++) {
-            value += W1[i * 768+j] * input[j];
+        for (int k = 0; k < nActive; k++) {
+            value += W1[active[k]];
         }
         hidden[i] = value > 0.f ? value : 0.f;
     }
