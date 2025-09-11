@@ -21,7 +21,7 @@ class NNUE {
 		float forward(Board &board);
 		bool load(const std::string& path);
 
-        int plane_index_from_piece(BitBoardEnum piece);
+        static int plane_index_from_piece(BitBoardEnum piece);
 
 	private:
         static constexpr int IN = 768;
