@@ -12,7 +12,7 @@ import chess  # <-- python-chess
 # -------------------------
 # Config
 # -------------------------
-DATA_PATH         = "data.txt"   # each line: "<FEN> ; <score_cp>"
+DATA_PATH         = "nnue_scored/part_0.txt"   # each line: "<FEN> ; <score_cp>"
 EPOCHS            = 3
 BATCH_SIZE        = 4096
 LR                = 1e-3
@@ -41,12 +41,25 @@ def encode_board_12x64_flat(board: chess.Board) -> np.ndarray:
 # Dataset
 # -------------------------
 class FenScoreDataset(Dataset):
-    def __init__(self, path: str, score_from_stm: bool = True, cp_scale: float = 600.0):
+    def __init__(self, path1: str, path2: str, score_from_stm: bool = True, cp_scale: float = 600.0):
         self.items: List[Tuple[str, float]] = []
         self.score_from_stm = score_from_stm
         self.cp_scale = cp_scale
 
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path1, 'r', encoding='utf-8') as f:
+            for line in f:
+                s = line.strip()
+                if not s or s.startswith('#') or ';' not in s:
+                    continue
+                fen, sc = s.split(';', 1)
+                fen = fen.strip()
+                try:
+                    cp = float(sc.strip())
+                except ValueError:
+                    continue
+                self.items.append((fen, cp))
+
+        with open(path2, 'r', encoding='utf-8') as f:
             for line in f:
                 s = line.strip()
                 if not s or s.startswith('#') or ';' not in s:
@@ -117,7 +130,7 @@ def main():
     set_seed(SEED)
     print(f"Device: {DEVICE}")
 
-    ds = FenScoreDataset(DATA_PATH, score_from_stm=SCORE_FROM_STM, cp_scale=TARGET_CP_SCALE)
+    ds = FenScoreDataset("nnue_scored/part_0.txt","nnue_scored/part_11.txt", score_from_stm=SCORE_FROM_STM, cp_scale=TARGET_CP_SCALE)
     n_total = len(ds)
     n_val = max(1, int(n_total * VAL_SPLIT))
     n_train = n_total - n_val

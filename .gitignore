@@ -4,3 +4,9 @@ build/
 tuning/*.pgn
 tuning/*.csv
 tuning/*.h
+
+scripts/*.gz
+scripts/*.npz
+scripts/*.pt
+scripts/*.nnue
+scripts/*.txt
