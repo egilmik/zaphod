@@ -52,6 +52,13 @@ class Search {
         int maxQuinesenceDepthThisSearch = 0;
         int maxPlyThisIteration = 0;
 
+        const int MATESCORE = 30000;
+        const int MAXPLY = 1024;
+
+        void setPrintInfo(bool on) {
+            printInfo = on;
+        };
+
     private:
 
 
@@ -63,9 +70,8 @@ class Search {
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
         SearchStack ss[100];
-        const int mateScore = 30000;
-        const int maxPly = 1024;
         NNUE nnue;
+        bool printInfo = true;
           
 };
 #endif

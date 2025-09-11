@@ -67,15 +67,16 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
 
         std::string scoreString = " score cp " + std::to_string(score);
-        if (score > mateScore - maxPly) {
-            scoreString = " score mate " + std::to_string((mateScore - score));
+        if (score > MATESCORE - MAXPLY) {
+            scoreString = " score mate " + std::to_string((MATESCORE - score));
         }
-        else if (score < -(mateScore - maxPly)) {
-            scoreString = " score mate " + std::to_string((-(mateScore + score)));
+        else if (score < -(MATESCORE - MAXPLY)) {
+            scoreString = " score mate " + std::to_string((-(MATESCORE + score)));
         }
 
-
-        std::cout << "info depth " << i << " seldepth " << maxPlyThisIteration << scoreString << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
+        if (printInfo) {
+            std::cout << "info depth " << i << " seldepth " << maxPlyThisIteration << scoreString << " nodes " << evaluatedNodes << " nps " << nps << " pv " << Perft::getNotation(bestMoveIteration.bestMove) << std::endl;
+        }
         currentFinishedDepth = i;
         bestScore = bestMoveIteration;
     } 
@@ -294,7 +295,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
         if (inCheck) {
             // We are check mate
-            alpha = -mateScore+ply;
+            alpha = -MATESCORE+ply;
         }
         else {
             // Stalemate
@@ -403,7 +404,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
         
         if (inCheck) {
             // We are check mate
-            alpha = -mateScore + ply;
+            alpha = -MATESCORE + ply;
         }
         else {
             // Stalemate
