@@ -20,6 +20,7 @@ class NNUE {
 		void removePiece(int sq, BitBoardEnum piece, BitBoardEnum color);
 		float forward(Board &board);
 		bool load(const std::string& path);
+        int encodeFeature(int piece, int sq, BitBoardEnum color);
 
         static int plane_index_from_piece(BitBoardEnum piece);
 

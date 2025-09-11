@@ -24,7 +24,7 @@ float NNUE::forward(Board& board) {
         float value = B1[i]; 
 
         for (int k = 0; k < nActive; k++) {
-            value += W1[active[k]];
+            value += W1[active[k]+(i*768)];
         }
         hidden[i] = value > 0.f ? value : 0.f;
     }
@@ -57,6 +57,14 @@ float NNUE::forward(Board& board) {
     default:  return -1;
     }
 }
+
+ int NNUE::encodeFeature(int piece, int sq, BitBoardEnum color) {
+     if (color == Black) {
+         sq ^= 56;
+         piece ^= 6;
+     }
+     return piece * 64 + sq;
+ }
 
 bool NNUE::load(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
