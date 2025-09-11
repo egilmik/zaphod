@@ -37,6 +37,7 @@ void worker_fn(WorkerArgs a) {
 
     Board board;
     Search search;
+    search.setPrintInfo(false);
 
     uint64_t local_written = 0;
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -65,7 +66,9 @@ void worker_fn(WorkerArgs a) {
 
             // Skip noisy: in-check or capture-to-play
             bool isCapture = board.getPieceOnSquare(best.to()) != All;
-            if (list.checkers == 0 && !isCapture) {
+            bool isMateScore = std::abs(sc.score) > search.MATESCORE - search.MAXPLY;
+
+            if (list.checkers == 0 && !isCapture && !isMateScore ) {
                 // Collect active indices
                 int idxs[64]; // enough (<= pieces on board)
                 int n = 0;
