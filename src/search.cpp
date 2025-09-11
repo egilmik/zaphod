@@ -663,20 +663,20 @@ int Search::evaluate(Board &board)
         gamePhase += Material::gamePhaseArray[piece];
         materialScore += Material::materialScoreArray[piece];
     }
-
+    
     //Pesto gamephase handling
     board.setGamePhase(gamePhase);
     int mgPhase = gamePhase;
-    if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
+    if (mgPhase > 24) mgPhase = 24;
     int egPhase = 24 - mgPhase;
     int psqt = (mgScore * mgPhase + egScore * egPhase) / 24;
     int score = materialScore+psqt;
     //score += evaluatePawns(board);
     //score += Evaluation::evaluatePiecePairs(board);
 
+
+
     
-
-
     if (board.getSideToMove() == BitBoardEnum::Black) {
         return score *= -1;
     }
