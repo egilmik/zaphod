@@ -14,7 +14,7 @@ HIDDEN     = 32
 # -------------------------
 TRAIN_PATHS       = ["D:/source/zaphod/out/build/x64-Release/Release/positions_indices.all.txt"]  # add more shards here
 VAL_MAX_SAMPLES   = 200_000            # small, fixed-size validation reservoir
-EPOCHS            = 10
+EPOCHS            = 5
 BATCH_SIZE        = 4096
 LR                = 1e-3
 TARGET_CP_SCALE   = 600.0              # tanh(cp/scale)

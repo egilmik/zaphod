@@ -12,7 +12,7 @@ float NNUE::forward(Board& board) {
         square = board.popLsb(allPieces);
         BitBoardEnum piece = board.getPieceOnSquare(square);
         int plane = plane_index_from_piece(piece);
-        active[nActive++] = plane * 64 + square;
+        active[nActive++] = encodeFeature(plane,square,board.getSideToMove());
     }
 
     float hidden[32] = {};

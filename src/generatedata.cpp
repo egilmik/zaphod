@@ -78,7 +78,7 @@ void worker_fn(WorkerArgs a) {
                     int sq = board.popLsb(all);
                     BitBoardEnum piece = board.getPieceOnSquare(sq);
                     int pl = NNUE::plane_index_from_piece(piece); // 0..11
-                    if (pl >= 0) idxs[n++] = pl * 64 + sq;
+                    if (pl >= 0) idxs[n++] = NNUE::encodeFeature(pl, sq, board.getSideToMove());
                 }
 
                 if (n > 0) {
