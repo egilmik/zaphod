@@ -60,15 +60,18 @@ void worker_fn(WorkerArgs a) {
             MoveGenerator::generateMoves(board, list);
             if (list.counter == 0 || board.hasPositionRepeated()) break;
 
-            // Search label (adjust depth/time as you wish)
-            Score sc = search.search(board, /*depth*/4, /*time_ms*/150);
+            
+            Score sc = search.search(board, 4, 100);
             Move  best = sc.bestMove;
 
             // Skip noisy: in-check or capture-to-play
             bool isCapture = board.getPieceOnSquare(best.to()) != All;
             bool isMateScore = std::abs(sc.score) > search.MATESCORE - search.MAXPLY;
 
-            if (list.checkers == 0 && !isCapture && !isMateScore ) {
+            // Eval is noisy
+            bool isNoisyEval = std::abs(search.evaluate(board)-sc.score) > 120; 
+
+            if (list.checkers == 0 && !isCapture && !isMateScore && !isNoisyEval ) {
                 // Collect active indices
                 int idxs[64]; // enough (<= pieces on board)
                 int n = 0;
@@ -86,7 +89,7 @@ void worker_fn(WorkerArgs a) {
 
                     // white-POV score
                     int score_cp = sc.score;
-                    if (board.getSideToMove() == Black) score_cp = -score_cp;
+                    //if (board.getSideToMove() == Black) score_cp = -score_cp;
 
                     // Reserve a slot *now*; stop if quota reached
                     uint64_t slot = a.produced->fetch_add(1, std::memory_order_relaxed);
