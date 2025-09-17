@@ -61,7 +61,7 @@ float NNUE::forward(Board& board) {
  int NNUE::encodeFeature(int piece, int sq, BitBoardEnum color) {
      if (color == Black) {
          sq ^= 56;
-         piece ^= 6;
+         piece = (piece < 6) ? (piece + 6) : (piece - 6);
      }
      return piece * 64 + sq;
  }

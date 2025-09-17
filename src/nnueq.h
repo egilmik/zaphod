@@ -44,10 +44,6 @@ public:
     bool load(const std::string& path);
     float forward(Board& board);
 
-    int plane_index_from_piece(BitBoardEnum piece);
-    int encodeFeature(int piece, int sq, BitBoardEnum color);
-
-
 };
 
 #endif
