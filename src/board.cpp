@@ -331,6 +331,8 @@ BitBoard Board::getLineMask(int square)
 
 void Board::clearBoard()
 {
+    nnue.clear();
+
     for(int i = 0; i < 15; i++){
         bitBoardArray[i] = 0;
     }

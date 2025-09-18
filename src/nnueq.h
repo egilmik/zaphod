@@ -53,6 +53,8 @@ public:
     void addPiece(BitBoardEnum piece, int sq);
     void removePiece(BitBoardEnum piece, int sq);
 
+    void clear();
+
 
 };
 

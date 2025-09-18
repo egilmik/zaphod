@@ -11,8 +11,7 @@ float NNUEQ::forward(BitBoardEnum stm) {
 
     int side = stm == White ? 0 : 1;
 
-    accumulator[0].pre.fill(0);
-    accumulator[1].pre.fill(0);
+    
 
     const float eps = 1e-6f;
     // ----- quantized path -----
@@ -63,6 +62,11 @@ void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
         accumulator[0].pre[i] += (int32_t)W1_q[featureWhite + (i * 768)];
         accumulator[1].pre[i] += (int32_t)W1_q[featureBlack + (i * 768)];
     }
+}
+
+void NNUEQ::clear() {
+    accumulator[0].pre.fill(0);
+    accumulator[1].pre.fill(0);
 }
 
 bool NNUEQ::load(const std::string& path) {
