@@ -8,6 +8,7 @@
 #include <chrono>
 #include "ttable.h"
 #include "nnue.h"
+#include "nnueq.h"
 
 struct Score {
     int depth = 0;
@@ -71,6 +72,7 @@ class Search {
         bool stopSearch = false;
         SearchStack ss[100];
         NNUE nnue;
+        NNUEQ nnueQ;
         bool printInfo = true;
           
 };

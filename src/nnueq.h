@@ -11,8 +11,11 @@
 #include <stdexcept>
 #include <vector>
 
-#include "bitboard.h"
-#include "board.h"
+#include "bitboard.h";
+
+struct Accumulator {
+    std::array<int32_t, 32> pre{};
+};
 
 class NNUEQ {
 public:
@@ -38,11 +41,18 @@ public:
     float s2 = 1.f;
     float B2_f = 0.f;
 
+    // 0 White, 1 Black
+    Accumulator accumulator[2];
+
     // State
     bool quantized = false;
 
     bool load(const std::string& path);
-    float forward(Board& board);
+    float forward(BitBoardEnum stm);
+
+    void addPiece(BitBoardEnum piece, int sq);
+    void removePiece(BitBoardEnum piece, int sq);
+
 
 };
 

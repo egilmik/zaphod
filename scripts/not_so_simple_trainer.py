@@ -1,7 +1,7 @@
 # nnue_768x32x1_trainer_idx_stream.py
 import math, random
 from typing import List, Tuple, Iterable, Optional
-
+from tqdm import tqdm
 import torch
 from torch import nn
 from torch.utils.data import IterableDataset, DataLoader, get_worker_info
@@ -12,13 +12,13 @@ HIDDEN     = 32
 # -------------------------
 # Config
 # -------------------------
-TRAIN_PATHS       = ["D:/source/zaphod/out/build/x64-Release/Release/positions_indices.all.txt"]  # add more shards here
-VAL_MAX_SAMPLES   = 200_000            # small, fixed-size validation reservoir
+TRAIN_PATHS       = ["D:/source/zaphod_nnue/Data/1.9_data/1.9_11M_depth6_STM.txt","D:/source/zaphod_nnue/Data/1.9_data/1.9_108M_depth4_STM.txt","D:/source/zaphod_nnue/Data/1.9_data/1.9_88M_depth4_STM.txt"]  # add more shards here
+VALIDATION_PATHS  = ["D:/source/zaphod_nnue/Data/1.9_data/1.9_5M_depth4_STM.txt"]  # add more shards here
 EPOCHS            = 5
 BATCH_SIZE        = 4096
 LR                = 1e-3
 TARGET_CP_SCALE   = 600.0              # tanh(cp/scale)
-NUM_WORKERS       = 4                  # streaming works best with workers
+NUM_WORKERS       = 10                  # streaming works best with workers
 PREFETCH_FACTOR   = 1                  # keep low to reduce RAM
 PIN_MEMORY        = True
 SEED              = 7
@@ -130,35 +130,6 @@ def collate_indices_to_dense(batch: list[Tuple[list, float]]):
     return X, y
 
 # -------------------------
-# Small validation reservoir (memory-bounded)
-# -------------------------
-def build_val_reservoir(paths: List[str], k: int, seed: int):
-    rng = random.Random(seed ^ 0x27d4eb2d)
-    val: list[Tuple[list, float]] = []
-    n_seen = 0
-    for p in paths:
-        with open(p, "r", encoding="utf-8") as f:
-            for line in f:
-                item = parse_indices_score(line)
-                if item is None:
-                    continue
-                n_seen += 1
-                if len(val) < k:
-                    val.append(item)
-                else:
-                    j = rng.randrange(n_seen)
-                    if j < k:
-                        val[j] = item
-    return val
-
-class IdxListDataset(torch.utils.data.Dataset):
-    def __init__(self, items: list[Tuple[list, float]]):
-        self.items = items
-    def __len__(self): return len(self.items)
-    def __getitem__(self, i):
-        return self.items[i]
-
-# -------------------------
 # Model
 # -------------------------
 class NNUE_768x32x1(nn.Module):
@@ -185,10 +156,7 @@ def main():
 
     # Streaming train dataset
     tr_ds = IdxScoreStreamDataset(TRAIN_PATHS, seed=SEED, shuffle_buffer=SHUFFLE_BUFFER)
-
-    # Small validation set (fixed reservoir)
-    val_items = build_val_reservoir(TRAIN_PATHS, VAL_MAX_SAMPLES, seed=SEED)
-    va_ds = IdxListDataset(val_items)
+    va_ds = IdxScoreStreamDataset(VALIDATION_PATHS, seed=SEED, shuffle_buffer=SHUFFLE_BUFFER)
 
     tr_loader = DataLoader(
         tr_ds, batch_size=BATCH_SIZE, shuffle=False,
@@ -198,7 +166,7 @@ def main():
     )
     va_loader = DataLoader(
         va_ds, batch_size=BATCH_SIZE, shuffle=False,
-        num_workers=0, pin_memory=PIN_MEMORY,
+        num_workers=4, pin_memory=PIN_MEMORY,
         collate_fn=collate_indices_to_dense,
     )
 
@@ -210,11 +178,12 @@ def main():
     best_va = float('inf')
     for ep in range(1, EPOCHS+1):
         tr_ds.set_epoch(ep)
-
+        print(f"Epoch {ep:02d}")
         # Train
         model.train()
         tr_loss_sum = tr_cnt = 0
-        for xb, yb in tr_loader:
+       
+        for xb, yb in tqdm(tr_loader, desc=f"Train {ep:02d}", leave=False):
             xb = xb.to(DEVICE, non_blocking=True)
             yb = yb.to(DEVICE, non_blocking=True)
             opt.zero_grad(set_to_none=True)
@@ -224,11 +193,10 @@ def main():
             tr_loss_sum += loss.item() * yb.size(0)
             tr_cnt      += yb.size(0)
 
-        # Validate
-        model.eval()
+        # Validation
         va_loss_sum = va_cnt = 0
         with torch.no_grad():
-            for xb, yb in va_loader:
+            for xb, yb in tqdm(va_loader, desc=f"Val {ep:02d}", leave=False):
                 xb = xb.to(DEVICE, non_blocking=True)
                 yb = yb.to(DEVICE, non_blocking=True)
                 loss = loss_fn(model(xb), yb)
@@ -238,13 +206,13 @@ def main():
         tr_loss = tr_loss_sum / max(tr_cnt, 1)
         va_loss = va_loss_sum / max(va_cnt, 1)
         print(f"Epoch {ep:02d} | train MSE={tr_loss:.6f} | val MSE={va_loss:.6f}")
-
+        
         if va_loss < best_va:
             best_va = va_loss
             torch.save({
                 "model_state_dict": model.state_dict(),
                 "config": {
-                    "score_from_stm": False,           # indices are white-POV
+                    "score_from_stm": True,           # indices are white-POV
                     "target_cp_scale": TARGET_CP_SCALE,
                     "arch": "768x32x1",
                 }

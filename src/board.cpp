@@ -302,6 +302,8 @@ Board::Board(){
     initMagics(true, magicMovesRook, rookMask, magicNumberRook, magicNumberShiftsRook);
     initMagics(false, magicMovesBishop, bishopMask, magicNumberBishop, magicNumberShiftsBishop);
     initSqBetween();
+
+    nnue.load("D:\\weights_int8.nnueq");
 }
 
 
@@ -348,9 +350,7 @@ void Board::clearBoard()
 
 void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 {
-    if (piece == All) {
-        int x = 0;
-    }
+    nnue.addPiece(piece, sq);
 
     mailBoxBoard[sq] = piece;
     bitBoardArray[All] |= sqBB[sq];
@@ -360,6 +360,7 @@ void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 
 void Board::removePiece(int sq, BitBoardEnum color)
 {
+    nnue.removePiece(mailBoxBoard[sq], sq);
     bitBoardArray[All] &= ~sqBB[sq];
     bitBoardArray[color] &= ~sqBB[sq];
     bitBoardArray[mailBoxBoard[sq]] &= ~sqBB[sq];
@@ -1196,6 +1197,10 @@ bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker
 BitBoardEnum Board::getPieceOnSquare(int sq)
 {
     return mailBoxBoard[sq];
+}
+
+float Board::evaluate() {
+    return nnue.forward(getSideToMove());
 }
 
 void Board::printBoard(){

@@ -4,40 +4,34 @@
 #include <cmath>
 #include "nnue.h"
 
-float NNUEQ::forward(Board& board) {
+float NNUEQ::forward(BitBoardEnum stm) {
     // Gather active features
     int active[48];
     int nActive = 0;
-    BitBoard allPieces = board.getBitboard(All);
-    while (allPieces) {
-        int sq = board.popLsb(allPieces);
-        BitBoardEnum piece = board.getPieceOnSquare(sq);
-        int plane = NNUE::plane_index_from_piece(piece);
-        if (plane >= 0) active[nActive++] = NNUE::encodeFeature(plane, sq, board.getSideToMove());
-    }
+
+    int side = stm == White ? 0 : 1;
+
+    accumulator[0].pre.fill(0);
+    accumulator[1].pre.fill(0);
 
     const float eps = 1e-6f;
     // ----- quantized path -----
     // L1: int32 pre = B1_q + sum W1_q[o, i_active]
     // Reconstruct float pre-act: z = s1[o] * pre[o], ReLU, then quantize to uint8 via a1
+    // L2: int32 dot of (uint8 hq) · (int8 W2_q)
     uint8_t hq[H];
+    int32_t acc2 = 0;
     for (int i = 0; i < H; ++i) {
-        int32_t acc = B1_q[i];
-        for (int k = 0; k < nActive; ++k) {
-            acc += (int32_t)W1_q[active[k] + (i * 768)];
-        }
+        int32_t acc = B1_q[i] +accumulator[side].pre[i];
 
         float z = s1[i] * (float)acc;
         z = z > 0.f ? z : 0.f;
         int q = (int)std::lrint(z / a1);
         if (q < 0) q = 0; else if (q > 127) q = 127;
         hq[i] = (uint8_t)q;
-    }
 
-    // L2: int32 dot of (uint8 hq) · (int8 W2_q)
-    int32_t acc2 = 0;
-    for (int i = 0; i < H; ++i)
         acc2 += (int32_t)((int16_t)W2_q[i]) * (int32_t)hq[i];
+    }
 
     // Final float in model output domain
     float y = B2_f + (s2 * a1) * (float)acc2;
@@ -47,6 +41,28 @@ float NNUEQ::forward(Board& board) {
     if (y < -1.f + eps) y = -1.f + eps;
     y = 0.5f * std::log((1.f + y) / (1.f - y));
     return y * scale_cp;
+}
+
+void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
+    int plane = NNUE::plane_index_from_piece(piece);
+    int featureWhite = NNUE::encodeFeature(plane, sq, White);
+    int featureBlack = NNUE::encodeFeature(plane, sq, Black);
+
+    for (int i = 0; i < H; i++) {
+        accumulator[0].pre[i] -= (int32_t)W1_q[featureWhite + (i * 768)];
+        accumulator[1].pre[i] -= (int32_t)W1_q[featureBlack + (i * 768)];
+    }
+}
+
+void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
+    int plane = NNUE::plane_index_from_piece(piece);
+    int featureWhite = NNUE::encodeFeature(plane, sq, White);
+    int featureBlack = NNUE::encodeFeature(plane, sq, Black);
+    
+    for (int i = 0; i < H; i++) {
+        accumulator[0].pre[i] += (int32_t)W1_q[featureWhite + (i * 768)];
+        accumulator[1].pre[i] += (int32_t)W1_q[featureBlack + (i * 768)];
+    }
 }
 
 bool NNUEQ::load(const std::string& path) {
@@ -73,7 +89,7 @@ bool NNUEQ::load(const std::string& path) {
 
     if (m.rfind("NNUEQ1", 0) == 0) {
         // -------- Quantized format --------
-        quantized = true;
+        
 
         // L1
         s1.resize(H);

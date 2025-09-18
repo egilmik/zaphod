@@ -10,3 +10,4 @@ scripts/*.pt
 scripts/*.txt
 scripts/*.npz
 scripts/*.nnue
+scripts/*.nnueq

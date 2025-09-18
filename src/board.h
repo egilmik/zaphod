@@ -8,6 +8,7 @@
 #include "transpositiontable.h"
 #include <array>
 #include <format>
+#include "nnueq.h"
 
 struct alignas(32) MoveUndoInfo {
     BitBoard hashKeyCopy = 0; // 8 byte
@@ -261,9 +262,13 @@ class Board {
             return gamePhase;
         }
 
+        float evaluate();
+
     private:
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
+        
+        NNUEQ nnue;
 
         MoveUndoInfo moveHistory[1024];
         int historyPly = 0;

@@ -8,6 +8,7 @@
 
 Search::Search() {
     //nnue.load("D:\\weights.nnue");
+    //nnueQ.load("D:\\weights_int8.nnueq");
 }
 
 Score Search::search(Board &board, int maxDepth, int maxTime)
@@ -330,7 +331,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
     // Has repeated 3-fold
     //////////////////////////
     if (board.hasPositionRepeated()) {
-        return 0;
+        return (board.getSideToMove() == White) ? -50 : 50;
     }
 
     int standPat = evaluate(board);
@@ -648,8 +649,9 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 int Search::evaluate(Board &board)
 {
     evaluatedNodes++;
-    //float score = nnue.forward(board);
-
+    //float score = nnueQ.forward(board,board.getSideToMove());
+    float score = board.evaluate();
+    /*
     int mgScore = 0;
     int egScore = 0;
     int gamePhase = 0;
@@ -681,6 +683,7 @@ int Search::evaluate(Board &board)
     if (board.getSideToMove() == BitBoardEnum::Black) {
         return score *= -1;
     }
+    */
     return score;
 }
 
