@@ -303,7 +303,7 @@ Board::Board(){
     initMagics(false, magicMovesBishop, bishopMask, magicNumberBishop, magicNumberShiftsBishop);
     initSqBetween();
 
-    nnue.load("D:\\weights_int8.nnueq");
+    nnue.load("D:\\weights128_int8.nnueq");
 }
 
 
@@ -391,7 +391,7 @@ void Board::parseFen(std::string fen){
     for(std::string::size_type i = 0; i < fen.size(); ++i) {
 
         if (count > 64) {
-            std::cout << "How did this happen" << std::endl;
+            std::cout << "How did this happen " << fen << std::endl;
         }
 
 

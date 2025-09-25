@@ -7,19 +7,19 @@ from torch import nn
 from torch.utils.data import IterableDataset, DataLoader, get_worker_info
 
 IN_FEATS   = 768
-HIDDEN     = 32
+HIDDEN     = 128
 
 # -------------------------
 # Config
 # -------------------------
-TRAIN_PATHS       = ["D:/source/zaphod_nnue/Data/1.9_data/1.9_11M_depth6_STM.txt","D:/source/zaphod_nnue/Data/1.9_data/1.9_108M_depth4_STM.txt","D:/source/zaphod_nnue/Data/1.9_data/1.9_88M_depth4_STM.txt"]  # add more shards here
+TRAIN_PATHS       = ["D:/source/zaphod_nnue/Data/1.9_data/1.9_11M_depth6_STM.txt","D:/source/zaphod_nnue/Data/1.9_data/1.9_113M_depth4_STM.txt","D:/source/zaphod_nnue/Data/1.9_data/1.9_108M_depth4_STM.txt","D:/source/zaphod_nnue/Data/1.9_data/1.9_88M_depth4_STM.txt"]  # add more shards here
 VALIDATION_PATHS  = ["D:/source/zaphod_nnue/Data/1.9_data/1.9_5M_depth4_STM.txt"]  # add more shards here
-EPOCHS            = 5
+EPOCHS            = 20
 BATCH_SIZE        = 4096
 LR                = 1e-3
 TARGET_CP_SCALE   = 600.0              # tanh(cp/scale)
 NUM_WORKERS       = 10                  # streaming works best with workers
-PREFETCH_FACTOR   = 1                  # keep low to reduce RAM
+PREFETCH_FACTOR   = 2                  # keep low to reduce RAM
 PIN_MEMORY        = True
 SEED              = 7
 SAVE_PATH         = "nnue_768x32x1.pt"
@@ -43,7 +43,7 @@ def parse_indices_score(line: str) -> Optional[Tuple[list, float]]:
     except ValueError:
         return None
     # validate + dedup + sort
-    idxs = sorted({i for i in idxs if 0 <= i < IN_FEATS})
+    #idxs = sorted({i for i in idxs if 0 <= i < IN_FEATS})
     if not idxs:
         return None
     return idxs, math.tanh(cp / TARGET_CP_SCALE)  # store target already transformed

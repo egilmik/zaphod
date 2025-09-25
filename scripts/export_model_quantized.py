@@ -62,7 +62,7 @@ B2_f = b2.astype(np.float32)  # (1,)
 # L2: s2 float32, W2_q int8[1*32], B2_f float32[1]
 with open(BIN_OUT, "wb") as f:
     f.write(b"NNUEQ1\0\0")
-    f.write(struct.pack("<iii", 768, 32, 1))
+    f.write(struct.pack("<iii", 768,128, 1))
     f.write(struct.pack("<f", scale))
 
     f.write(s1.astype("<f4").tobytes(order="C"))

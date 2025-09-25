@@ -14,13 +14,13 @@
 #include "bitboard.h";
 
 struct Accumulator {
-    std::array<int32_t, 32> pre{};
+    std::array<int16_t,128> pre;
 };
 
 class NNUEQ {
 public:
     static constexpr int IN = 768;
-    static constexpr int H = 32;
+    static constexpr int H = 128;
     static constexpr int OUT = 1;
 
     // --- Common ---
@@ -32,7 +32,7 @@ public:
 
     // --- Quantized path (NNUEQ1) ---
     // L1
-    std::vector<int8_t>  W1_q;   // H*IN
+    std::vector<int16_t>  W1_q;   // H*IN
     std::vector<int32_t> B1_q;   // H
     std::vector<float>   s1;     // H (per-channel scales)
     float a1 = 1.f;              // hidden activation scale (layer-wide)
@@ -54,6 +54,10 @@ public:
     void removePiece(BitBoardEnum piece, int sq);
 
     void clear();
+
+    void add_row_i16_avx2(const int16_t* __restrict w, int16_t* __restrict acc);
+    void sub_row_i16_avx2(const int16_t* __restrict w, int16_t* __restrict acc);
+    void build_feature_major_rows(const std::vector<int8_t>& src, std::vector<int16_t>& dst);
 
 
 };

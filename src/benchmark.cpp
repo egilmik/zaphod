@@ -68,7 +68,7 @@ struct BenchmarkDefinition {
                 
         Score move = search.search(board, depth,1000000);
 
-        MoveList pvList = search.reconstructPV(board,depth);
+        //MoveList pvList = search.reconstructPV(board,depth);
 
         
 
@@ -87,10 +87,10 @@ struct BenchmarkDefinition {
         std::cout << "Best move " << Perft::getNotation(move.bestMove)  << " Expected best move " << def.bestMove << std::endl;
         std::cout << "TT stats " << " Upper bound hit: " << search.upperBoundHit << " Lower bound hit " << search.lowerBoundHit << " Exact hit " << search.exactHit << " Pawn tt hits: " << search.pawnTTHits << std::endl;
         std::cout << "LMR stats " << " LMR hit: " << search.lmrHit << " LMR re-search: " << search.lmrResearchHit << std::endl;
-        std::cout << "PV ";
+        /*std::cout << "PV ";
         for (int i = 0; i < pvList.counter; i++) {
             std::cout << Perft::getNotation(pvList.moves[i]) << " ";
-        }
+        }*/
         //csvFile << "id,expMove,selMove,depth,score,elapsedtime,nps,nodes\n";
         csvFile << def.text << "," << status << "," << def.bestMove << "," << Perft::getNotation(move.bestMove);
         csvFile << "," << move.depth << "," << search.maxQuinesenceDepthThisSearch << "," << move.score << "," << duration.count() << "," << nps << "," << search.evaluatedNodes << "\n";
