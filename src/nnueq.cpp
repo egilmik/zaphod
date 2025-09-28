@@ -29,11 +29,6 @@ float NNUEQ::forward(BitBoardEnum stm) {
         __m256i lo32 = _mm256_cvtepi16_epi32(lo16);
         __m256i hi32 = _mm256_cvtepi16_epi32(hi16);
 
-        __m256i b0 = _mm256_load_si256((const __m256i*)(B1 + i));
-        __m256i b1 = _mm256_load_si256((const __m256i*)(B1 + i + 8));
-        lo32 = _mm256_add_epi32(lo32, b0);
-        hi32 = _mm256_add_epi32(hi32, b1);
-
         // --- z = ReLU(s1 * pre) ---
         __m256 z0 = _mm256_mul_ps(_mm256_cvtepi32_ps(lo32), _mm256_load_ps(S1 + i));
         __m256 z1 = _mm256_mul_ps(_mm256_cvtepi32_ps(hi32), _mm256_load_ps(S1 + i + 8));
@@ -127,8 +122,10 @@ void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
 }
 
 void NNUEQ::clear() {
-    accumulator[0].pre.fill(0);
-    accumulator[1].pre.fill(0);
+    for (int h = 0; h < H; ++h) {
+        accumulator[0].pre[h] = (int16_t)B1_q[h];
+        accumulator[1].pre[h] = (int16_t)B1_q[h];
+    }
 }
 
 void NNUEQ::add_row_i16_avx2(const int16_t* __restrict w, int16_t* __restrict acc) {
