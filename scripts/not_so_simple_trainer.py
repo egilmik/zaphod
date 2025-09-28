@@ -137,11 +137,14 @@ class NNUE_768x32x1(nn.Module):
         super().__init__()
         self.l1 = nn.Linear(IN_FEATS, HIDDEN, bias=True)
         self.l2 = nn.Linear(HIDDEN, 1, bias=True)
-        self.act = nn.ReLU(inplace=True)
+        # Clipped Relu
+        self.act = nn.Hardtanh(min_val=0.0, max_val=1.0, inplace=True)
         self._init()
     def _init(self):
-        nn.init.kaiming_uniform_(self.l1.weight, a=0.0); nn.init.zeros_(self.l1.bias)
-        nn.init.uniform_(self.l2.weight, -1e-3, 1e-3);  nn.init.zeros_(self.l2.bias)
+        nn.init.kaiming_uniform_(self.l1.weight, a=0.0)
+        nn.init.zeros_(self.l1.bias)
+        nn.init.uniform_(self.l2.weight, -1e-3, 1e-3)
+        nn.init.zeros_(self.l2.bias)
     def forward(self, x):
         return self.l2(self.act(self.l1(x)))
 

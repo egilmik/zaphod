@@ -7,21 +7,16 @@
 
 float NNUEQ::forward(BitBoardEnum stm) {
     const int side = (stm == White) ? 0 : 1;
-    const float eps = 1e-6f;
 
     const int16_t* __restrict acc16 = accumulator[side].pre.data();
-    const int32_t* __restrict B1 = B1_q.data();
     const float* __restrict S1 = s1.data();
-    const float* __restrict W2F = W2_f.data();   // prebuilt W2_q*(s2*a1)
     const int8_t* __restrict W2Q = W2_q.data();
-    
-    int i = 0;
-    int32_t acc2 = 0;
 
+    int32_t acc2 = 0;
     const __m512  zero_ps = _mm512_setzero_ps();
     const __m512  a1_ps = _mm512_set1_ps(a1);
     const __m512i zero_i = _mm512_setzero_si512();
-    const __m512i max127 = _mm512_set1_epi32(127);
+    const __m512i qcap32 = _mm512_set1_epi32((int)qCap);
 
     for (int i = 0; i < H; i += 32) {
         // 1) Load 32×i16 baked pre
@@ -46,10 +41,9 @@ float NNUEQ::forward(BitBoardEnum stm) {
         // 5) Convert to int32 and clamp [0,127]
         __m512i q0i = _mm512_cvttps_epi32(q0f);
         __m512i q1i = _mm512_cvttps_epi32(q1f);
-        q0i = _mm512_min_epi32(_mm512_max_epi32(q0i, zero_i), max127);
-        q1i = _mm512_min_epi32(_mm512_max_epi32(q1i, zero_i), max127);
+        q0i = _mm512_min_epi32(_mm512_max_epi32(q0i, zero_i), qcap32);
+        q1i = _mm512_min_epi32(_mm512_max_epi32(q1i, zero_i), qcap32);
 
-        // 6) L2 MAC in int (exact, scalar per lane keeps order)
         alignas(64) int32_t qbuf[32];
         _mm512_store_si512((void*)qbuf, q0i);
         _mm512_store_si512((void*)(qbuf + 16), q1i);
@@ -59,23 +53,13 @@ float NNUEQ::forward(BitBoardEnum stm) {
             acc2 += (int32_t)w2[k] * qbuf[k];
     }
 
-    /*
-    // Horizontal add of 'sum'
-    alignas(32) float buf[8];
-    _mm256_store_ps(buf, sum);
-    float acc2f = buf[0] + buf[1] + buf[2] + buf[3] + buf[4] + buf[5] + buf[6] + buf[7];
-    */
-
-    // Final float in model output domain (same as your code)
     float y = B2_f + (s2 * a1) * (float)acc2;
-
-    // inverse tanh to centipawns
     const float one_minus = 1.f - 1e-6f;
-    if (y > one_minus) y = one_minus;
-    if (y < -one_minus) y = -one_minus;
+    if (y > one_minus) y = one_minus; else if (y < -one_minus) y = -one_minus;
     y = 0.5f * std::log((1.f + y) / (1.f - y));
     return y * scale_cp;
 }
+
 
 void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
     int plane = NNUE::plane_index_from_piece(piece);
@@ -153,60 +137,66 @@ bool NNUEQ::load(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
     if (!f) return false;
 
-    char magic[8] = {};
-    f.read(reinterpret_cast<char*>(magic), 8);
-    if (!f) throw std::runtime_error("Failed reading magic");
-
-    int32_t in = 0, h = 0, out = 0;
-    auto rd_i32 = [&](int32_t& x) { f.read(reinterpret_cast<char*>(&x), 4); };
-    auto rd_f32 = [&](float& x) { f.read(reinterpret_cast<char*>(&x), 4); };
+    auto rd_i32 = [&](int32_t& x) { f.read((char*)&x, 4); };
+    auto rd_f32 = [&](float& x) { f.read((char*)&x, 4); };
     auto ensure = [&]() { if (!f) throw std::runtime_error("Weights truncated"); };
 
-    // Common dims + cp scale first (both formats)
+    char magic[8] = {};
+    f.read(magic, 8); ensure();
+    const std::string m(magic, magic + 8);
+
+    int32_t in = 0, h = 0, out = 0;
     rd_i32(in); rd_i32(h); rd_i32(out); ensure();
     if (in != IN || h != H || out != OUT)
         throw std::runtime_error("Unexpected dimensions in weights");
 
     rd_f32(scale_cp); ensure();
 
-    std::string m(magic, magic + 8);
-
     if (m.rfind("NNUEQ1", 0) == 0) {
         // -------- Quantized format --------
-        
 
         // L1
         s1.resize(H);
-        f.read(reinterpret_cast<char*>(s1.data()), H * sizeof(float)); ensure();
+        f.read((char*)s1.data(), H * sizeof(float)); ensure();
 
-        std::vector<int8_t> w1Temp;
+        std::vector<int8_t> w1_hidden_major(H * IN);
+        f.read((char*)w1_hidden_major.data(), w1_hidden_major.size()); ensure();
 
-        w1Temp.resize(H * IN);
-        f.read(reinterpret_cast<char*>(w1Temp.data()), w1Temp.size() * sizeof(int8_t)); ensure();
-
-        build_feature_major_rows(w1Temp, W1_q);
-
+        // Default: build feature-major i16 at load (fast row ops)
+        build_feature_major_rows(w1_hidden_major, W1_q);
 
         B1_q.resize(H);
-        f.read(reinterpret_cast<char*>(B1_q.data()), H * sizeof(int32_t)); ensure();
+        f.read((char*)B1_q.data(), H * sizeof(int32_t)); ensure();
 
+        // Act: a1 then q_cap (uint8)
         rd_f32(a1); ensure();
+
+        // Try to read Q_CAP (uint8). If older file w/o it, default to floor(1/a1).
+        uint8_t qcap_file = 0;
+        if (f.peek() != std::char_traits<char>::eof()) {
+            f.read((char*)&qcap_file, 1);
+            if (!f) throw std::runtime_error("Weights truncated at Q_CAP");
+            qCap = qcap_file;
+        }
+        else {
+            qCap = (uint8_t)std::min(127, (int)std::floor(1.0f / a1));
+        }
 
         // L2
         rd_f32(s2); ensure();
 
         W2_q.resize(H);
-        f.read(reinterpret_cast<char*>(W2_q.data()), H * sizeof(int8_t)); ensure();
+        f.read((char*)W2_q.data(), H * sizeof(int8_t)); ensure();
 
+        rd_f32(B2_f); ensure();
+
+        // Optionally precompute W2_f for float FMA path (else skip)
         W2_f.resize(H);
         for (int i = 0; i < H; ++i) {
             W2_f[i] = float(W2_q[i]) * (s2 * a1);
         }
 
-        rd_f32(B2_f); ensure();
-
-        // clear float vectors to save RAM
-        W1.clear(); B1.clear(); W2.clear(); B2 = 0.f;
+        // Done
         return true;
     }
 

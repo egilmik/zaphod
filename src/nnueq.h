@@ -39,9 +39,12 @@ public:
     // L2
     std::vector<int8_t>  W2_q;   // H
     std::vector<float> W2_f;   // W2_f[i] = W2_q[i] * (s2 * a1)
-    float inv_a1 = 1.0f / a1;
+    float inv_a1 = 1.0f / 127;
     float s2 = 1.f;
     float B2_f = 0.f;
+
+    //For Clipped relu
+    int qCap = 0;
 
     // 0 White, 1 Black
     Accumulator accumulator[2];

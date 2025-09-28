@@ -303,7 +303,7 @@ Board::Board(){
     initMagics(false, magicMovesBishop, bishopMask, magicNumberBishop, magicNumberShiftsBishop);
     initSqBetween();
 
-    nnue.load("D:\\weights128_int8.nnueq");
+    nnue.load("D:\\source\\zaphod_nnue\\nets\\compat_clipped_relu\\768x128x1\\zaphod_768x128x1_CRelu_28092025.nnueq");
 }
 
 
