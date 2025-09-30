@@ -13,7 +13,21 @@ struct BenchmarkDefinition {
     std::string bestMove;
 };
 
- int main(int, char**) {
+ int main(int argc, char* argv[]) {
+
+     std::string networkPath;
+     
+     for (int i = 1; i < argc; ++i) {
+         std::string arg = argv[i];
+         if(arg == "-network" && i+1 < argc){
+             networkPath = argv[i + 1];
+         }
+     }
+
+     if (networkPath.empty()) {
+         std::cout << "No network provided" << std::endl;
+         return 0;
+     }
 
     std::vector<BenchmarkDefinition> benchVector;
     
@@ -62,7 +76,7 @@ struct BenchmarkDefinition {
         auto start = std::chrono::high_resolution_clock::now();
 
         std::cout << def.text << " " << def.fen << std::endl;
-        Board board;
+        Board board(networkPath);
         board.parseFen(def.fen);
         int depth = 9;
                 

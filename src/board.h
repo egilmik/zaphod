@@ -264,6 +264,8 @@ class Board {
 
         float evaluate();
 
+        void loadNetwork(std::string path);
+
     private:
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();

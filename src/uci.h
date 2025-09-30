@@ -10,8 +10,9 @@
 
 class UCI {
     public:
+        UCI() {};
         void loop();
-        
+        void setNetworkPath(std::string networkPath);
 
     private:
         void setPosition(std::istringstream &is);
@@ -22,6 +23,7 @@ class UCI {
 
         Board motherBoard;
         Search search;
+        std::string networkPath;
 };
 
 #endif
