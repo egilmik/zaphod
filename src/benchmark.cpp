@@ -76,7 +76,8 @@ struct BenchmarkDefinition {
         auto start = std::chrono::high_resolution_clock::now();
 
         std::cout << def.text << " " << def.fen << std::endl;
-        Board board(networkPath);
+        Board board;
+        board.loadNetwork(networkPath);
         board.parseFen(def.fen);
         int depth = 9;
                 
