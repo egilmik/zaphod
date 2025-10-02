@@ -378,14 +378,18 @@ bool Board::hasPositionRepeated() {
     int moves = std::min(halfMoveClock, historyPly);
     int moveCounter = 0;
 
-    for (int i = historyPly-1; i > historyPly - moves; i--) {
+    for (int i = historyPly-1; i >= 0; i--) {
 
+         
         if (moveHistory[i].hashKeyCopy == hashKey) {
             moveCounter++;
+            if (moveCounter > 1) {
+                return true;
+            }
         }
     }
 
-    return moveCounter > 2;
+    return false;
 }
 
 void Board::parseFen(std::string fen){

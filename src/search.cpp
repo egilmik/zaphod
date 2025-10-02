@@ -14,8 +14,8 @@ Search::Search() {
 Score Search::search(Board &board, int maxDepth, int maxTime)
 {   
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-    //tt.clear();
-    //pawnTable.clear();
+    tt.clear();
+    pawnTable.clear();
 
     for (int i = 0; i < 100; i++) {
         ss[i].checkExt = 0;
@@ -116,15 +116,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     //////////////////////////
     // Has repeated 3-fold
     //////////////////////////
-    if (board.hasPositionRepeated()) {
-        alpha = 0;
-        if(alpha > beta){
-            return alpha;
-        }
+    if (board.hasPositionRepeated() || board.getHalfMoveClock() >= 100) {
+        return 0;
     }
     
     auto tte = tt.probe(key);
-
+    /*
     if (tte && tte->depth >= depth) {
         if (tte->type == EXACT) {
             exactHit++;
@@ -134,51 +131,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
                 bestMoveIteration.depth = tte->depth;
             }
             return tte->score;
-        }/*
-        else if (tte->type == LOWER && tte->score >= beta) {
-            lowerBoundHit++;
-            return tte->score;
         }
-        else if (tte->type == UPPER && tte->score <= alpha) {
-            upperBoundHit++;
-            return tte->score;
-        }
-        */
-            
-        /*
-        if (tte->type == LOWER) {
-            alpha = std::max(alpha, tte->score);
-        }
-        if (tte->type == UPPER) {
-            beta = std::min(beta, tte->score);
-        }
-        if (alpha >= beta) {
-            return alpha;
-        }
-
-        */
-
-            /*
-        else if (entryType == TEType::lower) {
-            lowerBoundHit++;
-            alpha = std::max(it->second.score, alpha);
-        }
-        else if (entryType == TEType::upper) {
-            upperBoundHit++;
-            beta = std::max(it->second.score, beta);
-        }
-
-        if (alpha >= beta) {
-            if (depth == currentTargetDepth) {
-                bestMoveIteration.bestMove = it->second.bestMove;
-                bestMoveIteration.score = alpha;
-                bestMoveIteration.depth = depth;
-            }
-
-            return it->second.score;
-        }
-        */
-    }
+    }*/
 
     
 
@@ -330,8 +284,8 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
     //////////////////////////
     // Has repeated 3-fold
     //////////////////////////
-    if (board.hasPositionRepeated()) {
-        return (board.getSideToMove() == White) ? -50 : 50;
+    if (board.hasPositionRepeated() || board.getHalfMoveClock() >= 100) {
+        return 0;
     }
 
     int standPat = evaluate(board);
