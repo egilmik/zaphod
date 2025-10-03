@@ -60,6 +60,10 @@ class Search {
             printInfo = on;
         };
 
+        void setTTclearEnabled(bool enabled) {
+            clearTTOnSearch = enabled;
+        }
+
     private:
 
 
@@ -74,6 +78,7 @@ class Search {
         NNUE nnue;
         NNUEQ nnueQ;
         bool printInfo = true;
+        bool clearTTOnSearch = true;
           
 };
 #endif

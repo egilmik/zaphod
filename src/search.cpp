@@ -14,8 +14,11 @@ Search::Search() {
 Score Search::search(Board &board, int maxDepth, int maxTime)
 {   
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-    tt.clear();
-    pawnTable.clear();
+    if (clearTTOnSearch) {
+        tt.clear();
+        pawnTable.clear();
+    }
+    
 
     for (int i = 0; i < 100; i++) {
         ss[i].checkExt = 0;
@@ -120,8 +123,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
         return 0;
     }
     
-    auto tte = tt.probe(key);
-    /*
+    auto tte = tt.probe(key);    
+    
     if (tte && tte->depth >= depth) {
         if (tte->type == EXACT) {
             exactHit++;
@@ -132,7 +135,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
             }
             return tte->score;
         }
-    }*/
+    }
 
     
 

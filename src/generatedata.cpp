@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <iomanip>
 #include <string>
 #include <thread>
 #include <vector>
@@ -10,6 +11,8 @@
 #include "board.h"
 #include "search.h"
 #include "nnue.h"
+
+static std::chrono::steady_clock::time_point gStart;  
 
 static inline uint64_t mix64(uint64_t x) {
     x ^= x >> 33; x *= 0xff51afd7ed558ccdULL;
@@ -22,6 +25,8 @@ struct WorkerArgs {
     uint64_t quota;                  // global target
     std::atomic<uint64_t>* produced; // global produced counter
     std::string outPath;
+    std::string networkPath;
+    int depth = 4;
 };
 
 void worker_fn(WorkerArgs a) {
@@ -36,7 +41,9 @@ void worker_fn(WorkerArgs a) {
     std::mt19937 gen(static_cast<uint32_t>(mix64(rd() ^ (0x9e3779b97f4a7c15ULL * (a.id + 1)))));
 
     Board board;
+    board.loadNetwork(a.networkPath);
     Search search;
+    search.setTTclearEnabled(false);
     search.setPrintInfo(false);
 
     uint64_t local_written = 0;
@@ -61,7 +68,7 @@ void worker_fn(WorkerArgs a) {
             if (list.counter == 0 || board.hasPositionRepeated()) break;
 
             
-            Score sc = search.search(board, 4, 100);
+            Score sc = search.search(board, a.depth, 3000);
             Move  best = sc.bestMove;
 
             // Skip noisy: in-check or capture-to-play
@@ -69,7 +76,7 @@ void worker_fn(WorkerArgs a) {
             bool isMateScore = std::abs(sc.score) > search.MATESCORE - search.MAXPLY;
 
             // Eval is noisy
-            bool isNoisyEval = std::abs(search.evaluate(board)-sc.score) > 120; 
+            bool isNoisyEval = std::abs(search.evaluate(board)-sc.score) > 60; 
 
             if (list.checkers == 0 && !isCapture && !isMateScore && !isNoisyEval ) {
                 // Collect active indices
@@ -89,7 +96,7 @@ void worker_fn(WorkerArgs a) {
 
                     // white-POV score
                     int score_cp = sc.score;
-                    //if (board.getSideToMove() == Black) score_cp = -score_cp;
+                    
 
                     // Reserve a slot *now*; stop if quota reached
                     uint64_t slot = a.produced->fetch_add(1, std::memory_order_relaxed);
@@ -123,10 +130,34 @@ void worker_fn(WorkerArgs a) {
         << " lines to " << a.outPath << "\n";
 }
 
-int main(int argc, char** argv) {
-    const uint64_t target_positions = (argc >= 2) ? std::stoull(argv[1]) : 100'000ULL;
-    int threads = (argc >= 3) ? std::stoi(argv[2]) : (int)std::thread::hardware_concurrency();
-    if (threads <= 0) threads = 1;
+int main(int argc, char* argv[]) {
+
+    std::string networkPath;
+    uint64_t targetPositions = 1000000;
+    int threads = 6;
+    int depth = 4;
+
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "-network" && i + 1 < argc) {
+            networkPath = argv[i + 1];
+        }
+
+        if (arg == "-target_positions" && i + 1 < argc) {
+            targetPositions = std::stoull(argv[i+1]);
+        }
+
+        if (arg == "-threads" && i + 1 < argc) {
+            threads = std::stoi(argv[i + 1]);
+        }
+
+        if (arg == "-depth" && i + 1 < argc) {
+            depth = std::stoi(argv[i + 1]);
+        }
+        
+    }
+
+
 
     std::cout.setf(std::ios::unitbuf); // line-buffered
 
@@ -138,8 +169,10 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < threads; ++i) {
         WorkerArgs a;
+        a.networkPath = networkPath;
+        a.depth = depth;
         a.id = i;
-        a.quota = target_positions;
+        a.quota = targetPositions;
         a.produced = &produced;
         a.outPath = "positions_indices.part_" + std::to_string(i) + ".txt";
         pool.emplace_back(worker_fn, a);
