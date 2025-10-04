@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <cmath>
 #include <immintrin.h>
-#include "nnue.h"
 
 float NNUEQ::forward(BitBoardEnum stm) {
     const int side = (stm == White) ? 0 : 1;
@@ -62,9 +61,9 @@ float NNUEQ::forward(BitBoardEnum stm) {
 
 
 void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
-    int plane = NNUE::plane_index_from_piece(piece);
-    int featureWhite = NNUE::encodeFeature(plane, sq, White);
-    int featureBlack = NNUE::encodeFeature(plane, sq, Black);
+    int plane = plane_index_from_piece(piece);
+    int featureWhite = encodeFeature(plane, sq, White);
+    int featureBlack = encodeFeature(plane, sq, Black);
 
     const int16_t* weightW = W1_q.data() + featureWhite * H;
     const int16_t* weightB = W1_q.data() + featureBlack * H;
@@ -82,9 +81,9 @@ void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
 }
 
 void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
-    int plane = NNUE::plane_index_from_piece(piece);
-    int featureWhite = NNUE::encodeFeature(plane, sq, White);
-    int featureBlack = NNUE::encodeFeature(plane, sq, Black);
+    int plane = plane_index_from_piece(piece);
+    int featureWhite = encodeFeature(plane, sq, White);
+    int featureBlack = encodeFeature(plane, sq, Black);
     
     const int16_t* weightW = W1_q.data() + featureWhite * H;
     const int16_t* weightB = W1_q.data() + featureBlack * H;
@@ -130,6 +129,25 @@ void NNUEQ::sub_row_i16_avx2(const int16_t* __restrict w,int16_t* __restrict acc
         _mm256_store_si256((__m256i*)(acc + i), _mm256_subs_epi16(a0, w0)); // sat sub
         _mm256_store_si256((__m256i*)(acc + i + 16), _mm256_subs_epi16(a1, w1));
     }
+}
+
+int NNUEQ::plane_index_from_piece(BitBoardEnum piece) {
+    // [P,N,B,R,Q,K,p,n,b,r,q,k] -> 0..11, else -1
+    switch (piece) {
+    case P: return 0; case N: return 1; case B: return 2;
+    case R: return 3; case Q: return 4; case K: return 5;
+    case p: return 6; case n: return 7; case b: return 8;
+    case r: return 9; case q: return 10; case k: return 11;
+    default:  return -1;
+    }
+}
+
+int NNUEQ::encodeFeature(int piece, int sq, BitBoardEnum color) {
+    if (color == Black) {
+        sq ^= 56;
+        piece = (piece < 6) ? (piece + 6) : (piece - 6);
+    }
+    return piece * 64 + sq;
 }
 
 

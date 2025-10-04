@@ -7,7 +7,6 @@
 #include <iostream>
 #include <chrono>
 #include "ttable.h"
-#include "nnue.h"
 #include "nnueq.h"
 
 struct Score {
@@ -75,7 +74,6 @@ class Search {
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
         SearchStack ss[100];
-        NNUE nnue;
         NNUEQ nnueQ;
         bool printInfo = true;
         bool clearTTOnSearch = true;

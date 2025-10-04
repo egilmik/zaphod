@@ -10,7 +10,7 @@
 #include <algorithm>
 #include "board.h"
 #include "search.h"
-#include "nnue.h"
+#include "nnueq.h"
 
 static std::chrono::steady_clock::time_point gStart;  
 
@@ -87,8 +87,8 @@ void worker_fn(WorkerArgs a) {
                 while (all) {
                     int sq = board.popLsb(all);
                     BitBoardEnum piece = board.getPieceOnSquare(sq);
-                    int pl = NNUE::plane_index_from_piece(piece); // 0..11
-                    if (pl >= 0) idxs[n++] = NNUE::encodeFeature(pl, sq, board.getSideToMove());
+                    int pl = NNUEQ::plane_index_from_piece(piece); // 0..11
+                    if (pl >= 0) idxs[n++] = NNUEQ::encodeFeature(pl, sq, board.getSideToMove());
                 }
 
                 if (n > 0) {

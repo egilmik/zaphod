@@ -7,8 +7,6 @@
 
 
 Search::Search() {
-    //nnue.load("D:\\weights.nnue");
-    //nnueQ.load("D:\\weights_int8.nnueq");
 }
 
 Score Search::search(Board &board, int maxDepth, int maxTime)

@@ -64,6 +64,8 @@ public:
     void sub_row_i16_avx2(const int16_t* __restrict w, int16_t* __restrict acc);
     void build_feature_major_rows(const std::vector<int8_t>& src, std::vector<int16_t>& dst);
 
+    static int plane_index_from_piece(BitBoardEnum piece);
+    static int encodeFeature(int piece, int sq, BitBoardEnum color);
 
 };
 
