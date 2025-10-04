@@ -41,7 +41,6 @@ class Search {
         int quinesence(Board &board, int alpha, int beta, int depth, int ply);
         void sortMoveList(Board &board,MoveList &list, int ply, Move bestMove);
         int evaluate(Board &board);
-        int evaluatePawns(Board& board);
         bool equal(Move &a, Move &b);
         MoveList reconstructPV(Board& board, int depth);
         bool isSearchStopped();
@@ -67,7 +66,6 @@ class Search {
 
 
         Score bestMoveIteration;        
-        TTable pawnTable = TTable(64); 
         TTable tt = TTable(256);
         int currentTargetDepth = 0;
         int64_t startTime = 0;

@@ -3,7 +3,6 @@
 #include "material.h"
 #include <algorithm>
 #include <chrono>
-#include "evaluation.h"
 
 
 Search::Search() {
@@ -14,7 +13,6 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
     if (clearTTOnSearch) {
         tt.clear();
-        pawnTable.clear();
     }
     
 
@@ -604,67 +602,8 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 int Search::evaluate(Board &board)
 {
     evaluatedNodes++;
-    //float score = nnueQ.forward(board,board.getSideToMove());
-    float score = board.evaluate();
-    /*
-    int mgScore = 0;
-    int egScore = 0;
-    int gamePhase = 0;
-    int materialScore = 0;
-    BitBoard allPieces = board.getBitboard(All);
-    int square = 0;
-    while (allPieces) {
-        square = board.popLsb(allPieces);
-        BitBoardEnum piece = board.getPieceOnSquare(square);
-        mgScore += Material::pieceSquareScoreArrayMG[piece][square];
-        egScore += Material::pieceSquareScoreArrayEG[piece][square];
-        gamePhase += Material::gamePhaseArray[piece];
-        materialScore += Material::materialScoreArray[piece];
-    }
-    
-    //Pesto gamephase handling
-    board.setGamePhase(gamePhase);
-    int mgPhase = gamePhase;
-    if (mgPhase > 24) mgPhase = 24;
-    int egPhase = 24 - mgPhase;
-    int psqt = (mgScore * mgPhase + egScore * egPhase) / 24;
-    int score = materialScore+psqt;
-    //score += evaluatePawns(board);
-    //score += Evaluation::evaluatePiecePairs(board);
-
-
-
-    
-    if (board.getSideToMove() == BitBoardEnum::Black) {
-        return score *= -1;
-    }
-    */
-    return score;
+    return board.evaluate();
 }
-
-int Search::evaluatePawns(Board& board) {
-    uint64_t hash = board.getPawnHashKey();
-    bool isValid = false;
-    int score = 0;
-    auto entry = pawnTable.probe(hash);
-
-    if (!isValid) {
-        score = 0;
-        score = Evaluation::evaluatePassedPawn(board, White);
-        score += Evaluation::evaluatePassedPawn(board, Black);
-        score += Evaluation::evaluatePawnShield(board);
-        pawnTable.put(hash, score,0,0,EXACT);
-        return score;
-    }
-    else
-    {
-        pawnTTHits++;
-    }
-    
-    return entry->score;
-}
-
-
 
 
 bool Search::equal(Move &a, Move &b)
