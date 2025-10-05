@@ -11,8 +11,7 @@ eval_scale = float(cfg.get("target_cp_scale", 600.0))
 
 # Dims
 IN_FEATS = 768
-HIDDEN   = sd["emb.weight"].shape[1]  # should be 32
-assert HIDDEN == 128, f"Unexpected HIDDEN={HIDDEN}"
+HIDDEN   = sd["emb.weight"].shape[1]  # should multiple of 64/32
 
 # Float weights
 w1 = sd["emb.weight"].cpu().numpy().astype(np.float32).T   # (H, IN)

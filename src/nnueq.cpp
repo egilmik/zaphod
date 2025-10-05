@@ -165,60 +165,57 @@ bool NNUEQ::load(const std::string& path) {
 
     int32_t in = 0, h = 0, out = 0;
     rd_i32(in); rd_i32(h); rd_i32(out); ensure();
-    if (in != IN || h != H || out != OUT)
-        throw std::runtime_error("Unexpected dimensions in weights");
+    
+    IN = in;
+    H = h;
+    OUT = out;
 
     rd_f32(scale_cp); ensure();
 
-    if (m.rfind("NNUEQ1", 0) == 0) {
-        // -------- Quantized format --------
+    
+    // L1
+    s1.resize(H);
+    f.read((char*)s1.data(), H * sizeof(float)); ensure();
 
-        // L1
-        s1.resize(H);
-        f.read((char*)s1.data(), H * sizeof(float)); ensure();
+    std::vector<int8_t> w1_hidden_major(H * IN);
+    f.read((char*)w1_hidden_major.data(), w1_hidden_major.size()); ensure();
 
-        std::vector<int8_t> w1_hidden_major(H * IN);
-        f.read((char*)w1_hidden_major.data(), w1_hidden_major.size()); ensure();
+    // Default: build feature-major i16 at load (fast row ops)
+    build_feature_major_rows(w1_hidden_major, W1_q);
 
-        // Default: build feature-major i16 at load (fast row ops)
-        build_feature_major_rows(w1_hidden_major, W1_q);
+    B1_q.resize(H);
+    f.read((char*)B1_q.data(), H * sizeof(int32_t)); ensure();
 
-        B1_q.resize(H);
-        f.read((char*)B1_q.data(), H * sizeof(int32_t)); ensure();
+    // Act: a1 then q_cap (uint8)
+    rd_f32(a1); ensure();
 
-        // Act: a1 then q_cap (uint8)
-        rd_f32(a1); ensure();
-
-        // Try to read Q_CAP (uint8). If older file w/o it, default to floor(1/a1).
-        uint8_t qcap_file = 0;
-        if (f.peek() != std::char_traits<char>::eof()) {
-            f.read((char*)&qcap_file, 1);
-            if (!f) throw std::runtime_error("Weights truncated at Q_CAP");
-            qCap = qcap_file;
-        }
-        else {
-            qCap = (uint8_t)std::min(127, (int)std::floor(1.0f / a1));
-        }
-
-        // L2
-        rd_f32(s2); ensure();
-
-        W2_q.resize(H);
-        f.read((char*)W2_q.data(), H * sizeof(int8_t)); ensure();
-
-        rd_f32(B2_f); ensure();
-
-        // Optionally precompute W2_f for float FMA path (else skip)
-        W2_f.resize(H);
-        for (int i = 0; i < H; ++i) {
-            W2_f[i] = float(W2_q[i]) * (s2 * a1);
-        }
-
-        // Done
-        return true;
+    // Try to read Q_CAP (uint8). If older file w/o it, default to floor(1/a1).
+    uint8_t qcap_file = 0;
+    if (f.peek() != std::char_traits<char>::eof()) {
+        f.read((char*)&qcap_file, 1);
+        if (!f) throw std::runtime_error("Weights truncated at Q_CAP");
+        qCap = qcap_file;
+    }
+    else {
+        qCap = (uint8_t)std::min(127, (int)std::floor(1.0f / a1));
     }
 
-    throw std::runtime_error("Bad magic in weights");
+    // L2
+    rd_f32(s2); ensure();
+
+    W2_q.resize(H);
+    f.read((char*)W2_q.data(), H * sizeof(int8_t)); ensure();
+
+    rd_f32(B2_f); ensure();
+
+    // precompute W2_f for float FMA path 
+    W2_f.resize(H);
+    for (int i = 0; i < H; ++i) {
+        W2_f[i] = float(W2_q[i]) * (s2 * a1);
+    }
+
+    
+    return true;
 }
 
 // src: [H_REAL][IN_FEATS] in hidden-major

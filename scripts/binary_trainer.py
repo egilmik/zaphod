@@ -19,8 +19,9 @@ TRAIN_PATHS       = [
     "D:\\source\\zaphod_nnue\\Data\\1.9_11M_depth6_STM.bin",
     "D:\\source\\zaphod_nnue\\Data\\1.9_88M_depth4_STM.bin",
     "D:\\source\\zaphod_nnue\\Data\\1.9_108M_depth4_STM.bin",
+    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_83M_depth4.bin",
 ]
-VALIDATION_PATHS  = ["D:\\source\\zaphod_nnue\\Data\\1.9_5M_depth4_STM.bin"]
+VALIDATION_PATHS  = ["D:\\source\\zaphod_nnue\\Data\\2.0_dev_50M_depth4.bin"]
 
 EPOCHS            = 20
 BATCH_SIZE        = 4096

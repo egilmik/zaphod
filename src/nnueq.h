@@ -19,9 +19,9 @@ struct Accumulator {
 
 class NNUEQ {
 public:
-    static constexpr int IN = 768;
-    static constexpr int H = 128;
-    static constexpr int OUT = 1;
+    int IN = 768;
+    int H = 128;
+    int OUT = 1;
 
     // --- Common ---
     float scale_cp = 600.f; // cp scale used by training head
