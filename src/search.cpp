@@ -49,6 +49,10 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
             break;
         }
 
+        int previousScore = i > 1 ? bestScore.score : 0;
+        int aspiration = 20 + i * 5;
+        int low = previousScore - aspiration;
+        int high = previousScore + aspiration;
 
         currentTargetDepth = i;
         maxQuinesenceDepthThisSearch = 0;
@@ -56,7 +60,14 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
         //Reset search stack check extension
         ss[0].checkExt = 0;
-        int score = negamax(board, i, lowerBound, upperBound,0,true);
+        int score = negamax(board, i, low, high,0,true);
+        if (score <= low) {
+            score = negamax(board, i, lowerBound, high, 0, true);
+        }
+        else if (score >= high) {
+            score = negamax(board, i, low, upperBound, 0, true);
+        }
+
         if (stopSearch) {
             break;
         }
@@ -102,7 +113,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool pvNode)
 {
 
-    if (depth == 0) return quinesence(board, alpha, beta, 1,ply);
+    if (depth <= 0) return quinesence(board, alpha, beta, 1,ply);
     
     BitBoard key = board.getHashKey();    
     bool isRoot = ply == 0;
@@ -163,16 +174,18 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
 
-    if (!pvNode && !inCheck && board.getGamePhase() > 12 && eval >= beta && depth >= 5 && ply > 0 && !ss[ply-1].isNullMove) {
-        int R = 3 + (depth >= 6) + (eval - beta) / 200; // adaptive
-        R = std::clamp(R, 2, 4);
-        board.makeNullMove();
-        ss[ply].isNullMove = true;
-        int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
-        board.revertNullMove();
-        if (nullScore >= beta) {
-            return nullScore;
-       }
+    if (!pvNode && !inCheck  && eval >= beta && depth >= 3 && ply > 0 && !ss[ply - 1].isNullMove) {
+        if(board.getNonPawnMaterial(board.getSideToMove()) > 0 || depth >= 5){
+            int R = 3 + (depth >= 6) + (eval - beta) / 200; // adaptive
+            R = std::clamp(R, 2, 4);
+            board.makeNullMove();
+            ss[ply].isNullMove = true;
+            int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
+            board.revertNullMove();
+            if (nullScore >= beta) {
+                return nullScore;
+            }
+        }
     }
 
 
@@ -205,6 +218,18 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         int newDepth = depth - 1 + extension;
 
+        /*
+        if (!pvNode && !inCheck && depth >= 3 && !isCapture && !isPromo) {
+            if (i > 8 + depth * 2) {
+                if (board.evaluate() + 80 <= alpha) {
+                    board.revertLastMove();
+                    continue;
+                }
+            }
+        }
+
+        */
+
         
         if (firstMove || pvNode || inCheck || isCapture || isPromo) {
             score = -negamax(board, newDepth, -beta, -alpha, ply + 1,firstMove && pvNode);
@@ -224,6 +249,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
                 reduction = std::max(0, reduction - 1);
             }
 
+
+            
 
             ////////////
             // LMR

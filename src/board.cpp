@@ -1117,41 +1117,40 @@ void Board::revertLastMove()
 }
 
 void Board::makeNullMove() {
-    /*
-    MoveStruct* histMove = &moveHistory[historyPly];
+    MoveUndoInfo* histMove = &moveHistory[historyPly];
 
-    int sizeBB = 15 * sizeof(bitBoardArray[0]);
-    int sizeMB = 64 * sizeof(mailBoxBoard[0]);
-    std::memcpy(&histMove->bitBoardArrayCopy, &bitBoardArray, sizeBB);
-    std::memcpy(&histMove->mailBox, &mailBoxBoard, sizeMB);
     histMove->halfMoveClock = halfMoveClock;
-    histMove->sideToMoveCopy = sideToMove;
-    histMove->enPassantSqCopy = enPassantSq;
-    histMove->castleWKCopy = castleWK;
-    histMove->castleWQCopy = castleWQ;
-    histMove->castleBKCopy = castleBK;
-    histMove->castleBQCopy = castleBQ;
-    histMove->hashKeyCopy = hashKey;
-    histMove->pawnHashCopy = pawnHash;
+    histMove->sideToMove = static_cast<uint8_t>(sideToMove);
 
     if (enPassantSq != noSq) {
         hashKey ^= ttable.enPassantKeys[enPassantSq];
     }
     enPassantSq = noSq;
 
-    historyPly++;
 
+    histMove->enPassantSqCopy = enPassantSq;
+    histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
+    histMove->hashKeyCopy = hashKey;
+    histMove->pawnHashCopy = pawnHash;
+
+    historyPly++;
     changeSideToMove();
-    */
 }
 
 void Board::revertNullMove() {
-    /*
     historyPly--;
-    MoveStruct* move = &moveHistory[historyPly];
+    MoveUndoInfo* info = &moveHistory[historyPly];
 
-    setBoardState(*move);
-    */
+    sideToMove = static_cast<BitBoardEnum>(info->sideToMove);
+    halfMoveClock = info->halfMoveClock;
+    enPassantSq = info->enPassantSqCopy;
+
+    castleWK = (info->castleMask & 1) != 0;
+    castleWQ = (info->castleMask & 2) != 0;
+    castleBK = (info->castleMask & 4) != 0;
+    castleBQ = (info->castleMask & 8) != 0;
+    hashKey = info->hashKeyCopy;
+    pawnHash = info->pawnHashCopy;
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
@@ -1207,6 +1206,14 @@ bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker
 BitBoardEnum Board::getPieceOnSquare(int sq)
 {
     return mailBoxBoard[sq];
+}
+
+int Board::getNonPawnMaterial(BitBoardEnum color) {
+    int count = countSetBits(bitBoardArray[N + color]);
+    count = countSetBits(bitBoardArray[B + color]);
+    count = countSetBits(bitBoardArray[R + color]);
+    count = countSetBits(bitBoardArray[Q + color]);
+    return count;
 }
 
 float Board::evaluate() {

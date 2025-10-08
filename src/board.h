@@ -262,6 +262,8 @@ class Board {
             return gamePhase;
         }
 
+        int getNonPawnMaterial(BitBoardEnum side);
+
         float evaluate();
 
         void loadNetwork(std::string path);
