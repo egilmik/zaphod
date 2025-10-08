@@ -56,7 +56,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
         //Reset search stack check extension
         ss[0].checkExt = 0;
-        int score = negamax(board, i, lowerBound, upperBound,0);
+        int score = negamax(board, i, lowerBound, upperBound,0,true);
         if (stopSearch) {
             break;
         }
@@ -99,12 +99,14 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
 
 
-int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
+int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool pvNode)
 {
 
     if (depth == 0) return quinesence(board, alpha, beta, 1,ply);
-    BitBoard key = board.getHashKey();
+    
+    BitBoard key = board.getHashKey();    
     bool isRoot = ply == 0;
+    int alphaOrginal = alpha;
 
 
     // Check if max search time has been exhausted
@@ -131,6 +133,15 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
             }
             return tte->score;
         }
+        else if (tte->type == LOWER && tte->score > alpha) {
+            alpha = tte->score;
+        }
+        else if (tte->type == UPPER && tte->score < beta) {
+            beta = tte->score;
+        }
+        if (alpha >= beta) {
+            return tte->score;
+        }
     }
 
     
@@ -139,7 +150,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     MoveGenerator::generateMoves(board, moveList);
     int score = 0;
 
-    int alphaOrginal = alpha;
+    
     Move alphaMove{};
     
     
@@ -148,61 +159,84 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
     int validMoves = moveList.counter;
     bool inCheck = moveList.checkers > 0;
 
-    //int eval = evaluate(board);
+    int eval = evaluate(board);
 
 
 
-    //if (!isInCheck && board.getGamePhase() > 12 && /*eval >= beta &&*/ depth > 3 && ply > 0) {
-    //    int r = depth > 6 ? 4 : 3;
-    //    board.makeNullMove();
-    //    ss[ply].isNullMove = true;
-    //    int nullScore = -negamax(board, depth - 1 - r, -beta, -beta + 1, ply + 1);
-    //   board.revertNullMove();
-    //    if (nullScore >= beta) {
-    //        return nullScore;
-    //   }
-    //}
+    if (!pvNode && !inCheck && board.getGamePhase() > 12 && eval >= beta && depth >= 5 && ply > 0 && !ss[ply-1].isNullMove) {
+        int R = 3 + (depth >= 6) + (eval - beta) / 200; // adaptive
+        R = std::clamp(R, 2, 4);
+        board.makeNullMove();
+        ss[ply].isNullMove = true;
+        int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
+        board.revertNullMove();
+        if (nullScore >= beta) {
+            return nullScore;
+       }
+    }
 
 
     
     for (int i = 0; i < moveList.counter; i++) {
-        Move move = moveList.moves[i];
-
-        bool moveIsCapture = board.getPieceOnSquare(move.to()) != All;
+        Move move = moveList.moves[i];        
         
-        board.makeMove(move);
+        bool isPromo = move.getMoveType() == PROMOTION;
+        bool isCapture = board.getPieceOnSquare(move.to()) != All;
         int plyCheckExtension = ss[ply].checkExt;
         int extension = 0;
+        bool firstMove = i == 0;
+        bool givesCheck = false;
+        
+        board.makeMove(move);        
 
         ////////////
         // Check extension
         ////////////
         BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
-        if (board.isSquareAttacked(kingBB, board.getOtherSide()) && plyCheckExtension < 3 && depth > 1) {
-           extension++;
+        if (board.isSquareAttacked(kingBB, board.getOtherSide())) {           
+           givesCheck = true;
+        }
+
+        if (givesCheck && plyCheckExtension < 3 && depth > 1) {
+            extension++;
         }
 
         ss[ply + 1].checkExt = plyCheckExtension + extension;
 
+        int newDepth = depth - 1 + extension;
+
         
-        if (i < 4 || depth < 3 || extension > 0 || moveIsCapture) {
-            score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1);
+        if (firstMove || pvNode || inCheck || isCapture || isPromo) {
+            score = -negamax(board, newDepth, -beta, -alpha, ply + 1,firstMove && pvNode);
         }
         else {
-            int reduction = 0.5 + (std::log(depth) * std::log(i) / 3);
+            //int reduction = 0.5 + (std::log(depth) * std::log(i) / 3);
+            int reduction = (uint8_t)std::max(0.0,0.75 + std::log(depth) * std::log(i) / 2.5);
+
+            int eval = board.evaluate();
+
+            // We are not improving, reduce more
+            if (eval <= alphaOrginal - 50) {
+                r + 1;
+            }
+
+            if (givesCheck) {
+                reduction = std::max(0, reduction - 1);
+            }
+
 
             ////////////
             // LMR
             ////////////
-            score = -negamax(board, depth -1 - reduction, -(alpha + 1), -alpha, ply + 1);
+            score = -negamax(board, newDepth-reduction, -(alpha + 1), -alpha, ply + 1,false);
             lmrHit++;
 
             if (score > alpha) {
                 lmrResearchHit++;
-                score = -negamax(board, depth - 1, -(alpha + 1), -alpha, ply + 1);
+                score = -negamax(board, newDepth, -(alpha + 1), -alpha, ply + 1,false);
                 if (score > alpha && score < beta) {
                     // Full re-search
-                    score = -negamax(board, depth - 1, -beta, -alpha, ply + 1);
+                    score = -negamax(board, newDepth, -beta, -alpha, ply + 1,true);
                 }
             } 
         }
@@ -224,7 +258,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
         if (score >= beta) {
             
-            if (!moveIsCapture) {
+            if (!isCapture) {
                 if (move.value != ss[ply].killerMove[0].value) {
                     ss[ply].killerMove[0] = move;
                 }
