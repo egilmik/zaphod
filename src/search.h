@@ -26,6 +26,10 @@ struct SearchStack {
     Move killerMove[2] = {0};
 };
 
+struct HistoryTables {
+    int16_t quiet[2][64][64] = {};
+};
+
 class Search {
     public:
         Search();
@@ -67,6 +71,7 @@ class Search {
 
         Score bestMoveIteration;        
         TTable tt = TTable(256);
+        HistoryTables hist;
         int currentTargetDepth = 0;
         int64_t startTime = 0;
         int64_t maxSearchTime = 0;

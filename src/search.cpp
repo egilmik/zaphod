@@ -49,6 +49,11 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
             break;
         }
 
+        for (int s = 0; s < 2; ++s)
+            for (int f = 0; f < 64; ++f)
+                for (int t = 0; t < 64; ++t)
+                    hist.quiet[s][f][t] /= 2;
+
         int previousScore = i > 1 ? bestScore.score : 0;
         int aspiration = 20 + i * 5;
         int low = previousScore - aspiration;
@@ -292,6 +297,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
                 else {
                     ss[ply].killerMove[1] = move;
                 }
+
+                int side = 0;
+                if (board.getSideToMove() == Black) {
+                    side = 1;
+                }
+                hist.quiet[side][move.from()][move.to()] += depth * depth;
 
             }
 
@@ -609,6 +620,7 @@ bool compare(SortStruct a, SortStruct b)
     return a.score > b.score;
 }
 
+
 void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 {    
     SortStruct sortArray[256];
@@ -616,9 +628,9 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
         SortStruct entry;
         entry.move = list.moves[i];
         if(equal(list.moves[i], bestMove)){
-            entry.score = 10000;
+            entry.score = 100000;
         } else if(entry.move.getMoveType() == PROMOTION) {
-            entry.score = 1000;
+            entry.score = 80000;
 
         } else if(board.getPieceOnSquare(entry.move.to()) != All ){
             
@@ -630,7 +642,7 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
             }
             int Mvv = Material::getMaterialScore(capturedPiece);
             int lva = Material::getMaterialScore(attacker);
-            entry.score = 100 + (Mvv - lva) / 100;
+            entry.score = 70000 + (Mvv - lva) / 100;
                 
             //int score = see(board, entry.move.from(), entry.move.to(), board.getSideToMove());
             //entry.score = 100 - (score / 100);               
@@ -640,10 +652,15 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
             // Killer moves
             if (ss[ply].killerMove[0].value == entry.move.value ||
                 ss[ply].killerMove[1].value == entry.move.value) {
-                entry.score = 50;
+                entry.score = 60000;
             }
             else {
-                entry.score = 0;
+                int side = 0;
+                if (board.getSideToMove() == Black) {
+                    side = 1;
+                }
+                
+                entry.score = 30000 + hist.quiet[side][entry.move.from()][entry.move.to()];
             }
 
             
