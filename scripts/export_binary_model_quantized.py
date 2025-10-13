@@ -1,8 +1,8 @@
 # export_to_nnuebin_int8.py
 import struct, torch, numpy as np
 
-PT_PATH = "nnue_768x32x1.pt"
-BIN_OUT = "weights_int8.nnueq"
+PT_PATH = "nnue_768x256x1.pt"
+BIN_OUT = "768x256x1.nnueq"
 
 ckpt = torch.load(PT_PATH, map_location="cpu")
 sd   = ckpt["model_state_dict"]

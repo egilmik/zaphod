@@ -9,28 +9,30 @@ from torch.utils.data import IterableDataset, DataLoader, get_worker_info
 import os
 
 IN_FEATS   = 768
-HIDDEN     = 128
+HIDDEN     = 256
 
 # -------------------------
 # Config
 # -------------------------
 TRAIN_PATHS       = [
-    "D:\\source\\zaphod_nnue\\Data\\1.9_113M_depth4_STM.bin",
+    #"D:\\source\\zaphod_nnue\\Data\\1.9_113M_depth4_STM.bin",
     "D:\\source\\zaphod_nnue\\Data\\1.9_11M_depth6_STM.bin",
-    "D:\\source\\zaphod_nnue\\Data\\1.9_88M_depth4_STM.bin",
-    "D:\\source\\zaphod_nnue\\Data\\1.9_108M_depth4_STM.bin",
+    #"D:\\source\\zaphod_nnue\\Data\\1.9_88M_depth4_STM.bin",
+    #"D:\\source\\zaphod_nnue\\Data\\1.9_108M_depth4_STM.bin",
     "D:\\source\\zaphod_nnue\\Data\\2.0_dev_83M_depth4.bin",
+    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_74M_depth6.bin",
+    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_50M_depth4.bin"
 ]
-VALIDATION_PATHS  = ["D:\\source\\zaphod_nnue\\Data\\2.0_dev_50M_depth4.bin"]
+VALIDATION_PATHS  = ["D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_12M_depth6.bin",]
 
-EPOCHS            = 20
-BATCH_SIZE        = 4096
+EPOCHS            = 30
+BATCH_SIZE        = 8192
 LR                = 1e-3
 NUM_WORKERS       = 10
 PREFETCH_FACTOR   = 2
 PIN_MEMORY        = True
 SEED              = 7
-SAVE_PATH         = "nnue_768x32x1.pt"
+SAVE_PATH         = "nnue_768x256x1.pt"
 DEVICE            = "cuda" if torch.cuda.is_available() else "cpu"
 SHUFFLE           = True  # shuffle within each shard via index permutation
 
@@ -85,8 +87,8 @@ class BinIdxStream(IterableDataset):
         base_seed = (self.seed ^ (self.epoch * 0x9E3779B97F4A7C15) ^ (wid * 0x85ebca6b)) & 0xFFFFFFFF
 
         for p_i, p in enumerate(self.paths):
-            rec_dtype = infer_rec_dtype(p)              # handles 102B vs 104B
-            mm = np.memmap(p, mode='r', dtype=rec_dtype)
+            #prec_dtype = infer_rec_dtype(p)              # handles 102B vs 104B
+            mm = np.memmap(p, mode='r', dtype=DTYPE_102)
             n  = mm.shape[0]
             if n == 0:
                 continue
@@ -125,10 +127,10 @@ class BinIdxStream(IterableDataset):
 
                 # targets (handle 102B vs 104B stride)
                 y_view = batch['y']                     # shape (B,)
-                if rec_dtype is DTYPE_102:
-                    y = np.ascontiguousarray(y_view).reshape(B, 1)
-                else:
-                    y = y_view.reshape(B, 1)
+                #if rec_dtype is DTYPE_102:
+                y = np.ascontiguousarray(y_view).reshape(B, 1)
+                #else:
+                #    y = y_view.reshape(B, 1)
 
                 yield (torch.from_numpy(flat),torch.from_numpy(off),torch.from_numpy(y))
 
@@ -186,7 +188,7 @@ def main():
     opt_dense  = torch.optim.Adam(dense_params,  lr=LR)
     loss_fn = nn.MSELoss()
 
-    scaler = torch.cuda.amp.GradScaler(enabled=(USE_AMP and AMP_DTYPE == torch.float16))
+    scaler = torch.amp.GradScaler("cuda",enabled=(USE_AMP and AMP_DTYPE == torch.float16))
     best_va = float("inf")
 
     for ep in range(1, EPOCHS + 1):
@@ -195,7 +197,9 @@ def main():
         # ---- Train ----
         model.train()
         tr_loss_sum = tr_cnt = 0
-        for idxs, offs, yb in tqdm(tr_loader, desc=f"Train {ep:02d}", leave=False):
+        pbar = tqdm(tr_loader, desc=f"Train {ep:02d}", leave=False)
+
+        for idxs, offs, yb in pbar:
             idxs = idxs.to(DEVICE, non_blocking=True)
             offs = offs.to(DEVICE, non_blocking=True)
             yb   = yb.to(DEVICE, non_blocking=True)
@@ -237,7 +241,9 @@ def main():
 
         tr_loss = tr_loss_sum / max(tr_cnt, 1)
         va_loss = va_loss_sum / max(va_cnt, 1)
-        print(f"Epoch {ep:02d} | train MSE={tr_loss:.6f} | val MSE={va_loss:.6f}")
+        elapsed_time = pbar.format_dict["elapsed"]
+        print(f"Epoch {ep:02d} | train MSE={tr_loss:.6f} | val MSE={va_loss:.6f} | elapsed time{elapsed_time:.2f}s")
+        
 
         if va_loss < best_va:
             best_va = va_loss
