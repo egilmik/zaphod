@@ -14,7 +14,8 @@
 #include "bitboard.h";
 
 struct Accumulator {
-    std::array<int16_t,128> pre;
+    explicit Accumulator(std::size_t n) : pre(n) {}
+    std::vector<int16_t> pre;
 };
 
 class NNUEQ {
@@ -47,7 +48,7 @@ public:
     int qCap = 0;
 
     // 0 White, 1 Black
-    Accumulator accumulator[2];
+    std::vector<Accumulator> accumulator;
 
     // State
     bool quantized = false;

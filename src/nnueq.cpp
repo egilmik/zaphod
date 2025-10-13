@@ -170,6 +170,9 @@ bool NNUEQ::load(const std::string& path) {
     H = h;
     OUT = out;
 
+    accumulator.push_back(Accumulator(H));
+    accumulator.push_back(Accumulator(H));
+
     rd_f32(scale_cp); ensure();
 
     
