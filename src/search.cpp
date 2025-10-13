@@ -139,7 +139,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
     auto tte = tt.probe(key);    
     
-    if (tte && tte->depth >= depth) {
+    if (!pvNode && tte && tte->depth >= depth) {
         if (tte->type == EXACT) {
             exactHit++;
             if (isRoot) {
