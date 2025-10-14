@@ -65,12 +65,14 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
         //Reset search stack check extension
         ss[0].checkExt = 0;
-        int score = negamax(board, i, low, high,0,true);
+        int score = negamax(board, i, low, high,0,false);
         if (score <= low) {
-            score = negamax(board, i, lowerBound, high, 0, true);
+            aspirationLowResearchHit++;
+            score = negamax(board, i, lowerBound, high, 0, false);
         }
         else if (score >= high) {
-            score = negamax(board, i, low, upperBound, 0, true);
+            aspirationHighResearchHit++;
+            score = negamax(board, i, low, upperBound, 0, false);
         }
 
         if (stopSearch) {
@@ -118,7 +120,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool pvNode)
 {
 
-    if (depth <= 0) return quinesence(board, alpha, beta, 1,ply);
+    if (depth <= 0) return quinesence(board, alpha, beta, 1,ply,pvNode);
     
     BitBoard key = board.getHashKey();    
     bool isRoot = ply == 0;
@@ -138,7 +140,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
     
     auto tte = tt.probe(key);    
-    
+
     if (!pvNode && tte && tte->depth >= depth) {
         if (tte->type == EXACT) {
             exactHit++;
@@ -349,7 +351,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
 
-int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
+int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, bool pvNode)
 {
 
     //////////////////////////
@@ -412,7 +414,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply)
         
         
         bool valid = board.makeMove(move);
-        score = -quinesence(board,-beta,-alpha,depth+1, ply+1);
+        score = -quinesence(board,-beta,-alpha,depth+1, ply+1,pvNode);
 
         if(score > alpha){
             alpha = score;

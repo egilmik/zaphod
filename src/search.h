@@ -40,9 +40,11 @@ class Search {
         int64_t exactHit = 0;
         int64_t lmrHit = 0;
         int64_t lmrResearchHit = 0;
+        int64_t aspirationHighResearchHit = 0;
+        int64_t aspirationLowResearchHit = 0;
         Score search(Board &board, int maxDepth, int maxTime);
         int negamax(Board &board, int depth, int alpha, int beta, int ply, bool pvNode);
-        int quinesence(Board &board, int alpha, int beta, int depth, int ply);
+        int quinesence(Board &board, int alpha, int beta, int depth, int ply, bool pvNode);
         void sortMoveList(Board &board,MoveList &list, int ply, Move bestMove);
         int evaluate(Board &board);
         bool equal(Move &a, Move &b);
