@@ -1,6 +1,7 @@
-# nnue_768x32x1_trainer_bin_stream.py
-import math, random
-from typing import List, Tuple
+
+
+import sys
+from typing import List
 from tqdm import tqdm
 import numpy as np
 import torch
@@ -15,15 +16,16 @@ HIDDEN     = 256
 # Config
 # -------------------------
 TRAIN_PATHS       = [
-    #"D:\\source\\zaphod_nnue\\Data\\1.9_113M_depth4_STM.bin",
+    "D:\\source\\zaphod_nnue\\Data\\1.9_113M_depth4_STM.bin",
     "D:\\source\\zaphod_nnue\\Data\\1.9_11M_depth6_STM.bin",
-    #"D:\\source\\zaphod_nnue\\Data\\1.9_88M_depth4_STM.bin",
-    #"D:\\source\\zaphod_nnue\\Data\\1.9_108M_depth4_STM.bin",
+    "D:\\source\\zaphod_nnue\\Data\\1.9_88M_depth4_STM.bin",
+    "D:\\source\\zaphod_nnue\\Data\\1.9_108M_depth4_STM.bin",
     "D:\\source\\zaphod_nnue\\Data\\2.0_dev_83M_depth4.bin",
     "D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_74M_depth6.bin",
-    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_50M_depth4.bin"
+    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_12M_depth6.bin",
+    
 ]
-VALIDATION_PATHS  = ["D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_12M_depth6.bin",]
+VALIDATION_PATHS  = ["D:\\source\\zaphod_nnue\\Data\\2.0_dev_50M_depth4.bin"]
 
 EPOCHS            = 30
 BATCH_SIZE        = 8192
@@ -32,7 +34,6 @@ NUM_WORKERS       = 10
 PREFETCH_FACTOR   = 2
 PIN_MEMORY        = True
 SEED              = 7
-SAVE_PATH         = "nnue_768x256x1.pt"
 DEVICE            = "cuda" if torch.cuda.is_available() else "cpu"
 SHUFFLE           = True  # shuffle within each shard via index permutation
 
@@ -157,7 +158,7 @@ class NNUE_EB_768x128x1(nn.Module):
 # -------------------------
 # Train
 # -------------------------
-def main():
+def main(output_dir: str):
     torch.manual_seed(SEED)
     if DEVICE == "cuda": torch.cuda.manual_seed_all(SEED)
     print(f"Device: {DEVICE}")
@@ -244,8 +245,10 @@ def main():
         elapsed_time = pbar.format_dict["elapsed"]
         print(f"Epoch {ep:02d} | train MSE={tr_loss:.6f} | val MSE={va_loss:.6f} | elapsed time{elapsed_time:.2f}s")
         
+        
 
         if va_loss < best_va:
+            outputFile = output_dir + str(ep) + ".pt"
             best_va = va_loss
             torch.save({
                 "model_state_dict": (model._orig_mod if hasattr(model, "_orig_mod") else model).state_dict(),
@@ -255,10 +258,14 @@ def main():
                     "arch": "768x128x1-eb-bin",
                     "record": {"idx": MAX_IDXS, "pad": PAD, "dtype": "u16,u16,f32"},
                 }
-            }, SAVE_PATH)
-            print(f"  -> saved: {SAVE_PATH}")
+            }, outputFile)
+            print(f"  -> saved: {outputFile}")
 
     print("Done.")
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Usage: py binary_trainer.py <output directory>")
+        sys.exit(1)
+    print(sys.argv[1])
+    main(sys.argv[1])
