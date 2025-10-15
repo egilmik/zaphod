@@ -29,6 +29,10 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     lmrHit = 0;
     lmrResearchHit = 0;
     exactHit = 0;
+    upperBoundHit = 0;
+    lowerBoundHit = 0;
+    aspirationHighResearchHit = 0;
+    aspirationLowResearchHit = 0;
     bestMoveIteration.depth = 0;
     bestMoveIteration.score = 0;
     bestMoveIteration.bestMove = 0;
@@ -152,9 +156,11 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             return tte->score;
         }
         else if (tte->type == LOWER && tte->score > alpha) {
+            lowerBoundHit++;
             alpha = tte->score;
         }
         else if (tte->type == UPPER && tte->score < beta) {
+            upperBoundHit++;
             beta = tte->score;
         }
         if (alpha >= beta) {
@@ -181,7 +187,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
 
-    if (!pvNode && !inCheck  && eval >= beta && depth >= 3 && ply > 0 && !ss[ply - 1].isNullMove) {
+    if (!pvNode && !inCheck  && eval >= beta && depth >= 3 && !isRoot && !ss[ply - 1].isNullMove) {
         if(board.getNonPawnMaterial(board.getSideToMove()) > 0 || depth >= 5){
             int R = 3 + (depth >= 6) + (eval - beta) / 200; // adaptive
             R = std::clamp(R, 2, 4);
@@ -238,7 +244,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         */
 
         
-        if (firstMove || pvNode || inCheck || isCapture || isPromo) {
+        if (firstMove || pvNode || inCheck || isCapture || isPromo || isRoot) {
             score = -negamax(board, newDepth, -beta, -alpha, ply + 1,firstMove && pvNode);
         }
         else {
