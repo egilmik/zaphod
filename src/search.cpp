@@ -631,47 +631,50 @@ bool compare(SortStruct a, SortStruct b)
 
 void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 {    
+    int side = 0;
+    if (board.getSideToMove() == Black) {
+        side = 1;
+    }
+
     SortStruct sortArray[256];
-    for(int i = 0; i< list.counter; i++){
+    for (int i = 0; i < list.counter; i++) {
         SortStruct entry;
         entry.move = list.moves[i];
-        if(equal(list.moves[i], bestMove)){
+        if (equal(list.moves[i], bestMove)) {
             entry.score = 100000;
-        } else if(entry.move.getMoveType() == PROMOTION) {
+        }
+        else if (entry.move.getMoveType() == PROMOTION) {
             entry.score = 80000;
 
-        } else if(board.getPieceOnSquare(entry.move.to()) != All ){
-            
+        }
+        else if (board.getPieceOnSquare(entry.move.to()) != All) {
+
             BitBoardEnum capturedPiece = board.getPieceOnSquare(entry.move.to());
             BitBoardEnum attacker = board.getPieceOnSquare(entry.move.from());
-            
+
             if (entry.move.getMoveType() == EN_PASSANT) {
                 capturedPiece = P;
             }
             int Mvv = Material::getMaterialScore(capturedPiece);
             int lva = Material::getMaterialScore(attacker);
-            entry.score = 70000 + (Mvv - lva) / 100;
-                
+            int mvvlva = (Mvv - lva) / 100;
+            entry.score = 70000 + mvvlva;
+
             //int score = see(board, entry.move.from(), entry.move.to(), board.getSideToMove());
             //entry.score = 100 - (score / 100);               
-            
-            
-        } else {
-            // Killer moves
-            if (ss[ply].killerMove[0].value == entry.move.value ||
-                ss[ply].killerMove[1].value == entry.move.value) {
-                entry.score = 60000;
-            }
-            else {
-                int side = 0;
-                if (board.getSideToMove() == Black) {
-                    side = 1;
-                }
-                
-                entry.score = 30000 + hist.quiet[side][entry.move.from()][entry.move.to()];
-            }
 
-            
+
+        }
+        else if (ss[ply].killerMove[0].value == entry.move.value ||
+            ss[ply].killerMove[1].value == entry.move.value) {
+            entry.score = 60000;
+        } else if(hist.quiet[side][entry.move.from()][entry.move.to()] != 0){                
+            entry.score = 30000 + hist.quiet[side][entry.move.from()][entry.move.to()];
+        }
+        else {
+            //quiet move
+            entry.score = 0;
+
         }
 
 
