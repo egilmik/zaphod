@@ -148,32 +148,5 @@ bool UCI::parseMove(std::string token)
 
 void UCI::staticEvaluation() {
     
-    int mgScore = 0;
-    int egScore = 0;
-    int gamePhase = 0;
-    int materialScore = 0;
-    BitBoard allPieces = motherBoard.getBitboard(All);
-    int square = 0;
-    while (allPieces) {
-        square = motherBoard.popLsb(allPieces);
-        BitBoardEnum piece = motherBoard.getPieceOnSquare(square);
-        mgScore += Material::pieceSquareScoreArrayMG[piece][square];
-        egScore += Material::pieceSquareScoreArrayEG[piece][square];
-        gamePhase += Material::gamePhaseArray[piece];
-        materialScore += Material::materialScoreArray[piece];
-    }
-
-    //Pesto gamephase handling
-    int mgPhase = gamePhase;
-    if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
-    int egPhase = 24 - mgPhase;
-    int psqt = (mgScore * mgPhase + egScore * egPhase) / 24;
-    int score = materialScore + psqt;
-    
-
-
-    if (motherBoard.getSideToMove() == BitBoardEnum::Black) {
-        score *= -1;
-    }
-    std::cout << "eval " << score << std::endl;
+    std::cout << "eval " << motherBoard.evaluate() << std::endl;
 }
