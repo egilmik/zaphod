@@ -186,7 +186,20 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     int eval = evaluate(board);
 
 
+    ////////////
+    // Razoring
+    ////////////
+    if (eval < alpha - 500 * depth*depth) {
 
+        int value = quinesence(board, alpha - 1, alpha, 0, ply, false);
+        if (value < alpha && std::abs(value) < 20000) {
+            return value;
+        }
+    }
+
+    ////////////
+    // Null move pruning
+    ////////////
     if (!pvNode && !inCheck  && eval >= beta && depth >= 3 && !isRoot && !ss[ply - 1].isNullMove) {
         if(board.getNonPawnMaterial(board.getSideToMove()) > 0 || depth >= 5){
             int R = 3 + (depth >= 6) + (eval - beta) / 200; // adaptive
@@ -416,7 +429,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             }
         }
         */
-        
+
         
         
         bool valid = board.makeMove(move);
