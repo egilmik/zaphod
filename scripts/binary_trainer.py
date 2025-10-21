@@ -24,7 +24,7 @@ TRAIN_PATHS       = [
     "D:\\source\\zaphod_nnue\\Data\\2.0_dev_83M_depth4.bin",
     "D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_74M_depth6.bin",
     "D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_12M_depth6.bin",
-    "D:\\source\\zaphod_nnue\\Data\2.0_dev_52a7cc16_215M_depth4.bin",
+    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_52a7cc16_215M_depth4.bin",
     
 ]
 VALIDATION_PATHS  = ["D:\\source\\zaphod_nnue\\Data\\2.0_dev_50M_depth4.bin"]
