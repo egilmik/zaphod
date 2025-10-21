@@ -37,6 +37,7 @@ class Search {
         unsigned long long pawnTTHits = 0;
         int64_t lowerBoundHit = 0;
         int64_t upperBoundHit = 0;
+        int64_t qsearchTTHit = 0;
         int64_t exactHit = 0;
         int64_t lmrHit = 0;
         int64_t lmrResearchHit = 0;

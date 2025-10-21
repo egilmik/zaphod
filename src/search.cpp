@@ -31,6 +31,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     exactHit = 0;
     upperBoundHit = 0;
     lowerBoundHit = 0;
+    qsearchTTHit = 0;
     aspirationHighResearchHit = 0;
     aspirationLowResearchHit = 0;
     bestMoveIteration.depth = 0;
@@ -379,8 +380,6 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     if (board.hasPositionRepeated() || board.getHalfMoveClock() >= 100) {
         return 0;
     }
-
-    int standPat = evaluate(board);
     
     if (maxQuinesenceDepthThisSearch < depth) {
         maxQuinesenceDepthThisSearch = depth;
@@ -390,18 +389,26 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         maxPlyThisIteration = ply;
     }
 
+    //////////////////////////
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
+    //////////////////////////
     if ((evaluatedNodes % 1000) > 0 && isSearchStopped()) {
         return beta;
     }
     
-    
-    if (standPat >= beta) {
-        return beta;
-    } else if(alpha < standPat) {
-        alpha = standPat;
+    auto tte = tt.probe(board.getHashKey());
+
+    //////////////////////////
+    // Transposition Table
+    //////////////////////////
+    if (!pvNode && tte &&  (tte->type == EXACT || (tte->type == LOWER && tte->score >= beta) || (tte->type == UPPER && tte->score <= alpha)))  {
+        qsearchTTHit++;            
+        return tte->score;
     }
+
+    int staticEval =  evaluate(board);
+
 
     MoveList moveList;
     MoveList moveListReduced;
@@ -412,13 +419,21 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         }
     }
 
-    auto tte = tt.probe(board.getHashKey());
+    bool inCheck = moveList.checkers > 0;
+
+    if (!inCheck && staticEval >= beta) {
+        return beta;
+    }
+    else if (!inCheck && alpha < staticEval) {
+        alpha = staticEval;
+    }
+
 
     sortMoveList(board, moveListReduced,ply,tte? tte->bestMove:0);
 
 
     int score = 0;
-    bool inCheck = moveList.checkers > 0;
+    
     for(int i = 0; i < moveListReduced.counter; i++){
         Move move = moveListReduced.moves[i];
         /*
@@ -433,7 +448,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         
         
         bool valid = board.makeMove(move);
-        score = -quinesence(board,-beta,-alpha,depth+1, ply+1,pvNode);
+        score = -quinesence(board,-beta,-alpha,depth-1, ply+1,pvNode);
 
         if(score > alpha){
             alpha = score;
