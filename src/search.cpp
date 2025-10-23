@@ -44,6 +44,8 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     Score bestScore;
     constexpr int lowerBound = -std::numeric_limits<int>::max();
     constexpr int upperBound = std::numeric_limits<int>::max();
+    int low = lowerBound;
+    int upper = upperBound;
 
     auto start = std::chrono::high_resolution_clock::now();
     
@@ -60,9 +62,11 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
                     hist.quiet[s][f][t] /= 2;
 
         int previousScore = i > 1 ? bestScore.score : 0;
-        int aspiration = 20 + i * 5;
-        int low = previousScore - aspiration;
-        int high = previousScore + aspiration;
+        if (i > 4) {
+            int aspiration = 20 + i * 5;
+            low = previousScore - aspiration;
+            upper = previousScore + aspiration;
+        }
 
         currentTargetDepth = i;
         maxQuinesenceDepthThisSearch = 0;
@@ -70,12 +74,12 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
         //Reset search stack check extension
         ss[0].checkExt = 0;
-        int score = negamax(board, i, low, high,0,false);
+        int score = negamax(board, i, low, upper,0,false);
         if (score <= low) {
             aspirationLowResearchHit++;
-            score = negamax(board, i, lowerBound, high, 0, false);
+            score = negamax(board, i, lowerBound, upper, 0, false);
         }
-        else if (score >= high) {
+        else if (score >= upper) {
             aspirationHighResearchHit++;
             score = negamax(board, i, low, upperBound, 0, false);
         }
@@ -146,7 +150,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
     auto tte = tt.probe(key);    
 
-    if (!pvNode && tte && tte->depth >= depth) {
+    if (!pvNode && tte != std::nullopt && tte->depth >= depth) {
         if (tte->type == EXACT) {
             exactHit++;
             if (isRoot) {
@@ -190,14 +194,23 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     // Razoring
     ////////////
-    if (eval < alpha - 500 * depth*depth) {
+    
+    if (depth <= 3 && (eval +200*depth) < beta) {
 
-        int value = quinesence(board, alpha - 1, alpha, 0, ply, false);
-        if (value < alpha && std::abs(value) < 20000) {
+        int value = quinesence(board, alpha, beta, 0, ply, false);
+        if (value < beta && std::abs(value) < 20000) {
             return value;
         }
     }
+    
+    
+    constexpr int futilityMargin[] = { 0,100,200,300};
 
+
+    if (!pvNode && !inCheck && depth <= 3 && (eval - futilityMargin[depth]) >= beta && eval >= beta) {
+        return (2 * beta + eval) / 3;
+    }
+    
     ////////////
     // Null move pruning
     ////////////
@@ -215,8 +228,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         }
     }
 
-
     
+
     for (int i = 0; i < moveList.counter; i++) {
         Move move = moveList.moves[i];        
         
@@ -258,26 +271,23 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         */
 
         
-        if (firstMove || pvNode || inCheck || isCapture || isPromo || isRoot) {
+        if (firstMove || pvNode || inCheck || isRoot) {
             score = -negamax(board, newDepth, -beta, -alpha, ply + 1,firstMove && pvNode);
         }
         else {
             //int reduction = 0.5 + (std::log(depth) * std::log(i) / 3);
             int reduction = (uint8_t)std::max(0.0,0.75 + std::log(depth) * std::log(i) / 2.5);
-
+            
             int eval = board.evaluate();
 
             // We are not improving, reduce more
             if (eval <= alphaOrginal - 50) {
                 r + 1;
             }
-
+            
             if (givesCheck) {
                 reduction = std::max(0, reduction - 1);
             }
-
-
-            
 
             ////////////
             // LMR
@@ -485,12 +495,9 @@ int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
         otherSide = Black;
     }
 
-    // We only want positive values, so subtracting side to move so we only get white values.    
-    int result = Material::materialScoreArray[board.getPieceOnSquare(toSq)-otherSide];
-    result = Material::materialScoreArray[board.getPieceOnSquare(fromSq) - sideToMove]- result;
-    if (result < 0) {
-        return result;
-    }
+    int ply, score[32];
+    
+    score[0] = Material::pieceMaterialScoreArray[board.getPieceOnSquare(toSq)];
 
     BitBoard occupied = board.getBitboard(All);
     BitBoard toSqBB = board.sqBB[toSq];
@@ -498,33 +505,101 @@ int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
 
     //Remove pieces
     occupied &= ~board.sqBB[fromSq];
-    occupied &= ~toSqBB;
 
 
     BitBoard attackersTo = 0;
 
     
-    uint64_t magic = ((board.getBitboard(All) & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
+    uint64_t magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
     attackersTo |= (*board.magicMovesRook)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r));
         
-    magic = ((board.getBitboard(All) & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
+    magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
     attackersTo |= (*board.magicMovesBishop)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b));
 
     attackersTo |= board.getKnightMask(toSq) & (board.getBitboard(N) | board.getBitboard(n));
 
-    attackersTo |= ((toSqBB & ~board.FileHMask) << 7) & board.getBitboard(P);
-    attackersTo |= ((toSqBB & ~board.FileAMask) << 9) & board.getBitboard(P);
+    attackersTo |= ((toSqBB & ~board.FileHMask) >> 7) & board.getBitboard(P);
+    attackersTo |= ((toSqBB & ~board.FileAMask) >> 9) & board.getBitboard(P);
 
-    attackersTo |= ((toSqBB & ~board.FileAMask) >> 7) & board.getBitboard(p);
-    attackersTo |= ((toSqBB & ~board.FileHMask) >> 9) & board.getBitboard(p);
+    attackersTo |= ((toSqBB & ~board.FileAMask) << 7) & board.getBitboard(p);
+    attackersTo |= ((toSqBB & ~board.FileHMask) << 9) & board.getBitboard(p);
+
+    attackersTo |= board.getKingMask(toSq) & (board.getBitboard(K) | board.getBitboard(k));
 
     //Remove the already capture pieces
-    attackersTo &= occupied;
+    attackersTo &= ~board.sqBB[fromSq];
+    ply = 1;
+
+    if (sideToMove == White) {
+        sideToMove = Black;
+        otherSide = White;
+    }
+    else {
+        sideToMove = White;
+        otherSide = Black;
+    }
+
+    BitBoard attackerBB = 0;
+    BitBoardEnum attacker = board.getPieceOnSquare(fromSq);
+    BitBoard sideToMoveAttackers = 0;
+    while (attackersTo & board.getBitboard(sideToMove)) {
+
         
 
-    BitBoard attacker = 0;
-    BitBoard sideToMoveAttackers = 0;
-    while (true) {
+        score[ply] = -score[ply - 1] + Material::pieceMaterialScoreArray[attacker];
+
+        if (score[ply] < 0) {
+            int x = 0;
+        }
+
+        if ((attackerBB = attackersTo & board.getBitboard(P + sideToMove))) {
+            fromSq = board.popLsb(attackerBB);
+            attacker = board.getPieceOnSquare(fromSq);
+            
+        }
+        else if ((attackerBB = attackersTo & board.getBitboard(N + sideToMove))) {
+            fromSq = board.popLsb(attackerBB);
+            attacker = board.getPieceOnSquare(fromSq);
+            
+        }
+        else if ((attackerBB = attackersTo & board.getBitboard(B + sideToMove))) {
+            fromSq = board.popLsb(attackerBB);
+            attacker = board.getPieceOnSquare(fromSq);
+        }
+        else if ((attackerBB = attackersTo & board.getBitboard(R + sideToMove))) {
+            fromSq = board.popLsb(attackerBB);
+            attacker = board.getPieceOnSquare(fromSq);
+
+        }
+        else if ((attackerBB = attackersTo & board.getBitboard(Q + sideToMove))) {
+            fromSq = board.popLsb(attackerBB);
+            attacker = board.getPieceOnSquare(fromSq);
+
+        }
+        else if ((attackerBB = attackersTo & board.getBitboard(K + sideToMove))) {
+            //score[ply++] = 100000000;
+            fromSq = board.popLsb(attackerBB);
+            attacker = board.getPieceOnSquare(fromSq);
+
+        }
+        else {
+            break;
+        }
+
+        attackersTo ^= board.sqBB[fromSq];
+        occupied ^= board.sqBB[fromSq];
+
+        uint64_t magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
+        attackersTo |= (*board.magicMovesRook)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r)) & occupied);
+
+        magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
+        attackersTo |= (*board.magicMovesBishop)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b)) & occupied);
+
+        attackersTo |= ((toSqBB & ~board.FileHMask) >> 7) & (board.getBitboard(P) & occupied);
+        attackersTo |= ((toSqBB & ~board.FileAMask) >> 9) & (board.getBitboard(P) & occupied);
+
+        attackersTo |= ((toSqBB & ~board.FileAMask) << 7) & (board.getBitboard(p) & occupied);
+        attackersTo |= ((toSqBB & ~board.FileHMask) << 9) & (board.getBitboard(p) & occupied);
 
         if (sideToMove == White) {
             sideToMove = Black;
@@ -535,91 +610,13 @@ int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
             otherSide = Black;
         }
 
-        if ((sideToMoveAttackers = attackersTo & board.getBitboard(sideToMove)) == 0) {
-            break;
-        }
-
-        if ((attacker = sideToMoveAttackers & board.getBitboard(P + sideToMove))) {
-            attackersTo &= board.sqBB[board.popLsb(attacker)];
-            occupied &= board.sqBB[board.popLsb(attacker)];
-            result = Material::materialScoreArray[P] - result;
-            if (result < 0) {
-                break;
-            }
-            //TODO: we have removed a piece, we need to check if there are changes to pins!
-            magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
-            attackersTo |= (*board.magicMovesBishop)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b)) & occupied);
-
-
-        }
-        else if ((attacker = sideToMoveAttackers & board.getBitboard(N + sideToMove))) {
-            BitBoard bb = board.sqBB[board.popLsb(attacker)];
-            attackersTo &= bb;
-            occupied &= bb;
-            result = Material::materialScoreArray[N] - result;
-            if (result < 0) {
-                break;
-            }
-        }
-        else if ((attacker = sideToMoveAttackers & board.getBitboard(B + sideToMove))) {
-            BitBoard bb = board.sqBB[board.popLsb(attacker)];
-            attackersTo &= bb;
-            occupied &= bb;
-            result = Material::materialScoreArray[B] - result;
-
-            magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
-            attackersTo |= (*board.magicMovesBishop)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b)) & occupied);
-            
-            if (result < 0) {
-                break;
-            }
-
-        }
-        else if ((attacker = sideToMoveAttackers & board.getBitboard(R + sideToMove))) {
-            BitBoard bb = board.sqBB[board.popLsb(attacker)];
-            attackersTo &= bb;
-            occupied &= bb;
-            result = Material::materialScoreArray[R] - result;
-            magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
-            attackersTo |= (*board.magicMovesRook)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r)) & occupied);
-
-            if (result < 0) {
-                break;
-            }
-
-        }
-        else if ((attacker = sideToMoveAttackers & board.getBitboard(Q + sideToMove))) {
-            BitBoard bb = board.sqBB[board.popLsb(attacker)];
-            attackersTo &= bb;
-            occupied &= bb;
-            result = Material::materialScoreArray[Q] - result;
-
-            magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
-            attackersTo |= (*board.magicMovesBishop)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b)) & occupied);
-
-            magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
-            attackersTo |= (*board.magicMovesRook)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r)) & occupied);
-
-            if (result < 0) {
-                break;
-            }
-        }
-        else if ((attacker = sideToMoveAttackers & board.getBitboard(K + sideToMove))) {
-            BitBoard bb = board.sqBB[board.popLsb(attacker)];
-            attackersTo &= bb;
-            occupied &= bb;
-            if (attackersTo) {
-                
-                return 1000;
-            }
-
-        }
-        if (attackersTo == 0) {
-            break;
-        }
+        ply++;
     }
 
-    return result;
+    while (--ply) {
+        score[ply - 1] = -std::max(-score[ply - 1], score[ply]);
+    }
+    return score[0];
 
 }
 
@@ -682,16 +679,32 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 
             if (entry.move.getMoveType() == EN_PASSANT) {
                 capturedPiece = P;
+                entry.score = 70000;
             }
-            int Mvv = Material::getMaterialScore(capturedPiece);
-            int lva = Material::getMaterialScore(attacker);
-            int mvvlva = (Mvv - lva) / 100;
-            entry.score = 70000 + mvvlva;
+            else {
+                int Mvv = Material::pieceMaterialScoreArray[capturedPiece];
+                int lva = Material::pieceMaterialScoreArray[attacker];
+                
+                int mvvlva = (Mvv - lva) / 100;
+                entry.score = 70000 + mvvlva;
+                
+                if (Mvv > lva) {
+                    entry.score = 70000+ mvvlva;
+                }
+                else {
+                    int seeScore = see(board, entry.move.from(), entry.move.to(), board.getSideToMove());
+                    if (seeScore >= 0) {
+                        entry.score = 70000 + seeScore;
+                    }
+                    else {
+                        entry.score = -70000 - seeScore;
+                    }
+                }
 
-            //int score = see(board, entry.move.from(), entry.move.to(), board.getSideToMove());
-            //entry.score = 100 - (score / 100);               
-
-
+                
+                
+                
+            }
         }
         else if (ss[ply].killerMove[0].value == entry.move.value ||
             ss[ply].killerMove[1].value == entry.move.value) {
