@@ -2,6 +2,7 @@
 #define MOVE_H
 
 #include "bitboard.h"
+#include <cstdint>
 
 /*
 struct Move {

@@ -1,14 +1,7 @@
 #ifndef BITBOARD_H
 #define BITBOARD_H
 
-#ifdef LINUX
-	#define BitBoard __UINT64_TYPE__
-#elif WIN32
-	#define BitBoard uint64_t
-#endif
-
-
-//#define BitBoard __UINT64_TYPE__
+#define BitBoard uint64_t
 enum BitBoardEnum {White,R,N,B,Q,K,P,Black,r,n,b,q,k,p,All};
 
 #endif
