@@ -722,7 +722,12 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
     }
     // MVV-LVA sorting
 
-    std::sort(sortArray, sortArray+list.counter, compare);
+    std::stable_sort(sortArray, sortArray + list.counter,
+        [](const SortStruct& a, const SortStruct& b) {
+            if (a.score != b.score) return a.score > b.score;     // strict order
+            return a.move.value < b.move.value;                   // total tie-break
+        });
+
     for(int i = 0; i< list.counter; i++){
         list.moves[i] = sortArray[i].move;
     }
