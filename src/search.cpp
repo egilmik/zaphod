@@ -194,8 +194,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     // Razoring
     ////////////
-    
-    if (depth <= 3 && (eval +200*depth) < beta) {
+    if (!isRoot && depth <= 3 && (eval +200*depth) < beta) {
 
         int value = quinesence(board, alpha, beta, 0, ply, false);
         if (value < beta && std::abs(value) < 20000) {
