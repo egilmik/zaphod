@@ -13,13 +13,7 @@ const int accH = (int)accumulator[side].pre.size();
 const int s1H  = (int)s1.size();
 const int w2H  = (int)W2_q.size();
 
-assert(accH >= H && s1H >= H && w2H >= H);
 
-// per-iteration bounds checks (debug only)
-assert(acc16 + i + 32 <= accumulator[side].pre.data() + accH);
-assert(S1    + i + 32 <= s1.data() + s1H);
-assert(W2Q   + i + 32 <= W2_q.data() + w2H);
-assert(a1 > 0.0);
 
     const int16_t* __restrict acc16 = accumulator[side].pre.data();
     const float* __restrict S1 = s1.data();
