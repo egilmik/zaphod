@@ -722,8 +722,7 @@ void Board::parseFenPosition(char value, int &count)
     int bitNr = fenToBitMapping[count];
 
     if(isdigit(value)){
-        std::string s = &value;
-        int increment = std::stoi(s);
+        int increment = value - '0';
         count+= increment;
     } else { 
 
@@ -786,7 +785,7 @@ bool Board::checkBit(BitBoardEnum piece, int bitNr)
 
 int Board::countSetBits(BitBoardEnum piece)
 {
-    #ifdef LINUX
+    #ifdef __linux__
         return __builtin_popcountll(bitBoardArray[piece]);
     #elif WIN32
         return __popcnt64(bitBoardArray[piece]);
@@ -796,7 +795,7 @@ int Board::countSetBits(BitBoardEnum piece)
 
 int Board::countSetBits(unsigned long long board)
 {
-    #ifdef LINUX
+    #ifdef __linux__
         return __builtin_popcountll(board);
     #elif WIN32
         return __popcnt64(board);
@@ -805,7 +804,7 @@ int Board::countSetBits(unsigned long long board)
 
 int Board::popLsb(BitBoard& board)
 {   
-    #ifdef LINUX
+    #ifdef __linux__
         int lsb = __builtin_ctzll(board);
         board &= board - 1;
         return lsb;

@@ -3,9 +3,23 @@
 #include <stdexcept>
 #include <cmath>
 #include <immintrin.h>
+#include <iostream>
+#include <cassert>
 
 float NNUEQ::forward(BitBoardEnum stm) {
     const int side = (stm == White) ? 0 : 1;
+
+const int accH = (int)accumulator[side].pre.size();
+const int s1H  = (int)s1.size();
+const int w2H  = (int)W2_q.size();
+
+assert(accH >= H && s1H >= H && w2H >= H);
+
+// per-iteration bounds checks (debug only)
+assert(acc16 + i + 32 <= accumulator[side].pre.data() + accH);
+assert(S1    + i + 32 <= s1.data() + s1H);
+assert(W2Q   + i + 32 <= W2_q.data() + w2H);
+assert(a1 > 0.0);
 
     const int16_t* __restrict acc16 = accumulator[side].pre.data();
     const float* __restrict S1 = s1.data();
@@ -17,9 +31,11 @@ float NNUEQ::forward(BitBoardEnum stm) {
     const __m512i zero_i = _mm512_setzero_si512();
     const __m512i qcap32 = _mm512_set1_epi32((int)qCap);
 
+    alignas(64) static thread_local int32_t qbuf[32];
+
     for (int i = 0; i < H; i += 32) {
         // 1) Load 32×i16 baked pre
-        __m512i pre_i16 = _mm512_load_si512((const void*)(acc16 + i));
+        __m512i pre_i16 = _mm512_loadu_si512((const void*)(acc16 + i));
 
         // 2) Split halves and widen to i32
         __m256i lo16 = _mm512_castsi512_si256(pre_i16);          // lanes [0..15]
@@ -28,8 +44,8 @@ float NNUEQ::forward(BitBoardEnum stm) {
         __m512i hi32 = _mm512_cvtepi16_epi32(hi16);              // 16×i32
 
         // 3) Dequant → ReLU: z = max(0, s1 * pre)
-        __m512 z0 = _mm512_mul_ps(_mm512_cvtepi32_ps(lo32), _mm512_load_ps(S1 + i));
-        __m512 z1 = _mm512_mul_ps(_mm512_cvtepi32_ps(hi32), _mm512_load_ps(S1 + i + 16));
+        __m512 z0 = _mm512_mul_ps(_mm512_cvtepi32_ps(lo32), _mm512_loadu_ps(S1 + i));
+        __m512 z1 = _mm512_mul_ps(_mm512_cvtepi32_ps(hi32), _mm512_loadu_ps(S1 + i + 16));
         z0 = _mm512_max_ps(z0, zero_ps);
         z1 = _mm512_max_ps(z1, zero_ps);
 
@@ -41,11 +57,17 @@ float NNUEQ::forward(BitBoardEnum stm) {
         __m512i q0i = _mm512_cvttps_epi32(q0f);
         __m512i q1i = _mm512_cvttps_epi32(q1f);
         q0i = _mm512_min_epi32(_mm512_max_epi32(q0i, zero_i), qcap32);
-        q1i = _mm512_min_epi32(_mm512_max_epi32(q1i, zero_i), qcap32);
+	q1i = _mm512_min_epi32(_mm512_max_epi32(q1i, zero_i), qcap32);
 
-        alignas(64) int32_t qbuf[32];
-        _mm512_store_si512((void*)qbuf, q0i);
-        _mm512_store_si512((void*)(qbuf + 16), q1i);
+	auto acc_end = acc16 + H;
+	auto s1_end  = S1   + H;
+	auto w2_end  = W2Q  + H;
+	assert(acc16 + i + 32 <= acc_end);
+	assert(S1    + i + 32 <= s1_end);
+	assert(W2Q   + i + 32 <= w2_end); 
+
+        _mm512_storeu_si512((void*)qbuf, q0i);
+        _mm512_storeu_si512((void*)(qbuf + 16), q1i);
 
         const int8_t* w2 = W2Q + i;
         for (int k = 0; k < 32; ++k)
@@ -111,23 +133,23 @@ void NNUEQ::clear() {
 
 void NNUEQ::add_row_i16_avx2(const int16_t* __restrict w, int16_t* __restrict acc) {
     for (int i = 0; i < H; i += 32) {
-        __m256i a0 = _mm256_load_si256((const __m256i*)(acc + i));
-        __m256i w0 = _mm256_load_si256((const __m256i*)(w + i));
-        __m256i a1 = _mm256_load_si256((const __m256i*)(acc + i + 16));
-        __m256i w1 = _mm256_load_si256((const __m256i*)(w + i + 16));
-        _mm256_store_si256((__m256i*)(acc + i), _mm256_adds_epi16(a0, w0)); // sat add
-        _mm256_store_si256((__m256i*)(acc + i + 16), _mm256_adds_epi16(a1, w1));
+        __m256i a0 = _mm256_loadu_si256((const __m256i*)(acc + i));
+        __m256i w0 = _mm256_loadu_si256((const __m256i*)(w + i));
+        __m256i a1 = _mm256_loadu_si256((const __m256i*)(acc + i + 16));
+        __m256i w1 = _mm256_loadu_si256((const __m256i*)(w + i + 16));
+        _mm256_storeu_si256((__m256i*)(acc + i), _mm256_adds_epi16(a0, w0)); // sat add
+        _mm256_storeu_si256((__m256i*)(acc + i + 16), _mm256_adds_epi16(a1, w1));
     }
 }
 
 void NNUEQ::sub_row_i16_avx2(const int16_t* __restrict w,int16_t* __restrict acc) {
     for (int i = 0; i < H; i += 32) {
-        __m256i a0 = _mm256_load_si256((const __m256i*)(acc + i));
-        __m256i w0 = _mm256_load_si256((const __m256i*)(w + i));
-        __m256i a1 = _mm256_load_si256((const __m256i*)(acc + i + 16));
-        __m256i w1 = _mm256_load_si256((const __m256i*)(w + i + 16));
-        _mm256_store_si256((__m256i*)(acc + i), _mm256_subs_epi16(a0, w0)); // sat sub
-        _mm256_store_si256((__m256i*)(acc + i + 16), _mm256_subs_epi16(a1, w1));
+        __m256i a0 = _mm256_loadu_si256((const __m256i*)(acc + i));
+        __m256i w0 = _mm256_loadu_si256((const __m256i*)(w + i));
+        __m256i a1 = _mm256_loadu_si256((const __m256i*)(acc + i + 16));
+        __m256i w1 = _mm256_loadu_si256((const __m256i*)(w + i + 16));
+        _mm256_storeu_si256((__m256i*)(acc + i), _mm256_subs_epi16(a0, w0)); // sat sub
+        _mm256_storeu_si256((__m256i*)(acc + i + 16), _mm256_subs_epi16(a1, w1));
     }
 }
 

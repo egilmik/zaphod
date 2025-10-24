@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "bitboard.h";
+#include "bitboard.h"
 
 struct Accumulator {
     explicit Accumulator(std::size_t n) : pre(n) {}
