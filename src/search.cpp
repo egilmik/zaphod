@@ -41,7 +41,7 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     
 
     bool inIteration = true;
-    Score bestScore;
+    Score bestScore{};
     constexpr int lowerBound = -std::numeric_limits<int>::max();
     constexpr int upperBound = std::numeric_limits<int>::max();
     int low = lowerBound;
@@ -74,14 +74,14 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
 
         //Reset search stack check extension
         ss[0].checkExt = 0;
-        int score = negamax(board, i, low, upper,0,false);
+        int score = negamax(board, i, low, upper,0,true);
         if (score <= low) {
             aspirationLowResearchHit++;
-            score = negamax(board, i, lowerBound, upper, 0, false);
+            score = negamax(board, i, lowerBound, upper, 0, true);
         }
         else if (score >= upper) {
             aspirationHighResearchHit++;
-            score = negamax(board, i, low, upperBound, 0, false);
+            score = negamax(board, i, low, upperBound, 0, true);
         }
 
         if (stopSearch) {
@@ -175,7 +175,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     
 
-    MoveList moveList;
+    MoveList moveList{};
     MoveGenerator::generateMoves(board, moveList);
     int score = 0;
 
@@ -221,6 +221,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             ss[ply].isNullMove = true;
             int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
             board.revertNullMove();
+            ss[ply].isNullMove = false;
             if (nullScore >= beta) {
                 return nullScore;
             }
@@ -238,6 +239,19 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         int extension = 0;
         bool firstMove = i == 0;
         bool givesCheck = false;
+        /*
+        if (!isRoot && !pvNode && !inCheck && board.getNonPawnMaterial(board.getSideToMove()) > 0 && bestMoveIteration.score > -10000) {
+            if (isCapture) {
+                int capturedValue = Material::pieceMaterialScoreArray[board.getPieceOnSquare(move.to())];
+                if (eval + capturedValue + 300 < alpha && depth < 8) {
+                    continue;
+                }
+            }
+            else {
+
+            }
+        }
+        */
         
         board.makeMove(move);        
 
@@ -255,7 +269,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         ss[ply + 1].checkExt = plyCheckExtension + extension;
 
-        int newDepth = depth - 1 + extension;
+        
 
         /*
         if (!pvNode && !inCheck && depth >= 3 && !isCapture && !isPromo) {
@@ -269,39 +283,42 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         */
 
-        
-        if (firstMove || pvNode || inCheck || isRoot) {
-            score = -negamax(board, newDepth, -beta, -alpha, ply + 1,firstMove && pvNode);
+        int newDepth = depth - 1 + extension;
+
+        int reduction = (int)std::max(0.0, 0.75 + std::log(depth) * std::log(i) / 2.25);
+
+        int lmrEval = board.evaluate();
+
+        // We are not improving, reduce more
+        if (lmrEval <= alphaOrginal - 50) {
+            reduction + 1;
         }
-        else {
-            //int reduction = 0.5 + (std::log(depth) * std::log(i) / 3);
-            int reduction = (uint8_t)std::max(0.0,0.75 + std::log(depth) * std::log(i) / 2.5);
-            
-            int eval = board.evaluate();
 
-            // We are not improving, reduce more
-            if (eval <= alphaOrginal - 50) {
-                r + 1;
-            }
-            
-            if (givesCheck) {
-                reduction = std::max(0, reduction - 1);
-            }
+        ////////////
+        // LMR
+        ////////////
 
-            ////////////
-            // LMR
-            ////////////
+        if (depth >= 2 && i > 1 + isRoot) {       
             score = -negamax(board, newDepth-reduction, -(alpha + 1), -alpha, ply + 1,false);
             lmrHit++;
 
             if (score > alpha) {
                 lmrResearchHit++;
                 score = -negamax(board, newDepth, -(alpha + 1), -alpha, ply + 1,false);
+                /*
                 if (score > alpha && score < beta) {
                     // Full re-search
                     score = -negamax(board, newDepth, -beta, -alpha, ply + 1,true);
                 }
+                */
             } 
+        }
+        else if (!pvNode || !firstMove) {
+            score = -negamax(board, newDepth, -(alpha + 1), -alpha, ply + 1, false);
+        }
+
+        if(pvNode && (firstMove || score > alpha)){
+            score = -negamax(board, newDepth, -beta, -alpha, ply + 1, true);
         }
 
 
@@ -316,6 +333,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
                 bestMoveIteration.bestMove = move;
                 bestMoveIteration.score = alpha;
                 bestMoveIteration.depth = depth;
+            }
+
+            if (score < beta && depth > 2 && depth < 13 && beta < 10000 && score > -10000) {
+                //depth -= 1;
             }
         }
 
@@ -402,7 +423,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
     //////////////////////////
-    if ((evaluatedNodes % 1000) > 0 && isSearchStopped()) {
+    if ((evaluatedNodes % 1000) == 0 && isSearchStopped()) {
         return beta;
     }
     
@@ -662,7 +683,7 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 
     SortStruct sortArray[256];
     for (int i = 0; i < list.counter; i++) {
-        SortStruct entry;
+        SortStruct entry{};
         entry.move = list.moves[i];
         if (equal(list.moves[i], bestMove)) {
             entry.score = 100000;
