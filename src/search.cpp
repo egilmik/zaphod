@@ -221,7 +221,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             ss[ply].isNullMove = true;
             int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
             board.revertNullMove();
-            ss[ply].isNullMove = false;
             if (nullScore >= beta) {
                 return nullScore;
             }
