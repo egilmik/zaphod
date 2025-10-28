@@ -20,6 +20,8 @@ const int w2H  = (int)W2_q.size();
     const int8_t* __restrict W2Q = W2_q.data();
 
     int32_t acc2 = 0;
+#if defined(__AVX512F__)
+    // ===== your existing AVX-512 code (unchanged) =====
     const __m512  zero_ps = _mm512_setzero_ps();
     const __m512  a1_ps = _mm512_set1_ps(a1);
     const __m512i zero_i = _mm512_setzero_si512();
@@ -28,37 +30,31 @@ const int w2H  = (int)W2_q.size();
     alignas(64) static thread_local int32_t qbuf[32];
 
     for (int i = 0; i < H; i += 32) {
-        // 1) Load 32×i16 baked pre
         __m512i pre_i16 = _mm512_loadu_si512((const void*)(acc16 + i));
+        __m256i lo16 = _mm512_castsi512_si256(pre_i16);
+        __m256i hi16 = _mm512_extracti64x4_epi64(pre_i16, 1);
+        __m512i lo32 = _mm512_cvtepi16_epi32(lo16);
+        __m512i hi32 = _mm512_cvtepi16_epi32(hi16);
 
-        // 2) Split halves and widen to i32
-        __m256i lo16 = _mm512_castsi512_si256(pre_i16);          // lanes [0..15]
-        __m256i hi16 = _mm512_extracti64x4_epi64(pre_i16, 1);    // lanes [16..31]
-        __m512i lo32 = _mm512_cvtepi16_epi32(lo16);              // 16×i32
-        __m512i hi32 = _mm512_cvtepi16_epi32(hi16);              // 16×i32
-
-        // 3) Dequant → ReLU: z = max(0, s1 * pre)
         __m512 z0 = _mm512_mul_ps(_mm512_cvtepi32_ps(lo32), _mm512_loadu_ps(S1 + i));
         __m512 z1 = _mm512_mul_ps(_mm512_cvtepi32_ps(hi32), _mm512_loadu_ps(S1 + i + 16));
         z0 = _mm512_max_ps(z0, zero_ps);
         z1 = _mm512_max_ps(z1, zero_ps);
 
-        // 4) q = floor(z / a1)  (NOT divide by zero)
         __m512 q0f = _mm512_floor_ps(_mm512_div_ps(z0, a1_ps));
         __m512 q1f = _mm512_floor_ps(_mm512_div_ps(z1, a1_ps));
 
-        // 5) Convert to int32 and clamp [0,127]
         __m512i q0i = _mm512_cvttps_epi32(q0f);
         __m512i q1i = _mm512_cvttps_epi32(q1f);
         q0i = _mm512_min_epi32(_mm512_max_epi32(q0i, zero_i), qcap32);
-	q1i = _mm512_min_epi32(_mm512_max_epi32(q1i, zero_i), qcap32);
+        q1i = _mm512_min_epi32(_mm512_max_epi32(q1i, zero_i), qcap32);
 
-	auto acc_end = acc16 + H;
-	auto s1_end  = S1   + H;
-	auto w2_end  = W2Q  + H;
-	assert(acc16 + i + 32 <= acc_end);
-	assert(S1    + i + 32 <= s1_end);
-	assert(W2Q   + i + 32 <= w2_end); 
+        auto acc_end = acc16 + H;
+        auto s1_end = S1 + H;
+        auto w2_end = W2Q + H;
+        assert(acc16 + i + 32 <= acc_end);
+        assert(S1 + i + 32 <= s1_end);
+        assert(W2Q + i + 32 <= w2_end);
 
         _mm512_storeu_si512((void*)qbuf, q0i);
         _mm512_storeu_si512((void*)(qbuf + 16), q1i);
@@ -67,6 +63,66 @@ const int w2H  = (int)W2_q.size();
         for (int k = 0; k < 32; ++k)
             acc2 += (int32_t)w2[k] * qbuf[k];
     }
+    // ===== end of your AVX-512 block =====
+
+#elif defined(__AVX2__)
+    
+    const int32_t* __restrict B1 = B1_q.data();    
+    const float* __restrict W2F = W2_f.data();   // prebuilt W2_q*(s2*a1)
+    __m256 sum = _mm256_setzero_ps();
+    const __m256 zero = _mm256_setzero_ps();
+    const __m256 a1ps = _mm256_set1_ps(a1);
+
+    int i = 0;
+    // Process 16 hidden units per iteration
+    for (; i + 16 <= H; i += 16) {
+        // --- widen pre = B1_q + acc16 ---
+        __m256i x16 = _mm256_load_si256((const __m256i*)(acc16 + i));
+        __m128i lo16 = _mm256_castsi256_si128(x16);
+        __m128i hi16 = _mm256_extracti128_si256(x16, 1);
+        __m256i lo32 = _mm256_cvtepi16_epi32(lo16);
+        __m256i hi32 = _mm256_cvtepi16_epi32(hi16);
+
+        // --- z = ReLU(s1 * pre) ---
+        __m256 z0 = _mm256_mul_ps(_mm256_cvtepi32_ps(lo32), _mm256_load_ps(S1 + i));
+        __m256 z1 = _mm256_mul_ps(_mm256_cvtepi32_ps(hi32), _mm256_load_ps(S1 + i + 8));
+        z0 = _mm256_max_ps(z0, zero);
+        z1 = _mm256_max_ps(z1, zero);
+
+        // --- q = floor(z / a1), not z * inv_a1 ---
+        __m256 q0f = _mm256_div_ps(z0, a1ps);
+        __m256 q1f = _mm256_div_ps(z1, a1ps);
+        q0f = _mm256_floor_ps(q0f);
+        q1f = _mm256_floor_ps(q1f);
+
+        // convert to int32 and clamp [0,127]
+        __m256i q0i = _mm256_cvttps_epi32(q0f);
+        __m256i q1i = _mm256_cvttps_epi32(q1f);
+        __m256i zero32 = _mm256_setzero_si256();
+        __m256i max127 = _mm256_set1_epi32(127);
+        q0i = _mm256_min_epi32(_mm256_max_epi32(q0i, zero32), max127);
+        q1i = _mm256_min_epi32(_mm256_max_epi32(q1i, zero32), max127);
+
+        // --- Finish L2 exactly like scalar: int32 acc2 += (int32)(W2_q[i+k] * q[k]) ---
+        // Extract to scalars for exact per-lane multiply-add (still faster overall because q computation is vectorized)
+        alignas(32) int32_t qbuf[16];
+        _mm256_store_si256((__m256i*)qbuf, q0i);
+        _mm256_store_si256((__m256i*)(qbuf + 8), q1i);
+
+        // Scalar L2 dot over 16 lanes (int8*int32 -> int32)
+        const int8_t* w2 = W2Q + i;
+        for (int k = 0; k < 16; ++k)
+            acc2 += (int32_t)w2[k] * qbuf[k];
+    }
+#else
+    // ===== Scalar fallback =====
+    for (int i = 0; i < H; ++i) {
+        float z = std::max(0.0f, (float)acc16[i] * S1[i]);
+        int q = (int)std::floor(z / a1);
+        if (q < 0) q = 0; else if (q > qCap) q = qCap;
+        acc2 += (int)W2Q[i] * q;
+    }
+#endif
 
     float y = B2_f + (s2 * a1) * (float)acc2;
     const float one_minus = 1.f - 1e-6f;
