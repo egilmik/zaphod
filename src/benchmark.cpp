@@ -103,6 +103,8 @@ struct BenchmarkDefinition {
         std::cout << "TT stats " << " Upper bound hit: " << search.upperBoundHit << " Lower bound hit " << search.lowerBoundHit << " Exact hit " << search.exactHit << " qsearch hits: " << search.qsearchTTHit << std::endl;
         std::cout << "LMR stats " << " LMR hit: " << search.lmrHit << " LMR re-search: " << search.lmrResearchHit << std::endl;
         std::cout << "Aspiration window stats " << " Low research : " << search.aspirationLowResearchHit << " High research: " << search.aspirationHighResearchHit << std::endl;
+        std::cout << "Reverse futility: " << search.reverseFutilityPruningHit << " Futility pruning: " << search.futilityPruningHit << std::endl;
+        std::cout << "Null move: " << search.nullMoveHit << std::endl;
         /*std::cout << "PV ";
         for (int i = 0; i < pvList.counter; i++) {
             std::cout << Perft::getNotation(pvList.moves[i]) << " ";

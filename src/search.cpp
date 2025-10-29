@@ -34,6 +34,10 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
     qsearchTTHit = 0;
     aspirationHighResearchHit = 0;
     aspirationLowResearchHit = 0;
+    reverseFutilityPruningHit = 0;
+    futilityPruningHit = 0;
+    nullMoveHit = 0;
+
     bestMoveIteration.depth = 0;
     bestMoveIteration.score = 0;
     bestMoveIteration.bestMove = 0;
@@ -134,6 +138,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     BitBoard key = board.getHashKey();    
     bool isRoot = ply == 0;
     int alphaOrginal = alpha;
+    bool improving = false;
 
 
     // Check if max search time has been exhausted
@@ -188,7 +193,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     int validMoves = moveList.counter;
     bool inCheck = moveList.checkers > 0;
 
-    
+    if (ply >= 4 && !inCheck) {
+        improving = (ss[ply].staticEval > ss[ply - 2].staticEval && ss[ply - 2].staticEval > ss[ply - 4].staticEval);
+    }
 
     ////////////
     // Razoring
@@ -202,25 +209,39 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
     
     
-    constexpr int futilityMargin[] = { 0,100,200,300};
+    ////////////
+    // Reverse futility pruning
+    ////////////
+    /*
+    constexpr int futilityMultiplier = 300;
+    //int futilityDepth = improving ? depth  : depth;
+    int futilityMargin = (depth+1) * futilityMultiplier;
+    
+    if (!pvNode && !inCheck && depth <= 3 && (ss[ply].staticEval - futilityMargin >= beta) && ss[ply].staticEval >= beta && ss[ply].staticEval < MATESCORE-MAXPLY) {
+        reverseFutilityPruningHit++;
+        return (ss[ply].staticEval+beta)/2;
+    }
+    */
 
-
+    /*
     if (!pvNode && !inCheck && depth <= 3 && (ss[ply].staticEval - futilityMargin[depth]) >= beta && ss[ply].staticEval >= beta) {
         return (2 * beta + ss[ply].staticEval) / 3;
     }
+    */
     
     ////////////
     // Null move pruning
     ////////////
     if (!pvNode && !inCheck  && ss[ply].staticEval >= beta && depth >= 3 && !isRoot && !ss[ply - 1].isNullMove) {
-        if(board.getNonPawnMaterial(board.getSideToMove()) > 0 || depth >= 5){
-            int R = 3 + (depth >= 6) + (ss[ply].staticEval - beta) / 200; // adaptive
-            R = std::clamp(R, 2, 4);
+        if(board.getNonPawnMaterial(board.getSideToMove()) > 0 ){
+            int R = 3 + (depth >= 6) + improving;
+            //R = std::clamp(R, 2, 4);
             board.makeNullMove();
             ss[ply].isNullMove = true;
             int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
             board.revertNullMove();
             if (nullScore >= beta) {
+                nullMoveHit++;
                 return nullScore;
             }
         }
@@ -250,8 +271,48 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             }
         }
         */
+
+        ////////////
+        // Move loop pruning
+        ////////////
+        if (!isRoot && !isPromo && !isCapture && improving) {
+            
+            
+            ////////////
+            // Futility pruning
+            ////////////
+            /*
+            constexpr int FpDepth = 5;
+            constexpr int FpMult = 148;
+            if (!pvNode && !inCheck && depth <= FpDepth && ss[ply].staticEval +18 + FpMult * depth <= alpha) {
+                futilityPruningHit++;
+                continue;
+            }
+            */
+            
+            ////////////
+            // Late move pruning
+            ////////////
+
+
+            ////////////
+            // History pruning
+            ////////////
+
+            ////////////
+            // Continuation pruning
+            ////////////
+
+
+        }
+
+
         
-        board.makeMove(move);        
+        board.makeMove(move);      
+
+        int staticEval = 0;
+        int newDepth = depth - 1;
+        ss[ply + 1].staticEval = staticEval = board.evaluate();
 
         ////////////
         // Check extension
@@ -268,16 +329,16 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         ss[ply + 1].checkExt = plyCheckExtension + extension;
         
 
-        int newDepth = depth - 1;
+        
         newDepth += extension; 
 
         int reduction = (int)std::max(0.0, 0.75 + std::log(depth) * std::log(i) / 2.25);
 
-        int staticEval = 0;
-        ss[ply+1].staticEval = staticEval = board.evaluate();
+        
+        
 
         // We are not improving, reduce more
-        if (staticEval <= alphaOrginal - 50) {
+        if (!improving) {
             reduction + 1;
         }
 
@@ -292,15 +353,14 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             if (score > alpha) {
                 lmrResearchHit++;
                 score = -negamax(board, newDepth, -(alpha + 1), -alpha, ply + 1,false);
-                /*
-                if (score > alpha && score < beta) {
-                    // Full re-search
-                    score = -negamax(board, newDepth, -beta, -alpha, ply + 1,true);
-                }
-                */
+                
             } 
         }
         else if (!pvNode || !firstMove) {
+            int r = 1;
+
+            
+
             score = -negamax(board, newDepth, -(alpha + 1), -alpha, ply + 1, false);
         }
 
