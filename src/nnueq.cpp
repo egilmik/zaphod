@@ -73,19 +73,20 @@ const int w2H  = (int)W2_q.size();
     const __m256 zero = _mm256_setzero_ps();
     const __m256 a1ps = _mm256_set1_ps(a1);
 
+    alignas(64) static thread_local int32_t qbuf[32];
     int i = 0;
     // Process 16 hidden units per iteration
     for (; i + 16 <= H; i += 16) {
         // --- widen pre = B1_q + acc16 ---
-        __m256i x16 = _mm256_load_si256((const __m256i*)(acc16 + i));
+        __m256i x16 = _mm256_loadu_si256((const __m256i*)(acc16 + i));
         __m128i lo16 = _mm256_castsi256_si128(x16);
         __m128i hi16 = _mm256_extracti128_si256(x16, 1);
         __m256i lo32 = _mm256_cvtepi16_epi32(lo16);
         __m256i hi32 = _mm256_cvtepi16_epi32(hi16);
 
         // --- z = ReLU(s1 * pre) ---
-        __m256 z0 = _mm256_mul_ps(_mm256_cvtepi32_ps(lo32), _mm256_load_ps(S1 + i));
-        __m256 z1 = _mm256_mul_ps(_mm256_cvtepi32_ps(hi32), _mm256_load_ps(S1 + i + 8));
+        __m256 z0 = _mm256_mul_ps(_mm256_cvtepi32_ps(lo32), _mm256_loadu_ps(S1 + i));
+        __m256 z1 = _mm256_mul_ps(_mm256_cvtepi32_ps(hi32), _mm256_loadu_ps(S1 + i + 8));
         z0 = _mm256_max_ps(z0, zero);
         z1 = _mm256_max_ps(z1, zero);
 
@@ -105,9 +106,8 @@ const int w2H  = (int)W2_q.size();
 
         // --- Finish L2 exactly like scalar: int32 acc2 += (int32)(W2_q[i+k] * q[k]) ---
         // Extract to scalars for exact per-lane multiply-add (still faster overall because q computation is vectorized)
-        alignas(32) int32_t qbuf[16];
-        _mm256_store_si256((__m256i*)qbuf, q0i);
-        _mm256_store_si256((__m256i*)(qbuf + 8), q1i);
+        _mm256_storeu_si256((__m256i*)qbuf, q0i);
+        _mm256_storeu_si256((__m256i*)(qbuf + 8), q1i);
 
         // Scalar L2 dot over 16 lanes (int8*int32 -> int32)
         const int8_t* w2 = W2Q + i;

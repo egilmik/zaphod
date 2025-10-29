@@ -12,8 +12,8 @@ if (MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  /Ob2 /GL /arch:AVX2 /fp:fast /GR- /EHs-")
 else()
     # Flags for GCC/Clang
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=x86-64-v3 -mavx512f -mavx2")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O3 -march=x86-64-v3 -mavx512f -mavx2")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=x86-64-v3 -mavx2")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O3 -march=x86-64-v3 -mavx2")
 endif()
 
 include(FetchContent)
