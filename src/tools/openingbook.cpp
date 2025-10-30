@@ -21,6 +21,7 @@ bool OpeningBook::loadBook(std::string path) {
 	}
 
 	std::shuffle(std::begin(fens), std::end(fens), std::default_random_engine{});
+	return true;
 }
 
 std::string OpeningBook::nextFen() {
