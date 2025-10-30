@@ -13,7 +13,7 @@ public:
 private:
 	std::vector<std::string> fens;
 	uint64_t index = 0;
-	std::mutex mutex;
+	std::mutex mutex{};
 };
 
 #endif
