@@ -11,8 +11,9 @@
 #include "board.h"
 #include "search.h"
 #include "nnueq.h"
+#include "tools/openingbook.h"
 
-static std::chrono::steady_clock::time_point gStart;  
+static std::chrono::steady_clock::time_point gStart;
 
 static inline uint64_t mix64(uint64_t x) {
     x ^= x >> 33; x *= 0xff51afd7ed558ccdULL;
@@ -26,6 +27,7 @@ struct WorkerArgs {
     std::atomic<uint64_t>* produced; // global produced counter
     std::string outPath;
     std::string networkPath;
+    OpeningBook* book;
     int depth = 4;
 };
 
@@ -51,23 +53,42 @@ void worker_fn(WorkerArgs a) {
 
     while (a.produced->load(std::memory_order_relaxed) < a.quota) {
 
-        board.parseFen(startFen);
+        if (a.book) {
+            std::string fen = a.book->nextFen();
+            std::cout << fen << std::endl;
+            board.parseFen(fen);
+        }
+        else {
 
-        // randomize opening a bit
-        for (int i = 0; i < 10; ++i) {
+            board.parseFen(startFen);
+
+            // randomize opening a bit
+            for (int i = 0; i < 4; ++i) {
+                MoveList l;
+                MoveGenerator::generateMoves(board, l);
+                if (l.counter == 0) break;
+                std::uniform_int_distribution<> d(0, l.counter - 1);
+                board.makeMove(l.moves[d(gen)]);
+            }
+        }
+        
+
+        // Here we randomize the first moves, since the opening book is looping to not generate the same position over and over
+        for (int i = 0; i < 4; ++i) {
             MoveList l;
             MoveGenerator::generateMoves(board, l);
             if (l.counter == 0) break;
             std::uniform_int_distribution<> d(0, l.counter - 1);
             board.makeMove(l.moves[d(gen)]);
         }
+        
 
         while (a.produced->load(std::memory_order_relaxed) < a.quota) {
             MoveList list;
             MoveGenerator::generateMoves(board, list);
             if (list.counter == 0 || board.hasPositionRepeated()) break;
 
-            
+
             Score sc = search.search(board, a.depth, 3000);
             Move  best = sc.bestMove;
 
@@ -76,9 +97,9 @@ void worker_fn(WorkerArgs a) {
             bool isMateScore = std::abs(sc.score) > search.MATESCORE - search.MAXPLY;
 
             // Eval is noisy
-            bool isNoisyEval = std::abs(search.evaluate(board)-sc.score) > 60; 
+            bool isNoisyEval = std::abs(search.evaluate(board) - sc.score) > 60;
 
-            if (list.checkers == 0 && !isCapture && !isMateScore && !isNoisyEval ) {
+            if (list.checkers == 0 && !isCapture && !isMateScore && !isNoisyEval) {
                 // Collect active indices
                 int idxs[64]; // enough (<= pieces on board)
                 int n = 0;
@@ -96,7 +117,7 @@ void worker_fn(WorkerArgs a) {
 
                     // white-POV score
                     int score_cp = sc.score;
-                    
+
 
                     // Reserve a slot *now*; stop if quota reached
                     uint64_t slot = a.produced->fetch_add(1, std::memory_order_relaxed);
@@ -133,6 +154,7 @@ void worker_fn(WorkerArgs a) {
 int main(int argc, char* argv[]) {
 
     std::string networkPath;
+    std::string bookPath;
     uint64_t targetPositions = 1000000;
     int threads = 6;
     int depth = 4;
@@ -144,7 +166,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (arg == "-target_positions" && i + 1 < argc) {
-            targetPositions = std::stoull(argv[i+1]);
+            targetPositions = std::stoull(argv[i + 1]);
         }
 
         if (arg == "-threads" && i + 1 < argc) {
@@ -154,10 +176,25 @@ int main(int argc, char* argv[]) {
         if (arg == "-depth" && i + 1 < argc) {
             depth = std::stoi(argv[i + 1]);
         }
-        
+
+        if (arg == "-book" && i + 1 < argc) {
+            bookPath = argv[i + 1];
+        }
     }
 
+    OpeningBook* openingBook;
+    if (!bookPath.empty()) {
+        openingBook = new OpeningBook();
+        bool success = openingBook->loadBook(bookPath);
+        if (success) {
+            std::cout << "Opening book loaded: " << bookPath << std::endl;
+        }
+        else {
+            std::cout << "Opening book not loaded" << std::endl;
+        }
 
+
+    }
 
     std::cout.setf(std::ios::unitbuf); // line-buffered
 
@@ -174,7 +211,8 @@ int main(int argc, char* argv[]) {
         a.id = i;
         a.quota = targetPositions;
         a.produced = &produced;
-        a.outPath = "positions_indices.part_" + std::to_string(i) + ".txt";
+        a.book = openingBook;
+        a.outPath = "part_" + std::to_string(i) + ".txt";
         pool.emplace_back(worker_fn, a);
     }
 
