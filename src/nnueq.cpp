@@ -72,6 +72,7 @@ const int w2H  = (int)W2_q.size();
     __m256 sum = _mm256_setzero_ps();
     const __m256 zero = _mm256_setzero_ps();
     const __m256 a1ps = _mm256_set1_ps(a1);
+    const __m256i max127 = _mm256_set1_epi32(127);
 
     alignas(64) static thread_local int32_t qbuf[32];
     int i = 0;
@@ -100,19 +101,30 @@ const int w2H  = (int)W2_q.size();
         __m256i q0i = _mm256_cvttps_epi32(q0f);
         __m256i q1i = _mm256_cvttps_epi32(q1f);
         __m256i zero32 = _mm256_setzero_si256();
-        __m256i max127 = _mm256_set1_epi32(127);
+        
         q0i = _mm256_min_epi32(_mm256_max_epi32(q0i, zero32), max127);
         q1i = _mm256_min_epi32(_mm256_max_epi32(q1i, zero32), max127);
 
-        // --- Finish L2 exactly like scalar: int32 acc2 += (int32)(W2_q[i+k] * q[k]) ---
-        // Extract to scalars for exact per-lane multiply-add (still faster overall because q computation is vectorized)
-        _mm256_storeu_si256((__m256i*)qbuf, q0i);
-        _mm256_storeu_si256((__m256i*)(qbuf + 8), q1i);
-
-        // Scalar L2 dot over 16 lanes (int8*int32 -> int32)
         const int8_t* w2 = W2Q + i;
-        for (int k = 0; k < 16; ++k)
-            acc2 += (int32_t)w2[k] * qbuf[k];
+
+        __m128i w8 = _mm_loadu_si128((const __m128i*)w2);
+        __m128i w8hi = _mm_srli_si128(w8, 8);
+
+        // sign-extend to 8×int32 twice
+        __m256i wlo32 = _mm256_cvtepi8_epi32(w8);    // weights 0..7
+        __m256i whi32 = _mm256_cvtepi8_epi32(w8hi);  // weights 8..15
+
+        // q0i, q1i are your clamped 8×int32 blocks (0..127), already computed
+        __m256i mul0 = _mm256_mullo_epi32(q0i, wlo32);
+        __m256i mul1 = _mm256_mullo_epi32(q1i, whi32);
+        __m256i sum = _mm256_add_epi32(mul0, mul1);
+
+        // horizontal reduce to scalar
+        __m128i s128 = _mm_add_epi32(_mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum, 1));
+        s128 = _mm_hadd_epi32(s128, s128);
+        s128 = _mm_hadd_epi32(s128, s128);
+
+        acc2 += _mm_cvtsi128_si32(s128);
     }
 #else
     // ===== Scalar fallback =====

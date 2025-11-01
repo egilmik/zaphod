@@ -17,17 +17,14 @@ HIDDEN     = 256
 # Config
 # -------------------------
 TRAIN_PATHS       = [
-    "D:\\source\\zaphod_nnue\\Data\\1.9_113M_depth4_STM.bin",
-    "D:\\source\\zaphod_nnue\\Data\\1.9_11M_depth6_STM.bin",
-    "D:\\source\\zaphod_nnue\\Data\\1.9_88M_depth4_STM.bin",
-    "D:\\source\\zaphod_nnue\\Data\\1.9_108M_depth4_STM.bin",
-    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_83M_depth4.bin",
-    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_74M_depth6.bin",
-    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_3e54e67d_12M_depth6.bin",
-    "D:\\source\\zaphod_nnue\\Data\\2.0_dev_52a7cc16_215M_depth4.bin",
+
+    "2.0_dev_83M_depth4.bin",
+    "2.0_dev_3e54e67d_74M_depth6.bin",
+    "2.0_dev_3e54e67d_12M_depth6.bin",
+    "2.0_dev_52a7cc16_215M_depth4.bin",
     
 ]
-VALIDATION_PATHS  = ["D:\\source\\zaphod_nnue\\Data\\2.0_dev_50M_depth4.bin"]
+VALIDATION_PATHS  = ["2.0_dev_50M_depth4.bin"]
 
 EPOCHS            = 30
 BATCH_SIZE        = 8192
