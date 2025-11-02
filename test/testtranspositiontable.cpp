@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "../src/search.h"
 #include "../src/movegenerator.h"
-#include "../src/perft.h"
+#include "../src/perft/perft.h"
 
 class TranspositionTableTest : public ::testing::Test {
  protected:
