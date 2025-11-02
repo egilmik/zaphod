@@ -1,7 +1,7 @@
 #ifndef PERFTTEST_H
 #define PERFTTEST_H
 
-#include "..\board.h"
+#include "../board.h"
 #include <vector>
 
 struct PertTestResult {
