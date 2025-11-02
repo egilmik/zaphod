@@ -50,12 +50,14 @@ void worker_fn(WorkerArgs a) {
 
     uint64_t local_written = 0;
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
     while (a.produced->load(std::memory_order_relaxed) < a.quota) {
 
         if (a.book) {
             std::string fen = a.book->nextFen();
-            std::cout << fen << std::endl;
+	    if(fen.empty()){
+	    	std::cout << "Empty fen" << std::endl;
+		continue;
+	    }
             board.parseFen(fen);
         }
         else {
@@ -83,7 +85,10 @@ void worker_fn(WorkerArgs a) {
         }
         
 
+        int moveCount = 0;
         while (a.produced->load(std::memory_order_relaxed) < a.quota) {
+            if(moveCount > 200) break; 
+            moveCount++;
             MoveList list;
             MoveGenerator::generateMoves(board, list);
             if (list.counter == 0 || board.hasPositionRepeated()) break;
@@ -182,7 +187,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    OpeningBook* openingBook;
+    OpeningBook* openingBook = nullptr;
     if (!bookPath.empty()) {
         openingBook = new OpeningBook();
         bool success = openingBook->loadBook(bookPath);
