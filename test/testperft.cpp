@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/perft.h"
+#include "../src/perft/perft.h"
 
 class PerftTest : public ::testing::Test {
  protected:
