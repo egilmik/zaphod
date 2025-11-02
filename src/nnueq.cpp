@@ -7,6 +7,9 @@
 #include <cassert>
 
 float NNUEQ::forward(BitBoardEnum stm) {
+    if (!isInitialized) {
+        return 0;
+    }
     const int side = (stm == White) ? 0 : 1;
 
 const int accH = (int)accumulator[side].pre.size();
@@ -145,6 +148,9 @@ const int w2H  = (int)W2_q.size();
 
 
 void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
+    if (!isInitialized) {
+        return;
+    }
     int plane = plane_index_from_piece(piece);
     int featureWhite = encodeFeature(plane, sq, White);
     int featureBlack = encodeFeature(plane, sq, Black);
@@ -165,6 +171,9 @@ void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
 }
 
 void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
+    if (!isInitialized) {
+        return;
+    }
     int plane = plane_index_from_piece(piece);
     int featureWhite = encodeFeature(plane, sq, White);
     int featureBlack = encodeFeature(plane, sq, Black);
@@ -187,6 +196,10 @@ void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
 }
 
 void NNUEQ::clear() {
+    if (!isInitialized) {
+        return;
+    }
+
     for (int h = 0; h < H; ++h) {
         accumulator[0].pre[h] = (int16_t)B1_q[h];
         accumulator[1].pre[h] = (int16_t)B1_q[h];
@@ -301,7 +314,7 @@ bool NNUEQ::load(const std::string& path) {
         W2_f[i] = float(W2_q[i]) * (s2 * a1);
     }
 
-    
+    isInitialized = true;
     return true;
 }
 

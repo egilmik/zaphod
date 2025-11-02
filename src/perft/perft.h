@@ -1,9 +1,9 @@
 #ifndef PERFT_H
 #define PERFT_H
 
-#include "board.h"
+#include "..\board.h"
 #include <vector>
-#include "movegenerator.h"
+#include "..\movegenerator.h"
 #include <iostream>
 
 struct PerftResults {

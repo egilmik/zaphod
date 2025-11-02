@@ -1,10 +1,10 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef PERFTTEST_H
+#define PERFTTEST_H
 
-#include "board.h"
+#include "..\board.h"
 #include <vector>
 
-struct TestResult {
+struct PertTestResult {
     std::string text;
     bool result;
     long long runTimeMilliseconds;
@@ -12,7 +12,7 @@ struct TestResult {
     unsigned long long actualNodes;
 };
 
-struct TestDefinition {
+struct PerftTestDefinition {
     int depth;
     unsigned long long expectedNodes;
     std::string text;
@@ -20,14 +20,14 @@ struct TestDefinition {
     bool printResult = false;
 };
 
-class Test {
+class PerftTest {
     public:
-        void runAllTest(std::vector<TestDefinition> &testVector);
+        void runAllTest();
 
     private:
-        void printResult(TestResult result, TestDefinition def);
+        void printResult(PertTestResult result, PerftTestDefinition def);
 
-        TestResult standardTest(TestDefinition definition);
+        PertTestResult standardTest(PerftTestDefinition definition);
 };
 
 #endif

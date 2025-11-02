@@ -1,6 +1,7 @@
 #include "uci.h"
 #include <sstream>
-#include "perft.h"
+#include "perft\perfttest.h"
+#include "perft/perft.h"
 #include "material.h"
 
 void UCI::setNetworkPath(std::string path) {
@@ -27,6 +28,7 @@ void UCI::loop(/*int argc, char* argv[]*/) {
         else if (token == "eval") staticEvaluation();
         else if (token == "isready") std::cout << "readyok" << std::endl;
         else if (token == "d") motherBoard.printBoard();
+        else if (token == "perft") perft();
     } while (token != "quit" /*&& argc == 1*/); // The command-line arguments are one-shot
 }
 
@@ -149,4 +151,13 @@ bool UCI::parseMove(std::string token)
 void UCI::staticEvaluation() {
     
     std::cout << "eval " << motherBoard.evaluate() << std::endl;
+}
+
+void UCI::perft() {
+    std::cout << "Starting perft" << std::endl;
+
+    PerftTest perft;
+    perft.runAllTest();
+
+    std::cout << "Perft done" << std::endl;
 }

@@ -1,8 +1,8 @@
 #include <iostream>
 #include "board.h"
 #include "movegenerator.h"
-#include "perft.h"
-#include "test.h"
+#include "perft/perft.h"
+
 #include "search.h"
 #include <chrono>
 #include <fstream>
@@ -79,7 +79,7 @@ struct BenchmarkDefinition {
         Board board;
         board.loadNetwork(networkPath);
         board.parseFen(def.fen);
-        int depth = 9;
+        int depth = 12;
                 
         Score move = search.search(board, depth,1000000);
 

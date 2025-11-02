@@ -68,6 +68,10 @@ public:
     static int plane_index_from_piece(BitBoardEnum piece);
     static int encodeFeature(int piece, int sq, BitBoardEnum color);
 
+private:
+    // Set to true when network is loaded.
+    bool isInitialized = false;
+
 };
 
 #endif

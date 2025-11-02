@@ -1,8 +1,6 @@
 #include <iostream>
 #include "board.h"
 #include "movegenerator.h"
-#include "perft.h"
-#include "test.h"
 #include "search.h"
 #include "uci.h"
 #include <chrono>

@@ -21,6 +21,8 @@ class UCI {
         void staticEvaluation();
         void sendID();
 
+        void perft();
+
         Board motherBoard;
         Search search;
         std::string networkPath;
