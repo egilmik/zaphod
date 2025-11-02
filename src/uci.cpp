@@ -1,6 +1,6 @@
 #include "uci.h"
 #include <sstream>
-#include "perft\perfttest.h"
+#include "perft/perfttest.h"
 #include "perft/perft.h"
 #include "material.h"
 
