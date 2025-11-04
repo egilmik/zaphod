@@ -21,9 +21,10 @@ struct alignas(32) MoveUndoInfo {
     uint8_t castleMask = 0; // 1 byte
 
     int8_t halfMoveClock = 0; // 1 byte
+    int8_t fullMoveClock = 1;
     int8_t enPassantSqCopy = -1; // 1 byte
     
-    uint8_t _pad[8];
+    uint8_t _pad[7];
     
 };
 
@@ -254,6 +255,10 @@ class Board {
             return halfMoveClock;
         }
 
+        int getFullMoveClock() {
+            return fullMoveClock;
+        }
+
         void setGamePhase(int gamePhase) {
             this->gamePhase = gamePhase;
         }
@@ -278,6 +283,7 @@ class Board {
         int historyPly = 0;
 
         int halfMoveClock = 0;
+        int fullMoveClock = 1;
         
         BitBoardEnum mailBoxBoard[64];
         BitBoard bitBoardArray[15];

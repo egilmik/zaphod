@@ -468,7 +468,7 @@ void Board::parseFen(std::string fen){
                 }
 
                 halfMoveClock = std::stoi(halfString);
-                int fullMove = std::stoi(fullmoveString);
+                fullMoveClock = std::stoi(fullmoveString);
             }
 
 
@@ -698,6 +698,7 @@ void Board::changeSideToMove()
        sideToMove = BitBoardEnum::Black;     
     } else {
         sideToMove = BitBoardEnum::White;
+        fullMoveClock++;
     }
     hashKey ^= sideToMove;
 }
@@ -824,6 +825,7 @@ bool Board::makeMove(Move move) {
     MoveUndoInfo *histMove = &moveHistory[historyPly];
     
     histMove->halfMoveClock = halfMoveClock;
+    histMove->fullMoveClock = fullMoveClock;
     histMove->sideToMove = static_cast<uint8_t>(sideToMove);
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
@@ -1052,6 +1054,7 @@ void Board::revertLastMove()
 
     sideToMove = static_cast<BitBoardEnum>(info->sideToMove);
     halfMoveClock = info->halfMoveClock;
+    fullMoveClock = info->fullMoveClock;
     enPassantSq = info->enPassantSqCopy;
 
     castleWK = (info->castleMask & 1) != 0;

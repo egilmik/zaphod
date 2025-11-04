@@ -22,6 +22,7 @@ class UCI {
         void sendID();
 
         void perft();
+        void printFen();
 
         Board motherBoard;
         Search search;

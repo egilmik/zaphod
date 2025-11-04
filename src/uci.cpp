@@ -3,6 +3,7 @@
 #include "perft/perfttest.h"
 #include "perft/perft.h"
 #include "material.h"
+#include "tools/fentools.h"
 
 void UCI::setNetworkPath(std::string path) {
     motherBoard.loadNetwork(path);
@@ -29,6 +30,7 @@ void UCI::loop(/*int argc, char* argv[]*/) {
         else if (token == "isready") std::cout << "readyok" << std::endl;
         else if (token == "d") motherBoard.printBoard();
         else if (token == "perft") perft();
+        else if (token == "fen") printFen();
     } while (token != "quit" /*&& argc == 1*/); // The command-line arguments are one-shot
 }
 
@@ -162,4 +164,9 @@ void UCI::perft() {
     perft.runAllTest();
 
     std::cout << "Perft done" << std::endl;
+}
+
+void UCI::printFen() {
+    FenTools tools;
+    std::cout << tools.boardToFen(motherBoard) << std::endl;
 }
