@@ -68,7 +68,8 @@ void UCI::startSearch(std::istringstream &is)
 
     bool fixedSearchTime = false;
     int searchTime = 30000;
-    int depth = 20;
+    
+    SearchLimits limits{};
 
     //https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
     while (is >> nextToken) {
@@ -103,7 +104,7 @@ void UCI::startSearch(std::istringstream &is)
         }
         else if (nextToken == "depth") {
             is >> nextToken;
-            depth = stoi(nextToken);
+            limits.depthLimit = stoi(nextToken);
         }
     }
     
@@ -118,11 +119,12 @@ void UCI::startSearch(std::istringstream &is)
         else {
             searchTime = bTime / 20 + bIncrement / 2;
         }
+        limits.timeLimit = searchTime;
     }
     
 
     Score move;
-    move = search.search(motherBoard,depth,searchTime);
+    move = search.search(motherBoard,limits);
     std::string bestMove = Perft::getNotation(move.bestMove);
     //std::cout << "info depth " << newSearch.currentFinishedDepth << std::endl;
     std::cout << "bestmove " << bestMove << std::endl;

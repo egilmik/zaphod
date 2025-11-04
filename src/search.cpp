@@ -8,7 +8,7 @@
 Search::Search() {
 }
 
-Score Search::search(Board &board, int maxDepth, int maxTime)
+Score Search::search(Board &board, SearchLimits lim)
 {   
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
     if (clearTTOnSearch) {
@@ -21,7 +21,21 @@ Score Search::search(Board &board, int maxDepth, int maxTime)
         ss[i].isNullMove = false;
     }
     
-    maxSearchTime = maxTime;
+    this->limits = lim;
+
+    if (limits.timeLimit > 0) {
+        maxSearchTime = limits.timeLimit;
+    }
+    else {
+        maxSearchTime = std::numeric_limits<int>::max();
+    }
+
+    int maxDepth = 128;
+    if (limits.depthLimit > 0) {
+        maxDepth = limits.depthLimit;
+    }
+    
+    
     
     stopSearch = false;
     evaluatedNodes = 0;
@@ -837,7 +851,11 @@ bool Search::isSearchStopped()
         std::chrono::steady_clock::now().time_since_epoch()).count();
     auto diff = end - startTime;
     if (diff > maxSearchTime) {
-        stopSearch = true;
+        return true;
     }
-    return stopSearch;
+    if (limits.nodeLimit > 0 && evaluatedNodes > limits.nodeLimit) {
+        return true;
+    }
+
+    return false;
 }

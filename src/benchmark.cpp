@@ -79,9 +79,11 @@ struct BenchmarkDefinition {
         Board board;
         board.loadNetwork(networkPath);
         board.parseFen(def.fen);
-        int depth = 12;
+        SearchLimits limits{};
+        //limits.depthLimit = 12;
+        limits.nodeLimit = 10000;
                 
-        Score move = search.search(board, depth,1000000);
+        Score move = search.search(board, limits);
 
         //MoveList pvList = search.reconstructPV(board,depth);
 

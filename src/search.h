@@ -27,6 +27,12 @@ struct SearchStack {
     int staticEval = 0;
 };
 
+struct SearchLimits {
+    int depthLimit = -1;
+    int nodeLimit = -1;
+    int timeLimit = -1;
+};
+
 struct HistoryTables {
     int16_t quiet[2][64][64] = {};
 };
@@ -47,7 +53,7 @@ class Search {
         int64_t reverseFutilityPruningHit = 0;
         int64_t futilityPruningHit = 0;
         int64_t nullMoveHit = 0;
-        Score search(Board &board, int maxDepth, int maxTime);
+        Score search(Board &board, SearchLimits limits);
         int negamax(Board &board, int depth, int alpha, int beta, int ply, bool pvNode);
         int quinesence(Board &board, int alpha, int beta, int depth, int ply, bool pvNode);
         void sortMoveList(Board &board,MoveList &list, int ply, Move bestMove);
@@ -83,6 +89,7 @@ class Search {
         int64_t startTime = 0;
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
+        SearchLimits limits;
         SearchStack ss[100];
         NNUEQ nnueQ;
         bool printInfo = true;

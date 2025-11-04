@@ -48,6 +48,9 @@ void worker_fn(WorkerArgs a) {
     search.setTTclearEnabled(false);
     search.setPrintInfo(false);
 
+    SearchLimits limits{};
+    limits.nodeLimit = 1000;
+
     uint64_t local_written = 0;
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     while (a.produced->load(std::memory_order_relaxed) < a.quota) {
@@ -94,7 +97,7 @@ void worker_fn(WorkerArgs a) {
             if (list.counter == 0 || board.hasPositionRepeated()) break;
 
 
-            Score sc = search.search(board, a.depth, 3000);
+            Score sc = search.search(board, limits);
             Move  best = sc.bestMove;
 
             // Skip noisy: in-check or capture-to-play
@@ -133,7 +136,7 @@ void worker_fn(WorkerArgs a) {
                         out << " ; " << score_cp << '\n';
                         ++local_written;
 
-                        if ((slot + 1) % 100000 == 0) {
+                        if ((slot + 1) % 10000 == 0) {
                             std::cout << "[t" << a.id << "] produced " << (slot + 1) << "\n";
                         }
                     }
