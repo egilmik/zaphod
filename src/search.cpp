@@ -69,7 +69,7 @@ Score Search::search(Board &board, SearchLimits lim)
     
 
     for (int i = 1; i <= maxDepth; i++) {
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
         if (maxSearchTime / 2 < duration.count()) {
             break;
         }
@@ -107,8 +107,8 @@ Score Search::search(Board &board, SearchLimits lim)
         }
 
         auto stop = std::chrono::high_resolution_clock::now();
-        duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
-        int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000);
+        duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
+        int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000000);
 
 
         std::string scoreString = " score cp " + std::to_string(score);
@@ -851,9 +851,11 @@ bool Search::isSearchStopped()
         std::chrono::steady_clock::now().time_since_epoch()).count();
     auto diff = end - startTime;
     if (diff > maxSearchTime) {
+        stopSearch = true;
         return true;
     }
     if (limits.nodeLimit > 0 && evaluatedNodes > limits.nodeLimit) {
+        stopSearch = true;
         return true;
     }
 
