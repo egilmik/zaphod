@@ -29,6 +29,7 @@ struct WorkerArgs {
     std::atomic<uint64_t>* produced; // global produced counter
     std::string outPath;
     std::string networkPath;
+    int nodes = 10000;
     OpeningBook* book;
     int depth = 4;
 };
@@ -57,7 +58,7 @@ void worker_fn(WorkerArgs a) {
     search.setPrintInfo(false);
 
     SearchLimits limits{};
-    limits.nodeLimit = 1000;
+    limits.nodeLimit = a.nodes;    
 
     int evalLimit = 3000;
 
@@ -190,6 +191,7 @@ int main(int argc, char* argv[]) {
     uint64_t targetPositions = 1000000;
     int threads = 6;
     int depth = 4;
+    int nodes = 0;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -211,6 +213,10 @@ int main(int argc, char* argv[]) {
 
         if (arg == "-book" && i + 1 < argc) {
             bookPath = argv[i + 1];
+        }
+
+        if (arg == "-nodes" && i + 1 < argc) {
+            nodes = std::stoi(argv[i + 1]);
         }
     }
 
@@ -242,6 +248,7 @@ int main(int argc, char* argv[]) {
         a.networkPath = networkPath;
         a.depth = depth;
         a.id = i;
+        a.nodes = nodes;
         a.quota = targetPositions;
         a.produced = &produced;
         a.book = openingBook;
