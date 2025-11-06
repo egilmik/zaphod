@@ -392,6 +392,43 @@ bool Board::hasPositionRepeated() {
     return false;
 }
 
+bool Board::hasInsufficientMaterial() {
+    bool qrp = getBitboard(Q) != 0 || getBitboard(q) || getBitboard(R) || getBitboard(r) || getBitboard(P) || getBitboard(p);
+    if (qrp) {
+        //  There is either a queen, rook or pawn
+        return false;
+    }
+
+    int whiteKnight = countSetBits(getBitboard(N));
+    int blackKnight = countSetBits(getBitboard(n));
+    int whiteBishops = countSetBits(getBitboard(B));
+    int blackBishops = countSetBits(getBitboard(b));
+
+    // King vs King
+    bool kk = !getBitboard(B) && !getBitboard(b) && !getBitboard(N) && !getBitboard(n);
+    bool kbk = whiteBishops == 1 && blackBishops == 0 && whiteKnight == 0 && blackKnight == 0;
+    bool kkb = whiteBishops == 0 && blackBishops == 1 && whiteKnight == 0 && blackKnight == 0;
+    bool knk = whiteBishops == 0 && blackBishops == 0 && whiteKnight == 1 && blackKnight == 0;
+    bool kkn = whiteBishops == 0 && blackBishops == 0 && whiteKnight == 0 && blackKnight == 1;
+    bool kbkb = whiteBishops == 1 && blackBishops == 1 && whiteKnight == 0 && blackKnight == 0;
+
+    bool sameColorkbkb = false;
+
+    if (kbkb) {
+        BitBoard wB = getBitboard(B);
+        BitBoard bB = getBitboard(b);
+        int whiteBishopSq = popLsb(wB);
+        int blackBishopSq = popLsb(bB);
+        // If same color square this is insufficient material
+        sameColorkbkb = whiteBishopSq % 2 == blackBishopSq % 2;
+    }
+    if (kk || kbk || kkb || knk || kkn || (kbkb && sameColorkbkb)) {
+        return true;
+    }
+    return false;
+
+}
+
 void Board::parseFen(std::string fen){
     clearBoard();
     int count = 0;

@@ -2,6 +2,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <format>
 #include <random>
 #include <iomanip>
 #include <string>
@@ -12,6 +13,7 @@
 #include "search.h"
 #include "nnueq.h"
 #include "tools/openingbook.h"
+#include "tools/fentools.h"
 
 static std::chrono::steady_clock::time_point gStart;
 
@@ -29,6 +31,11 @@ struct WorkerArgs {
     std::string networkPath;
     OpeningBook* book;
     int depth = 4;
+};
+
+struct PositionData {
+    std::string fen;
+    int score = 0; //white relative
 };
 
 void worker_fn(WorkerArgs a) {
@@ -51,8 +58,14 @@ void worker_fn(WorkerArgs a) {
     SearchLimits limits{};
     limits.nodeLimit = 1000;
 
+    int evalLimit = 3000;
+
+    FenTools fenTools;
+
     uint64_t local_written = 0;
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    std::vector<PositionData> posData{};
+    float wdl = 1;
     while (a.produced->load(std::memory_order_relaxed) < a.quota) {
 
         if (a.book) {
@@ -88,13 +101,13 @@ void worker_fn(WorkerArgs a) {
         }
         
 
-        int moveCount = 0;
-        while (a.produced->load(std::memory_order_relaxed) < a.quota) {
-            if(moveCount > 200) break; 
-            moveCount++;
+        while(true){
             MoveList list;
             MoveGenerator::generateMoves(board, list);
-            if (list.counter == 0 || board.hasPositionRepeated()) break;
+            if (list.counter == 0 || board.hasPositionRepeated() || board.hasInsufficientMaterial()) {
+                wdl = 0.5;
+                break;
+            }
 
 
             Score sc = search.search(board, limits);
@@ -102,55 +115,52 @@ void worker_fn(WorkerArgs a) {
 
             // Skip noisy: in-check or capture-to-play
             bool isCapture = board.getPieceOnSquare(best.to()) != All;
-            bool isMateScore = std::abs(sc.score) > search.MATESCORE - search.MAXPLY;
 
             // Eval is noisy
             bool isNoisyEval = std::abs(search.evaluate(board) - sc.score) > 60;
 
-            if (list.checkers == 0 && !isCapture && !isMateScore && !isNoisyEval) {
-                // Collect active indices
-                int idxs[64]; // enough (<= pieces on board)
-                int n = 0;
-
-                BitBoard all = board.getBitboard(All);
-                while (all) {
-                    int sq = board.popLsb(all);
-                    BitBoardEnum piece = board.getPieceOnSquare(sq);
-                    int pl = NNUEQ::plane_index_from_piece(piece); // 0..11
-                    if (pl >= 0) idxs[n++] = NNUEQ::encodeFeature(pl, sq, board.getSideToMove());
-                }
-
-                if (n > 0) {
-                    std::sort(idxs, idxs + n);
-
-                    // white-POV score
-                    int score_cp = sc.score;
-
-
-                    // Reserve a slot *now*; stop if quota reached
-                    uint64_t slot = a.produced->fetch_add(1, std::memory_order_relaxed);
-                    if (slot < a.quota) {
-                        // write line
-                        out << idxs[0];
-                        for (int i = 1; i < n; ++i) out << ' ' << idxs[i];
-                        out << " ; " << score_cp << '\n';
-                        ++local_written;
-
-                        if ((slot + 1) % 10000 == 0) {
-                            std::cout << "[t" << a.id << "] produced " << (slot + 1) << "\n";
-                        }
-                    }
-                    else {
-                        // exceeded quota: undo reservation and exit
-                        a.produced->fetch_sub(1, std::memory_order_relaxed);
-                        break;
-                    }
-                }
+            if (sc.score > evalLimit) {
+                wdl = 1;
+                break;
+            }
+            else if(sc.score < -evalLimit) {
+                wdl = 0;
+                break;
             }
 
-            // advance game
+            if (list.checkers == 0 && !isCapture && !isNoisyEval) {
+                // Collect active indices
+                PositionData data;
+
+                int scoreModifier = 1;
+                if (board.getSideToMove() == Black) {
+                    scoreModifier = -1;
+                }
+
+                //White POV score;
+                data.score = sc.score * scoreModifier;
+                data.fen = fenTools.boardToFen(board);                
+                posData.push_back(data);
+        
+        
+            }
+
+            if (board.getFullMoveClock() > 200) {
+                wdl = 0.5;
+                break;
+            }
+
+            
+        
             board.makeMove(best);
         }
+        a.produced->fetch_add(posData.size(), std::memory_order_relaxed);
+        
+        // 1.0 White win, 0.5 draw, 0 black win
+        for (int i = 0; i < posData.size(); i++) {
+            out << posData[i].fen << " | " << posData[i].score << " | " << std::format("{:.1f}", wdl) << "\n";
+        }
+        posData.clear();
     }
 
     out.flush();
