@@ -165,7 +165,7 @@ void UCI::setOption(std::istringstream& is) {
 
     if (optionToken == "hash") {
         std::string valueToken;
-        is >> valueToken; "Expected to be - value";
+        is >> valueToken; //Expected to be the string "value";
         std::string value;
         is >> value;
         int hashSize = stoi(value);
