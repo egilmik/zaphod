@@ -20,6 +20,7 @@ class UCI {
         void startSearch(std::istringstream &is);
         void staticEvaluation();
         void sendID();
+        void setOption(std::istringstream& is);
 
         void perft();
         void printFen();

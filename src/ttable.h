@@ -51,11 +51,15 @@ struct alignas(64) Bucket {          // 64 avoids false sharing
 class TTable {
 public:
     explicit TTable(size_t sizeMB) {
+        setSize(sizeMB);
+    }
+
+    void setSize(size_t sizeMB) {
         // choose power-of-two bucket count
         uint64_t bytes = uint64_t(sizeMB) * (1ull << 20);
         uint64_t buckets = bytes / sizeof(Bucket);
         if (buckets < 1024) buckets = 1024;
-        nrOfBuckets = bit_floor_64(buckets);     
+        nrOfBuckets = bit_floor_64(buckets);
         if (nrOfBuckets == 0) nrOfBuckets = 1024;   // safety in case sizeMB==0
         keyMask = nrOfBuckets - 1;
         table.reset(new Bucket[nrOfBuckets]);
@@ -101,6 +105,8 @@ public:
 
 private:
     inline uint64_t index(uint64_t key) const noexcept { return key & keyMask; }
+
+
 
     std::unique_ptr<Bucket[]> table;
     uint64_t nrOfBuckets = 0;

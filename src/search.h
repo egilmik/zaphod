@@ -79,6 +79,10 @@ class Search {
             clearTTOnSearch = enabled;
         }
 
+        void setTTSize(int size) {
+            tt.setSize(size);
+        }
+
     private:
 
 

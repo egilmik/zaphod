@@ -26,6 +26,7 @@ void UCI::loop(/*int argc, char* argv[]*/) {
         else if (token == "uci") sendID();
         else if (token == "position") setPosition(is);
         else if (token == "go") startSearch(is);
+        else if (token == "setoption") setOption(is);
         else if (token == "eval") staticEvaluation();
         else if (token == "isready") std::cout << "readyok" << std::endl;
         else if (token == "d") motherBoard.printBoard();
@@ -136,6 +137,7 @@ void UCI::sendID()
 {
     std::cout << "id name Zaphod 1.9" << std::endl;
     std::cout << "id author Egil Tennfjord Mikalsen" << std::endl;
+    std::cout << "option name Hash type spin default 256 min 1 max 2048" << std::endl;
     std::cout << "uciok" << std::endl;
 }
 
@@ -150,6 +152,27 @@ bool UCI::parseMove(std::string token)
         }
     }
     return false;
+}
+
+void UCI::setOption(std::istringstream& is) {
+    std::string optionToken;
+    std::string nameToken;
+
+    is >> nameToken;
+    is >> optionToken;
+
+    std::transform(optionToken.begin(), optionToken.end(), optionToken.begin(), ::tolower);
+
+    if (optionToken == "hash") {
+        std::string valueToken;
+        is >> valueToken; "Expected to be - value";
+        std::string value;
+        is >> value;
+        int hashSize = stoi(value);
+
+        search.setTTSize(hashSize);
+    }
+
 }
 
 void UCI::staticEvaluation() {
