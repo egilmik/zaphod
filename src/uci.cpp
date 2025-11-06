@@ -167,6 +167,6 @@ void UCI::perft() {
 }
 
 void UCI::printFen() {
-    FenTools tools;
-    std::cout << tools.boardToFen(motherBoard) << std::endl;
+    
+    std::cout << FenTools::boardToFen(motherBoard) << std::endl;
 }

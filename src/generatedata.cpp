@@ -60,8 +60,6 @@ void worker_fn(WorkerArgs a) {
 
     int evalLimit = 3000;
 
-    FenTools fenTools;
-
     uint64_t local_written = 0;
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     std::vector<PositionData> posData{};
@@ -139,7 +137,7 @@ void worker_fn(WorkerArgs a) {
 
                 //White POV score;
                 data.score = sc.score * scoreModifier;
-                data.fen = fenTools.boardToFen(board);                
+                data.fen = FenTools::boardToFen(board);                
                 posData.push_back(data);
         
         

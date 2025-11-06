@@ -2,12 +2,31 @@
 #define FENTOOLS_H
 
 #include <string>
+#include <algorithm>
 #include "../board.h"
 
-class FenTools {
-public:
+namespace FenTools {
+
+	inline char pieceToChar(BitBoardEnum piece) noexcept {
+		switch (piece) {
+		case p: return 'p';
+		case P: return 'P';
+		case n: return 'n';
+		case N: return 'N';
+		case b: return 'b';
+		case B: return 'B';
+		case r: return 'r';
+		case R: return 'R';
+		case q: return 'q';
+		case Q: return 'Q';
+		case k: return 'k';
+		case K: return 'K';
+		default:
+			return 'X';
+		}
+	}
 	
-	std::string boardToFen(Board& board) {
+	inline std::string boardToFen(Board& board) {
 		std::string fenString;
 		fenString.reserve(32);
 		for (int r = 7; r >= 0; r--) {
@@ -22,7 +41,7 @@ public:
 						fenString.push_back(char('0' + increment));
 						increment = 0;
 					}
-					fenString.push_back(pieceToChar(piece));
+					fenString.push_back(FenTools::pieceToChar(piece));
 				}
 			}
 			if (increment > 0) {
@@ -64,50 +83,7 @@ public:
 		fenString += std::to_string(std::max(1, board.getFullMoveClock()));
 
 		return fenString;
-	}
-
-	char pieceToChar(BitBoardEnum piece) {
-		if (piece == p) {
-			return 'p';
-		}
-		else if (piece == P) {
-			return 'P';
-		}
-		else if (piece == n) {
-			return 'n';
-		}
-		else if (piece == N) {
-			return 'N';
-		}
-		else if (piece == b) {
-			return 'b';
-		}
-		else if (piece == B) {
-			return 'B';
-		}
-		else if (piece == r) {
-			return 'r';
-		}
-		else if (piece == R) {
-			return 'R';
-		}
-		else if (piece == q) {
-			return 'q';
-		}
-		else if (piece == Q) {
-			return 'Q';
-		}
-		else if (piece == k) {
-			return 'k';
-		}
-		else if (piece == K) {
-			return 'K';
-		}
-		return 'X';
-	}
-
-private:
-	
-};
+	}	
+}
 
 #endif
