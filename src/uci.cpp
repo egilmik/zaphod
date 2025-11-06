@@ -64,13 +64,13 @@ void UCI::startSearch(std::istringstream &is)
 {
 
     std::string nextToken;
-    int wTime = 30000*30;
-    int bTime = 30000*30;
-    int wIncrement = 0;
-    int bIncrement = 0;
+    int wTime = -1;
+    int bTime = -1;
+    int wIncrement = -1;
+    int bIncrement = -1;
 
     bool fixedSearchTime = false;
-    int searchTime = 30000;
+    int searchTime = -1;
     
     SearchLimits limits{};
 
@@ -103,7 +103,7 @@ void UCI::startSearch(std::istringstream &is)
         else if (nextToken == "movetime") {
             is >> nextToken;
             searchTime = stoi(nextToken);
-            fixedSearchTime = true;
+            limits.timeLimit = searchTime;
         }
         else if (nextToken == "depth") {
             is >> nextToken;
@@ -115,14 +115,19 @@ void UCI::startSearch(std::istringstream &is)
     /////////////////////
     // Sets searchtime, based on amount left and/or increment time per move
     /////////////////////
-    if(!fixedSearchTime){
+    if(wTime > 0 && bTime > 0){
         if (motherBoard.getSideToMove() == White) {
-            searchTime = wTime / 20 + wIncrement / 2;
+            limits.timeLimit = wTime / 20;
+            if (wIncrement > 0) {
+                limits.timeLimit += wIncrement / 2;
+            }
         }
         else {
-            searchTime = bTime / 20 + bIncrement / 2;
+            limits.timeLimit = bTime / 20;
+            if (bIncrement > 0) {
+                limits.timeLimit += bIncrement / 2;
+            }
         }
-        limits.timeLimit = searchTime;
     }
     
 
