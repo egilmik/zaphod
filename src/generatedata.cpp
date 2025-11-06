@@ -33,6 +33,7 @@ struct WorkerArgs {
     int depth = 4;
 };
 
+
 struct PositionData {
     std::string fen;
     int score = 0; //white relative
@@ -60,7 +61,6 @@ void worker_fn(WorkerArgs a) {
 
     int evalLimit = 3000;
 
-    uint64_t local_written = 0;
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     std::vector<PositionData> posData{};
     float wdl = 1;
@@ -163,8 +163,24 @@ void worker_fn(WorkerArgs a) {
 
     out.flush();
     out.close();
-    std::cout << "[t" << a.id << "] wrote " << local_written
-        << " lines to " << a.outPath << "\n";
+}
+
+void monitor(std::atomic<uint64_t> &produced, const uint64_t target) {
+
+    while (true) {
+
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+
+        int prod = produced.load(std::memory_order_relaxed);
+
+        std::cout << prod << "/" << target << std::endl;
+
+        if (prod > target) {
+            return;
+        }
+    }
+
+    
 }
 
 int main(int argc, char* argv[]) {
@@ -216,6 +232,7 @@ int main(int argc, char* argv[]) {
 
     std::atomic<uint64_t> produced{ 0 };
     std::vector<std::thread> pool;
+    std::thread monitorThread(monitor,std::ref(produced), std::ref(targetPositions));
     pool.reserve(threads);
 
     auto t0 = std::chrono::steady_clock::now();
@@ -233,6 +250,8 @@ int main(int argc, char* argv[]) {
     }
 
     for (auto& th : pool) th.join();
+
+    monitorThread.join();
 
     auto t1 = std::chrono::steady_clock::now();
     double secs = std::chrono::duration<double>(t1 - t0).count();
