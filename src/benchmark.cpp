@@ -80,8 +80,8 @@ struct BenchmarkDefinition {
         board.loadNetwork(networkPath);
         board.parseFen(def.fen);
         SearchLimits limits{};
-        //limits.depthLimit = 12;
-        limits.nodeLimit = 10000;
+        limits.depthLimit = 12;
+        //limits.nodeLimit = 10000;
                 
         Score move = search.search(board, limits);
 

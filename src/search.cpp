@@ -111,7 +111,7 @@ Score Search::search(Board &board, SearchLimits lim)
 
         auto stop = std::chrono::high_resolution_clock::now();
         auto npsDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
-        int nps = (double)evaluatedNodes / ((double)duration.count() / (double)1000000);
+        int nps = (double)evaluatedNodes / ((double)npsDuration.count() / (double)1000000);
 
 
         std::string scoreString = " score cp " + std::to_string(score);
