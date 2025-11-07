@@ -149,7 +149,7 @@ Score Search::search(Board &board, SearchLimits lim)
 
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool pvNode)
 {
-    assert(ply < );
+    assert(ply < MAXPLY);
     if (depth <= 0) return quinesence(board, alpha, beta, 1,ply,pvNode);
     
     BitBoard key = board.getHashKey();    
