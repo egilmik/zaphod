@@ -17,7 +17,7 @@ Score Search::search(Board &board, SearchLimits lim)
     }
     
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < MAXPLY; i++) {
         ss[i].checkExt = 0;
         ss[i].isNullMove = false;
     }
@@ -31,7 +31,7 @@ Score Search::search(Board &board, SearchLimits lim)
         maxSearchTime = std::numeric_limits<int>::max();
     }
 
-    int maxDepth = 128;
+    int maxDepth = MAXPLY;
     if (limits.depthLimit > 0) {
         maxDepth = limits.depthLimit;
     }
@@ -149,7 +149,7 @@ Score Search::search(Board &board, SearchLimits lim)
 
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool pvNode)
 {
-    assert(ply < 100);
+    assert(ply < );
     if (depth <= 0) return quinesence(board, alpha, beta, 1,ply,pvNode);
     
     BitBoard key = board.getHashKey();    

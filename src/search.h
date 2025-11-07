@@ -69,7 +69,7 @@ class Search {
         int maxPlyThisIteration = 0;
 
         const int MATESCORE = 30000;
-        const int MAXPLY = 1024;
+        constexpr static int MAXPLY = 128;
 
         void setPrintInfo(bool on) {
             printInfo = on;
@@ -94,7 +94,7 @@ class Search {
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
         SearchLimits limits;
-        SearchStack ss[100];
+        SearchStack ss[MAXPLY];
         NNUEQ nnueQ;
         bool printInfo = true;
         bool clearTTOnSearch = true;
