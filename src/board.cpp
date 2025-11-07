@@ -858,7 +858,7 @@ int Board::popLsb(BitBoard& board)
 
 bool Board::makeMove(Move move) {
 
-    
+    assert(historyPly < sizeof(moveHistory));
     MoveUndoInfo *histMove = &moveHistory[historyPly];
     
     histMove->halfMoveClock = halfMoveClock;

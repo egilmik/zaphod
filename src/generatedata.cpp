@@ -168,17 +168,33 @@ void worker_fn(WorkerArgs a) {
 
 void monitor(std::atomic<uint64_t> &produced, const uint64_t target) {
 
+    int lastProduced = 0;
+    const int sleepSeconds = 10;
+
+    int hoursLeft = 0;
+    int minLeft = 0;
+
     while (true) {
 
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(sleepSeconds));
 
         int prod = produced.load(std::memory_order_relaxed);
-
-        std::cout << prod << "/" << target << std::endl;
 
         if (prod > target) {
             return;
         }
+
+        int delta = prod - lastProduced;
+        if (delta > sleepSeconds) {
+            int perSecond = delta / sleepSeconds;
+            int secondsLeft = (target - prod) / perSecond;
+            hoursLeft = secondsLeft / 60 / 60;
+            minLeft = secondsLeft / 60 % 60;
+        }
+
+        std::cout << prod << "/" << target << " ETA: " << hoursLeft << " h " << minLeft << " m" << std::endl;
+
+        lastProduced = prod;
     }
 
     
