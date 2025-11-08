@@ -21,7 +21,7 @@ struct Accumulator {
 class NNUEQ {
 public:
     const int IN = 768;
-    const int H = 128;
+    const int H = 64;
     const int OUT = 1;
 
     
@@ -32,19 +32,19 @@ public:
 
     
     // L1
-    std::vector<int16_t>  W1_q;   // H*IN
-    std::vector<int16_t> B1_q;   // H
+    std::vector<int16_t>  l0w;   // H*IN
+    std::vector<int16_t> l0b;   // H
     
     // L2
-    std::vector<int16_t>  W2_q;   // H
-    int16_t B2_q;
+    std::vector<int16_t>  l1w;   // H
+    int16_t l1b;
     
 
     // 0 White, 1 Black
     std::vector<Accumulator> accumulator;
 
     bool load(const std::string& path);
-    float forward(BitBoardEnum stm);
+    int forward(BitBoardEnum stm);
 
     void addPiece(BitBoardEnum piece, int sq);
     void removePiece(BitBoardEnum piece, int sq);

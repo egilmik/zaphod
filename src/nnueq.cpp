@@ -17,10 +17,7 @@ static inline int32_t hsum_epi32_avx2(__m256i v) {
     return _mm_cvtsi128_si32(sum);
 }
 
-int64_t NNUEQ::VectorizedSCReLU_AVX2(const int16_t* __restrict stmAcc,
-    const int16_t* __restrict nstmAcc,
-    const int16_t* __restrict wStm,
-    const int16_t* __restrict wNstm) {
+int64_t NNUEQ::VectorizedSCReLU_AVX2(const int16_t* __restrict stmAcc,const int16_t* __restrict nstmAcc,const int16_t* __restrict wStm,const int16_t* __restrict wNstm) {
 #ifndef __AVX2__
 #  error "Build Zaphod with AVX2 enabled for this NNUE path."
 #endif
@@ -32,27 +29,23 @@ int64_t NNUEQ::VectorizedSCReLU_AVX2(const int16_t* __restrict stmAcc,
     int64_t sum64 = 0;
 
     for (int i = 0; i < H; i += 16) {
-        // --- stm half ---
-        __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(stmAcc + i));
-        __m256i ws = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(wStm + i));
+        // load
+        __m256i stmAccValues = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(stmAcc + i));
+        __m256i nstmAccValues = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(nstmAcc + i));
+        __m256i stmWeights = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(wStm + i));
+        __m256i nstmWeights = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(wNstm + i));
 
-        a = _mm256_max_epi16(a, V_ZERO);
-        a = _mm256_min_epi16(a, V_QA);
+        //Clamp
+        __m256i stmAccClamped = _mm256_min_epi16(V_QA, _mm256_max_epi16(stmAccValues, V_ZERO));
+        __m256i nstmAccClamped = _mm256_min_epi16(V_QA, _mm256_max_epi16(nstmAccValues, V_ZERO));
 
-        __m256i ax = _mm256_mullo_epi16(a, ws);            // a * w
-        __m256i s = _mm256_madd_epi16(a, ax);             // sum of a^2 * w in int32 pairs
-        sum64 += static_cast<int64_t>(hsum_epi32_avx2(s));
+        // SCreLU
+        __m256i stmActivated = _mm256_madd_epi16(stmAccClamped, _mm256_mullo_epi16(stmAccClamped, stmWeights));
+        __m256i nstmActivated = _mm256_madd_epi16(nstmAccClamped, _mm256_mullo_epi16(nstmAccClamped, nstmWeights));
 
-        // --- ntm half ---
-        __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(nstmAcc + i));
-        __m256i wn = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(wNstm + i));
+        sum64 += static_cast<int64_t>(hsum_epi32_avx2(stmActivated));
+        sum64 += static_cast<int64_t>(hsum_epi32_avx2(nstmActivated));
 
-        b = _mm256_max_epi16(b, V_ZERO);
-        b = _mm256_min_epi16(b, V_QA);
-
-        __m256i bx = _mm256_mullo_epi16(b, wn);
-        __m256i t = _mm256_madd_epi16(b, bx);
-        sum64 += static_cast<int64_t>(hsum_epi32_avx2(t));
     }
 
     return sum64; // units: QB * QA^2
@@ -63,30 +56,29 @@ static inline int64_t div_round_i64(int64_t num, int64_t den) {
     return (num >= 0) ? (num + den / 2) / den : -((-num + den / 2) / den);
 }
 
-float NNUEQ::forward(BitBoardEnum stm) {
+int NNUEQ::forward(BitBoardEnum stm) {
     const Accumulator& stmAcc = (stm == White) ? accumulator[0] : accumulator[1];        
     const Accumulator& nstmAcc = (stm == White) ? accumulator[1] : accumulator[0];
         
 
     const int16_t* a = stmAcc.pre.data();               // HL_SIZE
     const int16_t* b = nstmAcc.pre.data();              // HL_SIZE
-    const int16_t* w0 = W1_q.data();   // HL_SIZE (stm)
+    const int16_t* w0 = l1w.data();   // HL_SIZE (stm)
     const int16_t* w1 = w0 + H;                // HL_SIZE (ntm)
 
-    // sum = Σ w * (relu(a))^2  (stm + ntm), units: QB*QA^2
+    
     int64_t sum = VectorizedSCReLU_AVX2(a, b, w0, w1);
 
     // Bring to QA*QB domain so we can add the bias (which is quantised to QA*QB)
     // sum' = sum / QA  (units: QA*QB)
-    int64_t sum_qaqb = div_round_i64(sum, QA);
+    int64_t sum_qaqb = sum/ QA;
 
     // Add bias (stored as i16 in file, widened to i32 here), already in QA*QB units.
-    int64_t acc = sum_qaqb + static_cast<int64_t>(B2_q);
+    int64_t acc = sum_qaqb + l1b;
 
     // Dequantise to engine scale: (acc / (QA*QB)) * SCALE
-    int64_t out = div_round_i64(acc * static_cast<int64_t>(SCALE),
-        static_cast<int64_t>(QA) * static_cast<int64_t>(QB));
-    return static_cast<int>(out);
+    int64_t out = (acc * SCALE)/(QA*QB);
+    return out;
 }
 
 
@@ -98,8 +90,8 @@ void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
     int featureWhite = encodeFeature(plane, sq, White);
     int featureBlack = encodeFeature(plane, sq, Black);
 
-    const int16_t* weightW = W1_q.data() + featureWhite * H;
-    const int16_t* weightB = W1_q.data() + featureBlack * H;
+    const int16_t* weightW = l0w.data() + featureWhite * H;
+    const int16_t* weightB = l0w.data() + featureBlack * H;
     int16_t* accW = accumulator[0].pre.data();
     int16_t* accB = accumulator[1].pre.data();
 
@@ -121,8 +113,8 @@ void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
     int featureWhite = encodeFeature(plane, sq, White);
     int featureBlack = encodeFeature(plane, sq, Black);
     
-    const int16_t* weightW = W1_q.data() + featureWhite * H;
-    const int16_t* weightB = W1_q.data() + featureBlack * H;
+    const int16_t* weightW = l0w.data() + featureWhite * H;
+    const int16_t* weightB = l0w.data() + featureBlack * H;
     int16_t* accW = accumulator[0].pre.data();
     int16_t* accB = accumulator[1].pre.data();
     
@@ -144,8 +136,8 @@ void NNUEQ::clear() {
     }
 
     for (int h = 0; h < H; ++h) {
-        accumulator[0].pre[h] = (int16_t)B1_q[h];
-        accumulator[1].pre[h] = (int16_t)B1_q[h];
+        accumulator[0].pre[h] = (int16_t)l0b[h];
+        accumulator[1].pre[h] = (int16_t)l0b[h];
     }
 }
 
@@ -199,22 +191,22 @@ bool NNUEQ::load(const std::string& path) {
     accumulator.push_back(Accumulator(H));
     accumulator.push_back(Accumulator(H));
 
-    W1_q.resize(H * IN);
-    for (size_t i = 0; i < W1_q.size(); i++) {
-        f.read(reinterpret_cast<char*>(&W1_q[i]), sizeof(int16_t));
+    l0w.resize(H * IN);
+    for (size_t i = 0; i < l0w.size(); i++) {
+        f.read(reinterpret_cast<char*>(&l0w[i]), sizeof(int16_t));
     }
     
-    B1_q.resize(H);
-    for (size_t i = 0; i < B1_q.size(); i++) {
-        f.read(reinterpret_cast<char*>(&B1_q[i]), sizeof(int16_t));
+    l0b.resize(H);
+    for (size_t i = 0; i < l0b.size(); i++) {
+        f.read(reinterpret_cast<char*>(&l0b[i]), sizeof(int16_t));
     }
 
-    W2_q.resize(H*2);
-    for (size_t i = 0; i < W2_q.size(); i++) {
-        f.read(reinterpret_cast<char*>(&W2_q[i]), sizeof(int16_t));
+    l1w.resize(H*2);
+    for (size_t i = 0; i < l1w.size(); i++) {
+        f.read(reinterpret_cast<char*>(&l1w[i]), sizeof(int16_t));
     }
 
-    f.read(reinterpret_cast<char*>(&B2_q), sizeof(int16_t));
+    f.read(reinterpret_cast<char*>(&l1b), sizeof(int16_t));
 
     
     isInitialized = true;

@@ -270,7 +270,7 @@ class Board {
 
         int getNonPawnMaterial(BitBoardEnum side);
 
-        float evaluate();
+        int evaluate();
 
         void loadNetwork(std::string path);
 

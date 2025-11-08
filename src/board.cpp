@@ -1255,7 +1255,7 @@ int Board::getNonPawnMaterial(BitBoardEnum color) {
     return count;
 }
 
-float Board::evaluate() {
+int Board::evaluate() {
     return nnue.forward(getSideToMove());
 }
 
