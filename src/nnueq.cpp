@@ -6,19 +6,7 @@
 #include <iostream>
 #include <cassert>
 
-
-static inline int64_t hsum32_to_i64(__m256i v) {
-    __m128i lo = _mm256_castsi256_si128(v);
-    __m128i hi = _mm256_extracti128_si256(v, 1);
-    __m256i lo64 = _mm256_cvtepi32_epi64(lo);
-    __m256i hi64 = _mm256_cvtepi32_epi64(hi);
-    __m256i s64 = _mm256_add_epi64(lo64, hi64);
-    __m128i s128 = _mm_add_epi64(_mm256_castsi256_si128(s64),
-        _mm256_extracti128_si256(s64, 1));
-    __m128i hi64_ = _mm_unpackhi_epi64(s128, s128);
-    s128 = _mm_add_epi64(s128, hi64_);
-    return _mm_cvtsi128_si64(s128);
-}
+using namespace NNUE;
 
 static inline int32_t hsum_epi32_avx2(__m256i v) {
     __m128i vlow = _mm256_castsi256_si128(v);
@@ -44,10 +32,10 @@ int64_t NNUEQ::VectorizedSCReLU_AVX2(const int16_t* __restrict stmAcc,const int1
 
     for (int i = 0; i < H; i += 16) {
         // load
-        __m256i stmAccValues = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(stmAcc + i));
-        __m256i nstmAccValues = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(nstmAcc + i));
-        __m256i stmWeights = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(wStm + i));
-        __m256i nstmWeights = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(wNstm + i));
+        __m256i stmAccValues = _mm256_load_si256(reinterpret_cast<const __m256i*>(stmAcc + i));
+        __m256i nstmAccValues = _mm256_load_si256(reinterpret_cast<const __m256i*>(nstmAcc + i));
+        __m256i stmWeights = _mm256_load_si256(reinterpret_cast<const __m256i*>(wStm + i));
+        __m256i nstmWeights = _mm256_load_si256(reinterpret_cast<const __m256i*>(wNstm + i));
 
         //Clamp
         __m256i stmAccClamped = _mm256_min_epi16(V_QA, _mm256_max_epi16(stmAccValues, V_ZERO));
@@ -75,12 +63,12 @@ int NNUEQ::forward(BitBoardEnum stm) {
 
     const int16_t* a = stmAcc.pre.data();
     const int16_t* b = nstmAcc.pre.data();
-    const int16_t* w0 = l1w.data();        // first H  = stm
+    const int16_t* w0 = net.l1w.data();        // first H  = stm
     const int16_t* w1 = w0 + H;            // next  H  = ntm
 
     int64_t sum = VectorizedSCReLU_AVX2(a, b, w0, w1);        // QB*QA^2
     int64_t sum_qaqb = div_round_i64(sum, QA);                // QA*QB
-    int64_t acc = sum_qaqb + l1b;                             // QA*QB
+    int64_t acc = sum_qaqb + net.l1b;                             // QA*QB
     int64_t out = div_round_i64(acc * SCALE, (int64_t)QA * QB);
 
     // optional clamp to engine range
@@ -97,8 +85,8 @@ void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
     int featureWhite = encodeFeature(plane, sq, White);
     int featureBlack = encodeFeature(plane, sq, Black);
 
-    const int16_t* weightW = l0w.data() + featureWhite * H;
-    const int16_t* weightB = l0w.data() + featureBlack * H;
+    const int16_t* weightW = net.l0w.data() + featureWhite * H;
+    const int16_t* weightB = net.l0w.data() + featureBlack * H;
     int16_t* accW = accumulator[0].pre.data();
     int16_t* accB = accumulator[1].pre.data();
 
@@ -120,8 +108,8 @@ void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
     int featureWhite = encodeFeature(plane, sq, White);
     int featureBlack = encodeFeature(plane, sq, Black);
     
-    const int16_t* weightW = l0w.data() + featureWhite * H;
-    const int16_t* weightB = l0w.data() + featureBlack * H;
+    const int16_t* weightW = net.l0w.data() + featureWhite * H;
+    const int16_t* weightB = net.l0w.data() + featureBlack * H;
     int16_t* accW = accumulator[0].pre.data();
     int16_t* accB = accumulator[1].pre.data();
     
@@ -143,30 +131,30 @@ void NNUEQ::clear() {
     }
 
     for (int h = 0; h < H; ++h) {
-        accumulator[0].pre[h] = (int16_t)l0b[h];
-        accumulator[1].pre[h] = (int16_t)l0b[h];
+        accumulator[0].pre[h] = net.l0b[h];
+        accumulator[1].pre[h] = net.l0b[h];
     }
 }
 
 void NNUEQ::add_row_i16_avx2(const int16_t* __restrict w, int16_t* __restrict acc) {
     for (int i = 0; i < H; i += 32) {
-        __m256i a0 = _mm256_loadu_si256((const __m256i*)(acc + i));
-        __m256i w0 = _mm256_loadu_si256((const __m256i*)(w + i));
-        __m256i a1 = _mm256_loadu_si256((const __m256i*)(acc + i + 16));
-        __m256i w1 = _mm256_loadu_si256((const __m256i*)(w + i + 16));
-        _mm256_storeu_si256((__m256i*)(acc + i), _mm256_adds_epi16(a0, w0)); // sat add
-        _mm256_storeu_si256((__m256i*)(acc + i + 16), _mm256_adds_epi16(a1, w1));
+        __m256i a0 = _mm256_load_si256((const __m256i*)(acc + i));
+        __m256i w0 = _mm256_load_si256((const __m256i*)(w + i));
+        __m256i a1 = _mm256_load_si256((const __m256i*)(acc + i + 16));
+        __m256i w1 = _mm256_load_si256((const __m256i*)(w + i + 16));
+        _mm256_store_si256((__m256i*)(acc + i), _mm256_adds_epi16(a0, w0)); // sat add
+        _mm256_store_si256((__m256i*)(acc + i + 16), _mm256_adds_epi16(a1, w1));
     }
 }
 
 void NNUEQ::sub_row_i16_avx2(const int16_t* __restrict w,int16_t* __restrict acc) {
     for (int i = 0; i < H; i += 32) {
-        __m256i a0 = _mm256_loadu_si256((const __m256i*)(acc + i));
-        __m256i w0 = _mm256_loadu_si256((const __m256i*)(w + i));
-        __m256i a1 = _mm256_loadu_si256((const __m256i*)(acc + i + 16));
-        __m256i w1 = _mm256_loadu_si256((const __m256i*)(w + i + 16));
-        _mm256_storeu_si256((__m256i*)(acc + i), _mm256_subs_epi16(a0, w0)); // sat sub
-        _mm256_storeu_si256((__m256i*)(acc + i + 16), _mm256_subs_epi16(a1, w1));
+        __m256i a0 = _mm256_load_si256((const __m256i*)(acc + i));
+        __m256i w0 = _mm256_load_si256((const __m256i*)(w + i));
+        __m256i a1 = _mm256_load_si256((const __m256i*)(acc + i + 16));
+        __m256i w1 = _mm256_load_si256((const __m256i*)(w + i + 16));
+        _mm256_store_si256((__m256i*)(acc + i), _mm256_subs_epi16(a0, w0)); // sat sub
+        _mm256_store_si256((__m256i*)(acc + i + 16), _mm256_subs_epi16(a1, w1));
     }
 }
 
@@ -198,84 +186,15 @@ bool NNUEQ::load(const std::string& path) {
     accumulator.push_back(Accumulator(H));
     accumulator.push_back(Accumulator(H));
 
-    l0w.resize(IN * H);
-    f.read((char*)l0w.data(), l0w.size() * sizeof(int16_t));
     
-
-
-    l0b.resize(H);
-    f.read((char*)l0b.data(), l0b.size() * sizeof(int16_t));
-    
-
-    l1w.resize(H*2);
-    f.read((char*)l1w.data(), l1w.size() * sizeof(int16_t));
-
-    f.read(reinterpret_cast<char*>(&l1b), sizeof(int16_t));
+    f.read((char*)net.l0w.data(), net.l0w.size() * sizeof(int16_t));
+    f.read((char*)net.l0b.data(), net.l0b.size() * sizeof(int16_t));    
+    f.read((char*)net.l1w.data(), net.l1w.size() * sizeof(int16_t));
+    f.read(reinterpret_cast<char*>(&net.l1b), sizeof(int16_t));
 
 
     clear();
     isInitialized = true;
     return true;
-}
-
-inline int32_t screlu(int16_t x) {
-    int32_t y = static_cast<int32_t>(x);
-    if (y < 0)      y = 0;
-    else if (y > 255) y = 255;
-    return y * y;
-}
-
-int NNUEQ::forward_full(BitBoardEnum mailBoxBoard[], BitBoardEnum stm)
-{
-    if (!isInitialized) return 0;
-
-    // Build pre-activations for both “views”: White-perspective and Black-perspective
-    int32_t zW[128], zB[128];
-    for (int h = 0; h < H; ++h) {
-        zW[h] = (int32_t)l0b[h];  // l0b is i16@QA
-        zB[h] = (int32_t)l0b[h];
-    }
-
-    // Accumulate rows for each active feature (≤32)
-    for(int i = 0 ; i < 64; i++){
-        BitBoardEnum piece = mailBoxBoard[i];
-
-        if (piece == All) continue;
-        int plane = plane_index_from_piece(piece);
-        if (plane < 0) continue;
-
-        // Bullet’s map_features: (stm, ntm) indices per piece
-        const int fW = encodeFeature(plane, i, White); // White-perspective
-        const int fB = encodeFeature(plane, i, Black); // Black-perspective
-
-
-        for (int h = 0; h < H; ++h) {
-            zW[h] += l0w[h + H * fW];
-            zB[h] += l0w[h + H * fB];
-        }
-    }
-
-    // Pick stm/ntm views
-    const int32_t* __restrict z_stm = (stm == White) ? zW : zB;
-    const int32_t* __restrict z_nstm = (stm == White) ? zB : zW;
-
-    // Final layer dot with SCReLU (ReLU then square), 64-bit accumulation
-    const int16_t* __restrict w0 = l1w.data();      // first H  -> stm
-    const int16_t* __restrict w1 = w0 + H;          // next  H  -> nstm
-
-    int64_t sum = 0;                                // units: QB * QA^2
-    for (int h = 0; h < H; ++h) {
-        sum += screlu(z_stm[h]) * w0[h];
-        sum += screlu(z_nstm[h]) * w1[h];
-    }
-
-    // Bring to QA*QB, add bias (already QA*QB), scale to centipawns
-    sum = sum / QA;
-    sum += l1b;
-    sum *= SCALE;
-    sum /= QA * QB;
-    
-
-    return sum;
 }
 

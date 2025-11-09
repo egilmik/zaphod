@@ -1,4 +1,10 @@
 ﻿{
+  "environments": [
+    {
+      "NETWORK": "D:\\source\\zaphod_nnue\\bullet\\768-128x2-1\\09112025_300M_10k_wdl_0.1.bin",
+      "BOOK": "D:\\chess\\UHO_4060_v1.epd"
+    }
+  ],
   "configurations": [
     {
       "name": "x64-Debug",

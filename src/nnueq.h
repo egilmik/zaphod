@@ -18,28 +18,27 @@ struct Accumulator {
     std::vector<int16_t> pre;
 };
 
+namespace NNUE{
+    constexpr int IN = 768;
+    constexpr int H = 128;
+    constexpr int OUT = 1;
+
+    constexpr int16_t SCALE = 400;
+    constexpr int16_t QA = 255;
+    constexpr int16_t QB = 64;
+
+    struct Network {
+        alignas(32) std::array<int16_t, IN*H>  l0w;
+        alignas(32) std::array<int16_t, H>  l0b;
+        alignas(32) std::array<int16_t, H*2>  l1w;
+        int16_t l1b;
+    };
+}
+
+using namespace NNUE;
+
 class NNUEQ {
 public:
-    const int IN = 768;
-    const int H = 128;
-    const int OUT = 1;
-
-    
-
-    const int16_t SCALE = 400;
-    const int16_t QA = 255;
-    const int16_t QB = 64;
-
-    
-    // L1
-    std::vector<int16_t>  l0w;   // H*IN
-    std::vector<int16_t> l0b;   // H
-    
-    // L2
-    std::vector<int16_t>  l1w;   // H
-    int16_t l1b;
-    
-
     // 0 White, 1 Black
     std::vector<Accumulator> accumulator;
 
@@ -59,11 +58,11 @@ public:
     static int plane_index_from_piece(BitBoardEnum piece);
     static int encodeFeature(int piece, int sq, BitBoardEnum color);
 
-    int forward_full(BitBoardEnum mailBoxBoard[], BitBoardEnum stm);
 
 private:
     // Set to true when network is loaded.
     bool isInitialized = false;
+    Network net;
 
 };
 
