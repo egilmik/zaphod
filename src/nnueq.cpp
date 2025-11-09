@@ -63,12 +63,12 @@ int NNUEQ::forward(BitBoardEnum stm) {
 
     const int16_t* a = stmAcc.pre.data();
     const int16_t* b = nstmAcc.pre.data();
-    const int16_t* w0 = net.l1w.data();        // first H  = stm
+    const int16_t* w0 = net->l1w.data();        // first H  = stm
     const int16_t* w1 = w0 + H;            // next  H  = ntm
 
     int64_t sum = VectorizedSCReLU_AVX2(a, b, w0, w1);        // QB*QA^2
     int64_t sum_qaqb = div_round_i64(sum, QA);                // QA*QB
-    int64_t acc = sum_qaqb + net.l1b;                             // QA*QB
+    int64_t acc = sum_qaqb + net->l1b;                             // QA*QB
     int64_t out = div_round_i64(acc * SCALE, (int64_t)QA * QB);
 
     // optional clamp to engine range
@@ -85,8 +85,8 @@ void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
     int featureWhite = encodeFeature(plane, sq, White);
     int featureBlack = encodeFeature(plane, sq, Black);
 
-    const int16_t* weightW = net.l0w.data() + featureWhite * H;
-    const int16_t* weightB = net.l0w.data() + featureBlack * H;
+    const int16_t* weightW = net->l0w.data() + featureWhite * H;
+    const int16_t* weightB = net->l0w.data() + featureBlack * H;
     int16_t* accW = accumulator[0].pre.data();
     int16_t* accB = accumulator[1].pre.data();
 
@@ -108,8 +108,8 @@ void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
     int featureWhite = encodeFeature(plane, sq, White);
     int featureBlack = encodeFeature(plane, sq, Black);
     
-    const int16_t* weightW = net.l0w.data() + featureWhite * H;
-    const int16_t* weightB = net.l0w.data() + featureBlack * H;
+    const int16_t* weightW = net->l0w.data() + featureWhite * H;
+    const int16_t* weightB = net->l0w.data() + featureBlack * H;
     int16_t* accW = accumulator[0].pre.data();
     int16_t* accB = accumulator[1].pre.data();
     
@@ -131,8 +131,8 @@ void NNUEQ::clear() {
     }
 
     for (int h = 0; h < H; ++h) {
-        accumulator[0].pre[h] = net.l0b[h];
-        accumulator[1].pre[h] = net.l0b[h];
+        accumulator[0].pre[h] = net->l0b[h];
+        accumulator[1].pre[h] = net->l0b[h];
     }
 }
 
@@ -187,10 +187,10 @@ bool NNUEQ::load(const std::string& path) {
     accumulator.push_back(Accumulator(H));
 
     
-    f.read((char*)net.l0w.data(), net.l0w.size() * sizeof(int16_t));
-    f.read((char*)net.l0b.data(), net.l0b.size() * sizeof(int16_t));    
-    f.read((char*)net.l1w.data(), net.l1w.size() * sizeof(int16_t));
-    f.read(reinterpret_cast<char*>(&net.l1b), sizeof(int16_t));
+    f.read((char*)net->l0w.data(), net->l0w.size() * sizeof(int16_t));
+    f.read((char*)net->l0b.data(), net->l0b.size() * sizeof(int16_t));    
+    f.read((char*)net->l1w.data(), net->l1w.size() * sizeof(int16_t));
+    f.read(reinterpret_cast<char*>(&net->l1b), sizeof(int16_t));
 
 
     clear();

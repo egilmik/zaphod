@@ -20,7 +20,7 @@ struct Accumulator {
 
 namespace NNUE{
     constexpr int IN = 768;
-    constexpr int H = 128;
+    constexpr int H = 256;
     constexpr int OUT = 1;
 
     constexpr int16_t SCALE = 400;
@@ -39,7 +39,9 @@ using namespace NNUE;
 
 class NNUEQ {
 public:
-    // 0 White, 1 Black
+    
+    NNUEQ() : net(std::make_unique<Network>()) {}
+  
     std::vector<Accumulator> accumulator;
 
     bool load(const std::string& path);
@@ -62,7 +64,8 @@ public:
 private:
     // Set to true when network is loaded.
     bool isInitialized = false;
-    Network net;
+    std::unique_ptr<Network> net;
+    
 
 };
 
