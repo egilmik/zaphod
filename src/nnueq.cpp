@@ -32,10 +32,10 @@ int64_t NNUEQ::VectorizedSCReLU_AVX2(const int16_t* __restrict stmAcc,const int1
 
     for (int i = 0; i < H; i += 16) {
         // load
-        __m256i stmAccValues = _mm256_load_si256(reinterpret_cast<const __m256i*>(stmAcc + i));
-        __m256i nstmAccValues = _mm256_load_si256(reinterpret_cast<const __m256i*>(nstmAcc + i));
-        __m256i stmWeights = _mm256_load_si256(reinterpret_cast<const __m256i*>(wStm + i));
-        __m256i nstmWeights = _mm256_load_si256(reinterpret_cast<const __m256i*>(wNstm + i));
+        __m256i stmAccValues = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(stmAcc + i));
+        __m256i nstmAccValues = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(nstmAcc + i));
+        __m256i stmWeights = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(wStm + i));
+        __m256i nstmWeights = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(wNstm + i));
 
         //Clamp
         __m256i stmAccClamped = _mm256_min_epi16(V_QA, _mm256_max_epi16(stmAccValues, V_ZERO));
@@ -138,23 +138,23 @@ void NNUEQ::clear() {
 
 void NNUEQ::add_row_i16_avx2(const int16_t* __restrict w, int16_t* __restrict acc) {
     for (int i = 0; i < H; i += 32) {
-        __m256i a0 = _mm256_load_si256((const __m256i*)(acc + i));
-        __m256i w0 = _mm256_load_si256((const __m256i*)(w + i));
-        __m256i a1 = _mm256_load_si256((const __m256i*)(acc + i + 16));
-        __m256i w1 = _mm256_load_si256((const __m256i*)(w + i + 16));
-        _mm256_store_si256((__m256i*)(acc + i), _mm256_adds_epi16(a0, w0)); // sat add
-        _mm256_store_si256((__m256i*)(acc + i + 16), _mm256_adds_epi16(a1, w1));
+        __m256i a0 = _mm256_loadu_si256((const __m256i*)(acc + i));
+        __m256i w0 = _mm256_loadu_si256((const __m256i*)(w + i));
+        __m256i a1 = _mm256_loadu_si256((const __m256i*)(acc + i + 16));
+        __m256i w1 = _mm256_loadu_si256((const __m256i*)(w + i + 16));
+        _mm256_storeu_si256((__m256i*)(acc + i), _mm256_adds_epi16(a0, w0)); // sat add
+        _mm256_storeu_si256((__m256i*)(acc + i + 16), _mm256_adds_epi16(a1, w1));
     }
 }
 
 void NNUEQ::sub_row_i16_avx2(const int16_t* __restrict w,int16_t* __restrict acc) {
     for (int i = 0; i < H; i += 32) {
-        __m256i a0 = _mm256_load_si256((const __m256i*)(acc + i));
-        __m256i w0 = _mm256_load_si256((const __m256i*)(w + i));
-        __m256i a1 = _mm256_load_si256((const __m256i*)(acc + i + 16));
-        __m256i w1 = _mm256_load_si256((const __m256i*)(w + i + 16));
-        _mm256_store_si256((__m256i*)(acc + i), _mm256_subs_epi16(a0, w0)); // sat sub
-        _mm256_store_si256((__m256i*)(acc + i + 16), _mm256_subs_epi16(a1, w1));
+        __m256i a0 = _mm256_loadu_si256((const __m256i*)(acc + i));
+        __m256i w0 = _mm256_loadu_si256((const __m256i*)(w + i));
+        __m256i a1 = _mm256_loadu_si256((const __m256i*)(acc + i + 16));
+        __m256i w1 = _mm256_loadu_si256((const __m256i*)(w + i + 16));
+        _mm256_storeu_si256((__m256i*)(acc + i), _mm256_subs_epi16(a0, w0)); // sat sub
+        _mm256_storeu_si256((__m256i*)(acc + i + 16), _mm256_subs_epi16(a1, w1));
     }
 }
 
