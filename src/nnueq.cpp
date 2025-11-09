@@ -6,6 +6,20 @@
 #include <iostream>
 #include <cassert>
 
+
+static inline int64_t hsum32_to_i64(__m256i v) {
+    __m128i lo = _mm256_castsi256_si128(v);
+    __m128i hi = _mm256_extracti128_si256(v, 1);
+    __m256i lo64 = _mm256_cvtepi32_epi64(lo);
+    __m256i hi64 = _mm256_cvtepi32_epi64(hi);
+    __m256i s64 = _mm256_add_epi64(lo64, hi64);
+    __m128i s128 = _mm_add_epi64(_mm256_castsi256_si128(s64),
+        _mm256_extracti128_si256(s64, 1));
+    __m128i hi64_ = _mm_unpackhi_epi64(s128, s128);
+    s128 = _mm_add_epi64(s128, hi64_);
+    return _mm_cvtsi128_si64(s128);
+}
+
 static inline int32_t hsum_epi32_avx2(__m256i v) {
     __m128i vlow = _mm256_castsi256_si128(v);
     __m128i vhigh = _mm256_extracti128_si256(v, 1);
@@ -47,7 +61,6 @@ int64_t NNUEQ::VectorizedSCReLU_AVX2(const int16_t* __restrict stmAcc,const int1
         sum64 += static_cast<int64_t>(hsum_epi32_avx2(nstmActivated));
 
     }
-
     return sum64; // units: QB * QA^2
 }
 
@@ -57,30 +70,24 @@ static inline int64_t div_round_i64(int64_t num, int64_t den) {
 }
 
 int NNUEQ::forward(BitBoardEnum stm) {
-    const Accumulator& stmAcc = (stm == White) ? accumulator[0] : accumulator[1];        
-    const Accumulator& nstmAcc = (stm == White) ? accumulator[1] : accumulator[0];
-        
+    const auto& stmAcc = (stm == White) ? accumulator[0] : accumulator[1];
+    const auto& nstmAcc = (stm == White) ? accumulator[1] : accumulator[0];
 
-    const int16_t* a = stmAcc.pre.data();               // HL_SIZE
-    const int16_t* b = nstmAcc.pre.data();              // HL_SIZE
-    const int16_t* w0 = l1w.data();   // HL_SIZE (stm)
-    const int16_t* w1 = w0 + H;                // HL_SIZE (ntm)
+    const int16_t* a = stmAcc.pre.data();
+    const int16_t* b = nstmAcc.pre.data();
+    const int16_t* w0 = l1w.data();        // first H  = stm
+    const int16_t* w1 = w0 + H;            // next  H  = ntm
 
-    
-    int64_t sum = VectorizedSCReLU_AVX2(a, b, w0, w1);
+    int64_t sum = VectorizedSCReLU_AVX2(a, b, w0, w1);        // QB*QA^2
+    int64_t sum_qaqb = div_round_i64(sum, QA);                // QA*QB
+    int64_t acc = sum_qaqb + l1b;                             // QA*QB
+    int64_t out = div_round_i64(acc * SCALE, (int64_t)QA * QB);
 
-    // Bring to QA*QB domain so we can add the bias (which is quantised to QA*QB)
-    // sum' = sum / QA  (units: QA*QB)
-    int64_t sum_qaqb = sum/ QA;
-
-    // Add bias (stored as i16 in file, widened to i32 here), already in QA*QB units.
-    int64_t acc = sum_qaqb + l1b;
-
-    // Dequantise to engine scale: (acc / (QA*QB)) * SCALE
-    int64_t out = (acc * SCALE)/(QA*QB);
-    return out;
+    // optional clamp to engine range
+    if (out > 30000) out = 30000;
+    if (out < -30000) out = -30000;
+    return (int)out;
 }
-
 
 void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
     if (!isInitialized) {
@@ -191,25 +198,84 @@ bool NNUEQ::load(const std::string& path) {
     accumulator.push_back(Accumulator(H));
     accumulator.push_back(Accumulator(H));
 
-    l0w.resize(H * IN);
-    for (size_t i = 0; i < l0w.size(); i++) {
-        f.read(reinterpret_cast<char*>(&l0w[i]), sizeof(int16_t));
-    }
+    l0w.resize(IN * H);
+    f.read((char*)l0w.data(), l0w.size() * sizeof(int16_t));
     
+
+
     l0b.resize(H);
-    for (size_t i = 0; i < l0b.size(); i++) {
-        f.read(reinterpret_cast<char*>(&l0b[i]), sizeof(int16_t));
-    }
+    f.read((char*)l0b.data(), l0b.size() * sizeof(int16_t));
+    
 
     l1w.resize(H*2);
-    for (size_t i = 0; i < l1w.size(); i++) {
-        f.read(reinterpret_cast<char*>(&l1w[i]), sizeof(int16_t));
-    }
+    f.read((char*)l1w.data(), l1w.size() * sizeof(int16_t));
 
     f.read(reinterpret_cast<char*>(&l1b), sizeof(int16_t));
 
-    
+
+    clear();
     isInitialized = true;
     return true;
+}
+
+inline int32_t screlu(int16_t x) {
+    int32_t y = static_cast<int32_t>(x);
+    if (y < 0)      y = 0;
+    else if (y > 255) y = 255;
+    return y * y;
+}
+
+int NNUEQ::forward_full(BitBoardEnum mailBoxBoard[], BitBoardEnum stm)
+{
+    if (!isInitialized) return 0;
+
+    // Build pre-activations for both “views”: White-perspective and Black-perspective
+    int32_t zW[128], zB[128];
+    for (int h = 0; h < H; ++h) {
+        zW[h] = (int32_t)l0b[h];  // l0b is i16@QA
+        zB[h] = (int32_t)l0b[h];
+    }
+
+    // Accumulate rows for each active feature (≤32)
+    for(int i = 0 ; i < 64; i++){
+        BitBoardEnum piece = mailBoxBoard[i];
+
+        if (piece == All) continue;
+        int plane = plane_index_from_piece(piece);
+        if (plane < 0) continue;
+
+        // Bullet’s map_features: (stm, ntm) indices per piece
+        const int fW = encodeFeature(plane, i, White); // White-perspective
+        const int fB = encodeFeature(plane, i, Black); // Black-perspective
+
+
+        for (int h = 0; h < H; ++h) {
+            zW[h] += l0w[h + H * fW];
+            zB[h] += l0w[h + H * fB];
+        }
+    }
+
+    // Pick stm/ntm views
+    const int32_t* __restrict z_stm = (stm == White) ? zW : zB;
+    const int32_t* __restrict z_nstm = (stm == White) ? zB : zW;
+
+    // Final layer dot with SCReLU (ReLU then square), 64-bit accumulation
+    const int16_t* __restrict w0 = l1w.data();      // first H  -> stm
+    const int16_t* __restrict w1 = w0 + H;          // next  H  -> nstm
+
+    int64_t sum = 0;                                // units: QB * QA^2
+    for (int h = 0; h < H; ++h) {
+        sum += screlu(z_stm[h]) * w0[h];
+        sum += screlu(z_nstm[h]) * w1[h];
+    }
+
+    // Bring to QA*QB, add bias (already QA*QB), scale to centipawns
+    sum = sum / QA;
+    sum += l1b;
+    sum *= SCALE;
+    sum /= QA * QB;
+    
+
+    return sum;
 }
 

@@ -21,7 +21,7 @@ struct Accumulator {
 class NNUEQ {
 public:
     const int IN = 768;
-    const int H = 64;
+    const int H = 128;
     const int OUT = 1;
 
     
@@ -58,6 +58,8 @@ public:
 
     static int plane_index_from_piece(BitBoardEnum piece);
     static int encodeFeature(int piece, int sq, BitBoardEnum color);
+
+    int forward_full(BitBoardEnum mailBoxBoard[], BitBoardEnum stm);
 
 private:
     // Set to true when network is loaded.
