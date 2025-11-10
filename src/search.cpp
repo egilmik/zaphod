@@ -349,22 +349,23 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         
         newDepth += extension; 
 
-        int reduction = (int)std::max(0.0, 0.75 + std::log(depth) * std::log(i) / 2.25);
+        
 
         
         
-
-        // We are not improving, reduce more
-        if (!improving) {
-            reduction + 1;
-        }
 
         ////////////
         // LMR
         ////////////
 
         if (depth >= 2 && i > 1 + isRoot) {       
-            score = -negamax(board, newDepth-reduction, -(alpha + 1), -alpha, ply + 1,false);
+            int r = (int)std::max(0.0, (isCapture ? -0.1: 0.75) + std::log(depth) * std::log(i) / 2.25);
+
+            r += !pvNode;
+            r -= improving;
+            r -= givesCheck;
+
+            score = -negamax(board, newDepth-r, -(alpha + 1), -alpha, ply + 1,false);
             lmrHit++;
 
             if (score > alpha) {
