@@ -20,7 +20,15 @@ Score Search::search(Board &board, SearchLimits lim)
     for (int i = 0; i < MAXPLY; i++) {
         ss[i].checkExt = 0;
         ss[i].isNullMove = false;
+        ss[i].killerMove[0] = 0;
+        ss[i].killerMove[1] = 0;
+        ss[i].staticEval = 0;
     }
+
+    for (int s = 0; s < 2; ++s)
+        for (int f = 0; f < 64; ++f)
+            for (int t = 0; t < 64; ++t)
+                hist.quiet[s][f][t] = 0;
     
     this->limits = lim;
 

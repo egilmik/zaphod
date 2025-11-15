@@ -95,7 +95,6 @@ class Search {
         bool stopSearch = false;
         SearchLimits limits;
         SearchStack ss[MAXPLY];
-        NNUEQ nnueQ;
         bool printInfo = true;
         bool clearTTOnSearch = true;
           
