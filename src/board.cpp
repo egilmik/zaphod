@@ -1249,9 +1249,9 @@ BitBoardEnum Board::getPieceOnSquare(int sq)
 
 int Board::getNonPawnMaterial(BitBoardEnum color) {
     int count = countSetBits(bitBoardArray[N + color]);
-    count = countSetBits(bitBoardArray[B + color]);
-    count = countSetBits(bitBoardArray[R + color]);
-    count = countSetBits(bitBoardArray[Q + color]);
+    count += countSetBits(bitBoardArray[B + color]);
+    count += countSetBits(bitBoardArray[R + color]);
+    count += countSetBits(bitBoardArray[Q + color]);
     return count;
 }
 
