@@ -24,6 +24,7 @@ class UCI {
 
         void perft();
         void printFen();
+        void bench();
 
         Board motherBoard;
         Search search;
