@@ -23,12 +23,13 @@ int64_t NNUEQ::VectorizedSCReLU_AVX2(const int16_t* __restrict stmAcc,const int1
 #ifndef __AVX2__
 #  error "Build Zaphod with AVX2 enabled for this NNUE path."
 #endif
-    //static_assert((H % 16) == 0, "HL_SIZE must be a multiple of 16 for AVX2 path.");
+    
 
     const __m256i V_ZERO = _mm256_setzero_si256();
     const __m256i V_QA = _mm256_set1_epi16(static_cast<int16_t>(QA));
 
-    int64_t sum64 = 0;
+    __m256i sum = _mm256_setzero_si256();
+
 
     for (int i = 0; i < H; i += 16) {
         // load
@@ -45,11 +46,11 @@ int64_t NNUEQ::VectorizedSCReLU_AVX2(const int16_t* __restrict stmAcc,const int1
         __m256i stmActivated = _mm256_madd_epi16(stmAccClamped, _mm256_mullo_epi16(stmAccClamped, stmWeights));
         __m256i nstmActivated = _mm256_madd_epi16(nstmAccClamped, _mm256_mullo_epi16(nstmAccClamped, nstmWeights));
 
-        sum64 += static_cast<int64_t>(hsum_epi32_avx2(stmActivated));
-        sum64 += static_cast<int64_t>(hsum_epi32_avx2(nstmActivated));
+        sum = _mm256_add_epi32(sum, stmActivated);
+        sum = _mm256_add_epi32(sum, nstmActivated);
 
     }
-    return sum64; // units: QB * QA^2
+    return hsum_epi32_avx2(sum); // units: QB * QA^2
 }
 
 static inline int64_t div_round_i64(int64_t num, int64_t den) {
