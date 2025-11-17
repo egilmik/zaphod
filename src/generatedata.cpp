@@ -110,7 +110,12 @@ void worker_fn(WorkerArgs a) {
 
 
             Score sc = search.search(board, limits);
-            Move  best = sc.bestMove;
+            Move best = sc.bestMove;
+
+            
+            if (board.getSideToMove() == Black) {
+                sc.score = sc.score * -1;
+            }
 
             // Skip noisy: in-check or capture-to-play
             bool isCapture = board.getPieceOnSquare(best.to()) != All;
@@ -131,13 +136,7 @@ void worker_fn(WorkerArgs a) {
                 // Collect active indices
                 PositionData data;
 
-                int scoreModifier = 1;
-                if (board.getSideToMove() == Black) {
-                    scoreModifier = -1;
-                }
-
-                //White POV score;
-                data.score = sc.score * scoreModifier;
+                data.score = sc.score;
                 data.fen = FenTools::boardToFen(board);                
                 posData.push_back(data);
         
