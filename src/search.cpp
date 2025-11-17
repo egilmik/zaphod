@@ -181,24 +181,17 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     auto tte = tt.probe(key);    
 
     if (!pvNode && tte != std::nullopt && tte->depth >= depth) {
+        
         if (tte->type == EXACT) {
             exactHit++;
-            if (isRoot) {
-                bestMoveIteration.bestMove = tte->bestMove;
-                bestMoveIteration.score = tte->score;
-                bestMoveIteration.depth = tte->depth;
-            }
             return tte->score;
         }
-        else if (tte->type == LOWER && tte->score > alpha) {
+        else if (tte->type == LOWER && tte->score >= beta) {
             lowerBoundHit++;
-            alpha = tte->score;
+            return tte->score;
         }
-        else if (tte->type == UPPER && tte->score < beta) {
+        else if (tte->type == UPPER && tte->score <= alpha) {
             upperBoundHit++;
-            beta = tte->score;
-        }
-        if (alpha >= beta) {
             return tte->score;
         }
     }
