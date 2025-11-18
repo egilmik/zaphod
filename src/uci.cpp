@@ -144,6 +144,10 @@ void UCI::sendID()
     std::cout << "id name Zaphod 1.9" << std::endl;
     std::cout << "id author Egil Tennfjord Mikalsen" << std::endl;
     std::cout << "option name Hash type spin default 256 min 1 max 2048" << std::endl;
+
+    //Tuner parameters
+    std::cout << "option name tuner.lmrdivider type spin default 225 min 100 max 350" << std::endl;
+
     std::cout << "uciok" << std::endl;
 }
 
@@ -178,6 +182,18 @@ void UCI::setOption(std::istringstream& is) {
 
         search.setTTSize(hashSize);
     }
+
+    if (optionToken == "tuner.lmrdivider") {
+        std::string valueToken;
+        is >> valueToken; //Expected to be the string "value";
+        std::string value;
+        is >> value;
+        int lmrDivider = stoi(value);
+        search.setLMRDivider((float)lmrDivider);
+
+
+    }
+
 
 }
 
