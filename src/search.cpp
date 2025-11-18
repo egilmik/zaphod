@@ -164,6 +164,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     bool isRoot = ply == 0;
     int alphaOrginal = alpha;
     bool improving = false;
+    int bestScore = -MATESCORE;
 
 
     // Check if max search time has been exhausted
@@ -392,39 +393,43 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         
         board.revertLastMove();
 
-        if (score > alpha) {
-            alpha = score;
-            alphaMove = move;
-            if (isRoot) {
-                bestMoveIteration.bestMove = move;
-                bestMoveIteration.score = alpha;
-                bestMoveIteration.depth = depth;
-            }
-        }
+        if (score > bestScore) {
+            bestScore = score;
 
-        if (score >= beta) {
-            
-            if (!isCapture) {
-                if (move.value != ss[ply].killerMove[0].value) {
-                    ss[ply].killerMove[0] = move;
+            if (score > alpha) {
+                alpha = score;
+                alphaMove = move;
+                if (isRoot) {
+                    bestMoveIteration.bestMove = move;
+                    bestMoveIteration.score = alpha;
+                    bestMoveIteration.depth = depth;
                 }
-                else {
-                    ss[ply].killerMove[1] = move;
-                }
-
-                int side = 0;
-                if (board.getSideToMove() == Black) {
-                    side = 1;
-                }
-                hist.quiet[side][move.from()][move.to()] += depth * depth;
-
             }
 
-            /*if (it == transpositionMap.end() || it->second.depth < depth) {
-                transpositionMap[key] = { move, TEType::lower, depth, beta };
-            }*/
-                
-            break;
+            if (alpha >= beta) {
+
+                if (!isCapture) {
+                    if (move.value != ss[ply].killerMove[0].value) {
+                        ss[ply].killerMove[0] = move;
+                    }
+                    else {
+                        ss[ply].killerMove[1] = move;
+                    }
+
+                    int side = 0;
+                    if (board.getSideToMove() == Black) {
+                        side = 1;
+                    }
+                    hist.quiet[side][move.from()][move.to()] += depth * depth;
+
+                }
+
+                /*if (it == transpositionMap.end() || it->second.depth < depth) {
+                    transpositionMap[key] = { move, TEType::lower, depth, beta };
+                }*/
+
+                break;
+            }
         }
 
         
@@ -432,33 +437,18 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     if (validMoves == 0) {
-
-        if (inCheck) {
-            // We are check mate
-            alpha = -MATESCORE+ply;
-        }
-        else {
-            // Stalemate
-            alpha = 0;
-        }
+        return inCheck ? -MATESCORE + ply : 0;
     }
 
+    TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;
     
     //Replace if depth is higher
     if (!tte || (tte && tte->depth < depth)) {
-        if (alpha <= alphaOrginal) {
-            tt.put(key, alpha, depth, alphaMove, UPPER);
-        }
-        else if (alpha >= beta) {
-            tt.put(key, alpha, depth, alphaMove, LOWER);
-        } 
-        if (alpha < beta && alpha > alphaOrginal) {
-            tt.put(key, alpha, depth, alphaMove, EXACT);
-        }
+        tt.put(key, bestScore, depth, alphaMove, bound);
     }
     
 
-    return alpha;
+    return bestScore;
 }
 
 
