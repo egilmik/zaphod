@@ -367,7 +367,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         ////////////
 
         if (depth >= 2 && i > 1 + isRoot) {       
-            int r = (int)std::max(0.0, (isCapture ? -0.1: 0.75) + std::log(depth) * std::log(i) / lmrDivider);
+            int r = (int)std::max(0.0, (isCapture ? lmrBaseNoisy: lmrBaseQuiet) + std::log(depth) * std::log(i) / lmrDivider);
 
             r += !pvNode;
             r -= improving;

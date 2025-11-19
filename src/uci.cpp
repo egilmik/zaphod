@@ -147,6 +147,8 @@ void UCI::sendID()
 
     //Tuner parameters
     std::cout << "option name tuner.lmrdivider type spin default 225 min 100 max 350" << std::endl;
+    std::cout << "option name tuner.lmrbasenoisy type spin default -10 min -150 max 100" << std::endl;
+    std::cout << "option name tuner.lmrbasequiet type spin default 70 min -50 max 220" << std::endl;
 
     std::cout << "uciok" << std::endl;
 }
@@ -190,8 +192,24 @@ void UCI::setOption(std::istringstream& is) {
         is >> value;
         int lmrDivider = stoi(value);
         search.setLMRDivider((float)lmrDivider);
+    }
 
+    if (optionToken == "tuner.lmrbasenoisy") {
+        std::string valueToken;
+        is >> valueToken; //Expected to be the string "value";
+        std::string value;
+        is >> value;
+        int lmr = stoi(value);
+        search.setLMRBaseNoisy((float)lmr);
+    }
 
+    if (optionToken == "tuner.lmrbasequiet") {
+        std::string valueToken;
+        is >> valueToken; //Expected to be the string "value";
+        std::string value;
+        is >> value;
+        int lmr = stoi(value);
+        search.setLMRBaseQuiet((float)lmr);
     }
 
 
