@@ -85,6 +85,7 @@ class Search {
 
     private:
 
+        Move rootMove = 0;
 
         Score bestMoveIteration;        
         TTable tt = TTable(256);

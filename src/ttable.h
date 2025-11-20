@@ -32,13 +32,13 @@ static inline uint64_t bit_floor_64(uint64_t x) {
 #endif
 // ----------------------------------------
 
-enum TType : uint8_t { EXACT, UPPER, LOWER };
+enum TType : uint8_t { EXACT, UPPER, LOWER, NO_TYPE };
 
 struct TTEntry {
     uint64_t key = 0;
     int32_t  score = 0;
     uint16_t depth = 0;
-    TType    type = EXACT;
+    TType    type = NO_TYPE;
     Move     bestMove{};
 };
 
@@ -76,7 +76,7 @@ public:
     std::optional<TTEntry> probe(uint64_t key) const noexcept {
         const Bucket& b = table[index(key)];
         uint64_t k = b.key.load(std::memory_order_acquire);
-        if (k != key) return std::nullopt;
+        if (k != key) return TTEntry{};
         uint64_t lo = b.lo.load(std::memory_order_relaxed);
         uint64_t hi = b.hi.load(std::memory_order_relaxed);
         TTEntry e;

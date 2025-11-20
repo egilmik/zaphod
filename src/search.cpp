@@ -181,7 +181,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
     auto tte = tt.probe(key);    
 
-    if (!pvNode && tte != std::nullopt && tte->depth >= depth) {
+    if (!pvNode && tte->type != NO_TYPE && tte->depth >= depth) {
         
         if (tte->type == EXACT) {
             exactHit++;
@@ -197,7 +197,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         }
     }
 
+    const Move ttMove = (isRoot && depth > 1 && bestMoveIteration.bestMove.value != 0) ? bestMoveIteration.bestMove : tte->bestMove;
     
+    if (depth >= 3 && pvNode && (ttMove.value == 0 || tte->depth + 3 < depth)) {
+        --depth;
+    }
+
 
     MoveList moveList{};
     MoveGenerator::generateMoves(board, moveList);
@@ -207,7 +212,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     Move alphaMove{};
     
     
-    sortMoveList(board, moveList, ply, tte ? tte->bestMove : 0);
+    sortMoveList(board, moveList, ply, ttMove);
 
     int validMoves = moveList.counter;
     bool inCheck = moveList.checkers > 0;
