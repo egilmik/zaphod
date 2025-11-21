@@ -197,6 +197,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         }
     }
 
+    bool ttHit = tte.type != TType::NO_TYPE;
+
     
 
     MoveList moveList{};
@@ -207,10 +209,21 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     Move alphaMove{};
     
     
-    sortMoveList(board, moveList, ply, tte.type != TType::NO_TYPE ? tte.bestMove : 0);
+    sortMoveList(board, moveList, ply, ttHit ? tte.bestMove : 0);
 
     int validMoves = moveList.counter;
     bool inCheck = moveList.checkers > 0;
+
+    if (inCheck) {
+        ss[ply].staticEval = -MATESCORE - 1;
+    }
+    else if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
+        ss[ply].staticEval = tte.staticEval;
+    }
+    else {
+        ss[ply].staticEval = evaluate(board);
+    }
+
 
     if (ply >= 4 && !inCheck) {
         improving = (ss[ply].staticEval > ss[ply - 2].staticEval && ss[ply - 2].staticEval > ss[ply - 4].staticEval);
@@ -324,14 +337,11 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
         }
-
-
         
         board.makeMove(move);      
 
-        int staticEval = 0;
-        int newDepth = depth - 1;
-        ss[ply + 1].staticEval = staticEval = board.evaluate();
+        
+        int newDepth = depth - 1;        
 
         ////////////
         // Check extension
