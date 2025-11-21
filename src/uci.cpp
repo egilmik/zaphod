@@ -243,7 +243,6 @@ void UCI::bench() {
     auto start = std::chrono::high_resolution_clock::now();
     uint64_t nodes = 0;
 
-    Search search;
     SearchLimits limits;
     limits.depthLimit = 12;
 
