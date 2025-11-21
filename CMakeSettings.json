@@ -1,7 +1,7 @@
 ﻿{
   "environments": [
     {
-      "NETWORK": "D:\\source\\zaphod_nnue\\bullet\\768-256x2-1\\768-256x2-1_19112025_236M_10k_wdl_0.75.bin",
+      "NETWORK": "D:\\source\\zaphod_nnue\\bullet\\768-256x2-1\\768-256x2-1_15112025_694M_10k_wdl_0.1.bin",
       //"NETWORK": "D:\\source\\bullet\\checkpoints\\1_simple-50\\quantised.bin",      
       "BOOK": "D:\\chess\\UHO_4060_v1.epd"
     }
