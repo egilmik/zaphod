@@ -181,19 +181,19 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
     auto tte = tt.probe(key);    
 
-    if (!pvNode && tte != std::nullopt && tte->depth >= depth) {
+    if (!pvNode && tte.depth >= depth) {
         
-        if (tte->type == EXACT) {
+        if (tte.type == EXACT) {
             exactHit++;
-            return tte->score;
+            return tte.score;
         }
-        else if (tte->type == LOWER && tte->score >= beta) {
+        else if (tte.type == LOWER && tte.score >= beta) {
             lowerBoundHit++;
-            return tte->score;
+            return tte.score;
         }
-        else if (tte->type == UPPER && tte->score <= alpha) {
+        else if (tte.type == UPPER && tte.score <= alpha) {
             upperBoundHit++;
-            return tte->score;
+            return tte.score;
         }
     }
 
@@ -207,7 +207,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     Move alphaMove{};
     
     
-    sortMoveList(board, moveList, ply, tte ? tte->bestMove : 0);
+    sortMoveList(board, moveList, ply, tte.type != TType::NO_TYPE ? tte.bestMove : 0);
 
     int validMoves = moveList.counter;
     bool inCheck = moveList.checkers > 0;
@@ -442,10 +442,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;
     
-    //Replace if depth is higher
-    if (!tte || (tte && tte->depth < depth)) {
-        tt.put(key, bestScore, depth, alphaMove, bound);
+    if (tte.type == TType::NO_TYPE || (tte.type != TType::NO_TYPE && tte.depth <= depth)) {
+        tt.put(key, bestScore, ss[ply].staticEval, depth, alphaMove, bound);
     }
+    
     
 
     return bestScore;
@@ -484,9 +484,9 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     //////////////////////////
     // Transposition Table
     //////////////////////////
-    if (!pvNode && tte &&  (tte->type == EXACT || (tte->type == LOWER && tte->score >= beta) || (tte->type == UPPER && tte->score <= alpha)))  {
+    if (!pvNode &&  (tte.type == EXACT || (tte.type == LOWER && tte.score >= beta) || (tte.type == UPPER && tte.score <= alpha)))  {
         qsearchTTHit++;            
-        return tte->score;
+        return tte.score;
     }
 
     int staticEval =  evaluate(board);
@@ -511,7 +511,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     }
 
 
-    sortMoveList(board, moveListReduced,ply,tte? tte->bestMove:0);
+    sortMoveList(board, moveListReduced,ply,tte.type != TType::NO_TYPE? tte.bestMove:0);
 
 
     int score = 0;
@@ -817,27 +817,6 @@ bool Search::equal(Move &a, Move &b)
 {
     return (a.from() == b.from() &&
             a.to() == b.to());
-}
-
-MoveList Search::reconstructPV(Board& board, int depth)
-{
-    MoveList list;
-
-    for (int i = 0; i < depth; i++) {
-        
-        auto tte = tt.probe(board.getHashKey());
-
-        if (tte && tte->type == EXACT) {
-            board.makeMove(tte->bestMove);
-            list.moves[list.counter++] = tte->bestMove;
-        }
-        else {
-            return list;
-        }
-
-    }
-
-    return list;
 }
 
 bool Search::isSearchStopped()

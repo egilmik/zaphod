@@ -32,20 +32,15 @@ static inline uint64_t bit_floor_64(uint64_t x) {
 #endif
 // ----------------------------------------
 
-enum TType : uint8_t { EXACT, UPPER, LOWER };
+enum TType : uint8_t { EXACT, UPPER, LOWER, NO_TYPE };
 
 struct TTEntry {
     uint64_t key = 0;
-    int32_t  score = 0;
-    uint16_t depth = 0;
-    TType    type = EXACT;
+    int16_t  score = 0;
+    int16_t staticEval = 0;
+    int8_t depth = 0;
+    TType    type = NO_TYPE;
     Move     bestMove{};
-};
-
-struct alignas(64) Bucket {          // 64 avoids false sharing
-    std::atomic<uint64_t> key{ 0 };    // publish
-    std::atomic<uint64_t> lo{ 0 };     // [score:int32][move:uint32]
-    std::atomic<uint64_t> hi{ 0 };     // [depth:uint16][type:uint8][pad:40]
 };
 
 class TTable {
@@ -57,59 +52,41 @@ public:
     void setSize(size_t sizeMB) {
         // choose power-of-two bucket count
         uint64_t bytes = uint64_t(sizeMB) * (1ull << 20);
-        uint64_t buckets = bytes / sizeof(Bucket);
-        if (buckets < 1024) buckets = 1024;
-        nrOfBuckets = bit_floor_64(buckets);
-        if (nrOfBuckets == 0) nrOfBuckets = 1024;   // safety in case sizeMB==0
-        keyMask = nrOfBuckets - 1;
-        table.reset(new Bucket[nrOfBuckets]);
+        uint64_t size = bytes / sizeof(TTEntry);
+        if (size < 1024) size = 1024;
+        nrOfEntries = bit_floor_64(size);
+        if (nrOfEntries == 0) nrOfEntries = 1024;   // safety in case sizeMB==0
+        keyMask = nrOfEntries - 1;
+        table.reset(new TTEntry[nrOfEntries]);
     }
 
     TTable(const TTable&) = delete;
     TTable& operator=(const TTable&) = delete;
 
     void clear() noexcept {
-        for (uint64_t i = 0; i < nrOfBuckets; ++i)
-            table[i].key.store(0, std::memory_order_relaxed);
+        for (uint64_t i = 0; i < nrOfEntries; ++i)
+            table[i].key = 0;
     }
 
-    std::optional<TTEntry> probe(uint64_t key) const noexcept {
-        const Bucket& b = table[index(key)];
-        uint64_t k = b.key.load(std::memory_order_acquire);
-        if (k != key) return std::nullopt;
-        uint64_t lo = b.lo.load(std::memory_order_relaxed);
-        uint64_t hi = b.hi.load(std::memory_order_relaxed);
-        TTEntry e;
-        e.key = k;
-        e.score = static_cast<int32_t>(lo >> 32);
-        e.bestMove = Move(static_cast<uint32_t>(lo));
-        e.depth = static_cast<uint16_t>(hi >> 8);
-        e.type = static_cast<TType>(hi & 0xFF);
-        return e;
-    }
-
-    void put(uint64_t key, int score, int depth, Move move, TType type) noexcept {
-        Bucket& b = table[index(key)];
-        uint64_t existingKey = b.key.load(std::memory_order_acquire);
-        if (existingKey == key) {
-            uint64_t oldHi = b.hi.load(std::memory_order_relaxed);
-            uint16_t oldDepth = static_cast<uint16_t>(oldHi >> 8);
-            if (depth <= oldDepth) return;
+    TTEntry probe(uint64_t key) const noexcept {
+        int idx = index(key);
+        const TTEntry& tte = table[index(key)];
+        if (tte.key != key) {
+            return TTEntry{};
         }
-        uint64_t lo = (uint64_t(uint32_t(score)) << 32) | uint64_t(move.value);
-        uint64_t hi = (uint64_t(uint16_t(depth)) << 8) | uint64_t(uint8_t(type));
-        b.lo.store(lo, std::memory_order_relaxed);
-        b.hi.store(hi, std::memory_order_relaxed);
-        b.key.store(key, std::memory_order_release);
+
+        return tte;
     }
+
+    void put(uint64_t key, int score, int staticEval, int depth, Move move, TType type);
 
 private:
     inline uint64_t index(uint64_t key) const noexcept { return key & keyMask; }
 
 
 
-    std::unique_ptr<Bucket[]> table;
-    uint64_t nrOfBuckets = 0;
+    std::unique_ptr<TTEntry[]> table;
+    uint64_t nrOfEntries = 0;
     uint64_t keyMask = 0;
 };
 
