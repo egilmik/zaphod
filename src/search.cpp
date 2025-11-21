@@ -157,7 +157,7 @@ Score Search::search(Board &board, SearchLimits lim)
 
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool pvNode)
 {
-    assert(ply < MAXPLY);
+    assert(ply <= MAXPLY);
     if (depth <= 0) return quinesence(board, alpha, beta, 1,ply,pvNode);
     
     BitBoard key = board.getHashKey();    
@@ -176,6 +176,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     //////////////////////////
     if (board.hasPositionRepeated() || board.getHalfMoveClock() >= 100) {
         return 0;
+    }
+
+    if (ply >= MAXPLY) {
+        return evaluate(board);
     }
     
     auto tte = tt.probe(key);    
@@ -472,7 +476,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, bool pvNode)
 {
-    assert(ply < 100);
+    assert(ply <= MAXPLY);
     //////////////////////////
     // Has repeated 3-fold
     //////////////////////////
@@ -494,6 +498,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     //////////////////////////
     if ((evaluatedNodes % 1000) == 0 && isSearchStopped()) {
         return beta;
+    }
+
+    if (ply >= MAXPLY) {
+        return evaluate(board);
     }
     
     auto tte = tt.probe(board.getHashKey());

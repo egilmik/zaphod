@@ -69,7 +69,7 @@ class Search {
         int maxPlyThisIteration = 0;
 
         const int MATESCORE = 30000;
-        constexpr static int MAXPLY = 128;
+        constexpr static int MAXPLY = 255;
 
         void setPrintInfo(bool on) {
             printInfo = on;
