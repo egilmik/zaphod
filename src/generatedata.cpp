@@ -99,11 +99,12 @@ void worker_fn(WorkerArgs a) {
             board.makeMove(l.moves[d(gen)]);
         }
         
+        int moveCounter = 0;
 
         while(true){
             MoveList list;
             MoveGenerator::generateMoves(board, list);
-            if (list.counter == 0 || board.hasPositionRepeated() || board.hasInsufficientMaterial()) {
+            if (list.counter == 0 || board.hasPositionRepeated() || board.hasInsufficientMaterial() || moveCounter > 200) {
                 wdl = 0.5;
                 break;
             }
@@ -151,6 +152,7 @@ void worker_fn(WorkerArgs a) {
             
         
             board.makeMove(best);
+            moveCounter++;
         }
         a.produced->fetch_add(posData.size(), std::memory_order_relaxed);
         

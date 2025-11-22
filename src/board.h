@@ -277,10 +277,12 @@ class Board {
     private:
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
+
+        constexpr static int MAXMOVEHISTORY = 1024;
         
         NNUEQ nnue;
 
-        MoveUndoInfo moveHistory[1024];
+        MoveUndoInfo moveHistory[MAXMOVEHISTORY];
         int historyPly = 0;
 
         int halfMoveClock = 0;
