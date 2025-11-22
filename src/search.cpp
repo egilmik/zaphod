@@ -498,6 +498,8 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     }
     
     auto tte = tt.probe(board.getHashKey());
+    bool ttHit = tte.type != TType::NO_TYPE;
+
 
     //////////////////////////
     // Transposition Table
@@ -521,12 +523,27 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
     bool inCheck = moveList.checkers > 0;
 
-    if (!inCheck && staticEval >= beta) {
-        return beta;
+    if (inCheck) {
+        ss[ply].staticEval = -MATESCORE - 1;
     }
-    else if (!inCheck && alpha < staticEval) {
-        alpha = staticEval;
+    else {
+        if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
+            ss[ply].staticEval = tte.staticEval;
+        }
+        else {
+            ss[ply].staticEval = evaluate(board);
+        }
+
+        if (ss[ply].staticEval >= beta) {
+            return beta;
+        }
+
+        if (ss[ply].staticEval > alpha) {
+            alpha = ss[ply].staticEval;
+        }
     }
+    
+
 
 
     sortMoveList(board, moveListReduced,ply,tte.type != TType::NO_TYPE? tte.bestMove:0);
