@@ -158,7 +158,7 @@ Score Search::search(Board &board, SearchLimits lim)
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool pvNode)
 {
     assert(ply <= MAXPLY);
-    if (depth <= 0) return quinesence(board, alpha, beta, 1,ply,pvNode);
+    
     
     BitBoard key = board.getHashKey();    
     bool isRoot = ply == 0;
@@ -182,6 +182,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     if (ply >= MAXPLY) {
         return evaluate(board);
     }
+
+    if (depth <= 0) return quinesence(board, alpha, beta, 1, ply, pvNode);
     
     auto tte = tt.probe(key);    
 
