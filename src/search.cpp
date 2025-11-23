@@ -183,6 +183,14 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         return evaluate(board);
     }
 
+    // Mate distance pruning
+    alpha = std::max(alpha, -MATESCORE+ply);
+    beta = std::min((int)beta, MATESCORE-ply);
+    if (alpha >= beta) {
+        return alpha;
+    }
+
+
     if (depth <= 0) return quinesence(board, alpha, beta, 1, ply, pvNode);
     
     auto tte = tt.probe(key);    
@@ -499,6 +507,14 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         return evaluate(board);
     }
     
+    // Mate distance pruning
+    alpha = std::max(alpha, -MATESCORE + ply);
+    beta = std::min((int)beta, MATESCORE - ply);
+    if (alpha >= beta) {
+        return alpha;
+    }
+
+
     auto tte = tt.probe(board.getHashKey());
     bool ttHit = tte.type != TType::NO_TYPE;
 
