@@ -7,31 +7,8 @@
 #include <optional>
 #include <vector>
 #include <array>
+#include <bit>
 #include "move.h"
-
-// ---------- portable bit_floor ----------
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#include <intrin.h>
-static inline uint64_t bit_floor_64(uint64_t x) {
-    if (!x) return 0;
-    unsigned long idx;
-    _BitScanReverse64(&idx, x);
-    return 1ull << idx;
-}
-#else
-static inline uint64_t bit_floor_64(uint64_t x) {
-    if (!x) return 0;
-    x |= (x >> 1);
-    x |= (x >> 2);
-    x |= (x >> 4);
-    x |= (x >> 8);
-    x |= (x >> 16);
-    x |= (x >> 32);
-    return x - (x >> 1);
-}
-#endif
-// ----------------------------------------
 
 enum TType : uint8_t { EXACT, UPPER, LOWER, NO_TYPE };
 
@@ -57,7 +34,7 @@ public:
         uint64_t bytes = uint64_t(sizeMB) * (1ull << 20);
         uint64_t size = bytes / sizeof(Bucket);
         if (size < 1024) size = 1024;
-        nrOfEntries = bit_floor_64(size);
+        nrOfEntries = std::bit_floor(size);
         if (nrOfEntries == 0) nrOfEntries = 1024;   // safety in case sizeMB==0
         keyMask = nrOfEntries - 1;
         table.reset(new Bucket[nrOfEntries]);
