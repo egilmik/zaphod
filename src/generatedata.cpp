@@ -54,7 +54,6 @@ void worker_fn(WorkerArgs a) {
     Board board;
     board.loadNetwork(a.networkPath);
     Search search;
-    search.setTTclearEnabled(false);
     search.setPrintInfo(false);
 
     SearchLimits limits{};
@@ -66,7 +65,7 @@ void worker_fn(WorkerArgs a) {
     std::vector<PositionData> posData{};
     float wdl = 1;
     while (a.produced->load(std::memory_order_relaxed) < a.quota) {
-
+        search.setNewGame();
         if (a.book) {
             std::string fen = a.book->nextFen();
 	    if(fen.empty()){

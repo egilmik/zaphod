@@ -62,6 +62,8 @@ class Search {
         bool isSearchStopped();
         int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove);
         BitBoard getPinned(Board& board, BitBoardEnum otherSide);
+
+        void setNewGame();
         
         int currentFinishedDepth = 0;
         int maxQuinesenceDepthThisSearch = 0;
@@ -73,10 +75,6 @@ class Search {
         void setPrintInfo(bool on) {
             printInfo = on;
         };
-
-        void setTTclearEnabled(bool enabled) {
-            clearTTOnSearch = enabled;
-        }
 
         void setTTSize(int size) {
             tt.setSize(size);

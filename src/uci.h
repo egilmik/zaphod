@@ -15,6 +15,7 @@ class UCI {
         void setNetworkPath(std::string networkPath);
 
     private:
+        void setUCINewGame();
         void setPosition(std::istringstream &is);
         bool parseMove(std::string token);
         void startSearch(std::istringstream &is);

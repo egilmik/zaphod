@@ -12,10 +12,6 @@ Search::Search() {
 Score Search::search(Board &board, SearchLimits lim)
 {   
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-    if (clearTTOnSearch) {
-        tt.clear();
-    }
-    
 
     for (int i = 0; i < MAXPLY; i++) {
         ss[i].checkExt = 0;
@@ -870,6 +866,10 @@ bool Search::equal(Move &a, Move &b)
 {
     return (a.from() == b.from() &&
             a.to() == b.to());
+}
+
+void Search::setNewGame() {
+    tt.clear();
 }
 
 bool Search::isSearchStopped()
