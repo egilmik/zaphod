@@ -6,6 +6,7 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <array>
 #include "move.h"
 
 // ---------- portable bit_floor ----------
@@ -43,6 +44,8 @@ struct TTEntry {
     Move     bestMove{};
 };
 
+
+
 class TTable {
 public:
     explicit TTable(size_t sizeMB) {
@@ -52,30 +55,36 @@ public:
     void setSize(size_t sizeMB) {
         // choose power-of-two bucket count
         uint64_t bytes = uint64_t(sizeMB) * (1ull << 20);
-        uint64_t size = bytes / sizeof(TTEntry);
+        uint64_t size = bytes / sizeof(Bucket);
         if (size < 1024) size = 1024;
         nrOfEntries = bit_floor_64(size);
         if (nrOfEntries == 0) nrOfEntries = 1024;   // safety in case sizeMB==0
         keyMask = nrOfEntries - 1;
-        table.reset(new TTEntry[nrOfEntries]);
+        table.reset(new Bucket[nrOfEntries]);
     }
 
     TTable(const TTable&) = delete;
     TTable& operator=(const TTable&) = delete;
 
     void clear() noexcept {
-        for (uint64_t i = 0; i < nrOfEntries; ++i)
-            table[i].key = 0;
+        for (uint64_t i = 0; i < nrOfEntries; ++i){
+            for (uint64_t z = 0; z < Bucket::size; z++) {
+                table[i].entries[z].key = 0;
+            }
+        
+        }
     }
 
     TTEntry probe(uint64_t key) const noexcept {
         int idx = index(key);
-        const TTEntry& tte = table[index(key)];
-        if (tte.key != key) {
-            return TTEntry{};
+        const Bucket& entries = table[index(key)];
+        for (const auto tte : entries.entries) {
+            if (tte.key == key) {
+                return tte;
+            }
         }
 
-        return tte;
+        return TTEntry{};
     }
 
     void put(uint64_t key, int score, int staticEval, int depth, Move move, TType type);
@@ -83,9 +92,13 @@ public:
 private:
     inline uint64_t index(uint64_t key) const noexcept { return key & keyMask; }
 
+    struct Bucket {
+        static constexpr uint8_t size = 3;
+        std::array<TTEntry, size> entries{};
+    };
 
 
-    std::unique_ptr<TTEntry[]> table;
+    std::unique_ptr<Bucket[]> table;
     uint64_t nrOfEntries = 0;
     uint64_t keyMask = 0;
 };
