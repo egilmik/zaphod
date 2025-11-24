@@ -44,12 +44,7 @@ public:
     TTable& operator=(const TTable&) = delete;
 
     void clear() noexcept {
-        for (uint64_t i = 0; i < nrOfEntries; ++i){
-            for (uint64_t z = 0; z < Bucket::size; z++) {
-                table[i].entries[z].key = 0;
-            }
-        
-        }
+        table.reset(new Bucket[nrOfEntries]);
     }
 
     TTEntry probe(uint64_t key) const noexcept {
