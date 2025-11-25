@@ -19,6 +19,7 @@ struct TTEntry {
     int8_t depth = 0;
     TType    type = NO_TYPE;
     Move     bestMove{};
+    uint16_t age;
 };
 
 
@@ -61,6 +62,10 @@ public:
 
     void put(uint64_t key, int score, int staticEval, int depth, Move move, TType type);
 
+    void age() {
+        tableAge++;
+    }
+
 private:
     inline uint64_t index(uint64_t key) const noexcept { return key & keyMask; }
 
@@ -73,6 +78,7 @@ private:
     std::unique_ptr<Bucket[]> table;
     uint64_t nrOfEntries = 0;
     uint64_t keyMask = 0;
+    uint16_t tableAge = 0;
 };
 
 #endif // TTABLE_H
