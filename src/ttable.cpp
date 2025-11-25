@@ -19,7 +19,7 @@ void TTable::put(uint64_t key, int score, int staticEval, int depth, Move move, 
 
         if (entryValue < minAge) {
             entryPtr = &candidate;
-            minAge = relativeAge;
+            minAge = entryValue;
         }
     }
 
