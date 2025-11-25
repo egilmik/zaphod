@@ -14,7 +14,7 @@ void TTable::put(uint64_t key, int score, int staticEval, int depth, Move move, 
             break;
         }
 
-        const auto relativeAge = tableAge - candidate.age;
+        const auto relativeAge = candidate.depth - (tableAge - candidate.age);
 
         if (relativeAge < minAge) {
             entryPtr = &candidate;
@@ -26,19 +26,16 @@ void TTable::put(uint64_t key, int score, int staticEval, int depth, Move move, 
 
     auto tte = *entryPtr;
 
-    if (!(type == TType::EXACT || depth + 2 > tte.depth || key != tte.key)) {
-        return;
-    }
-
-
-    tte.key = key;
-    tte.bestMove = move;
-    tte.score = score;
-    tte.depth = depth;
-    tte.staticEval = staticEval;
-    tte.type = type;
-    tte.age = tableAge;
+    if(type == TType::EXACT || depth + 4 > tte.depth || key != tte.key){
+        tte.key = key;
+        tte.bestMove = move;
+        tte.score = score;
+        tte.depth = depth;
+        tte.staticEval = staticEval;
+        tte.type = type;
+        tte.age = tableAge;
     
-    *entryPtr = tte;
+        *entryPtr = tte;
+    }
 
 }
