@@ -1,5 +1,6 @@
 #include "ttable.h"
 #include <cassert>
+#include <limits>
 
 void TTable::put(uint64_t key, int score, int staticEval, int depth, Move move, TType type, bool pv) {
     auto packedKey = packKey(key);
