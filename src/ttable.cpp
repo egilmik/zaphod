@@ -26,7 +26,7 @@ void TTable::put(uint64_t key, int score, int staticEval, int depth, Move move, 
 
     auto tte = *entryPtr;
 
-    if (!(tte.type == TType::EXACT || depth + 4 > tte.depth || key != tte.key)) {
+    if (!(type == TType::EXACT || depth + 2 > tte.depth || key != tte.key)) {
         return;
     }
 

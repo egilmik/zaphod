@@ -46,6 +46,7 @@ public:
 
     void clear() noexcept {
         table.reset(new Bucket[nrOfEntries]);
+        tableAge = 0;
     }
 
     TTEntry probe(uint64_t key) const noexcept {

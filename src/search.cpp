@@ -133,6 +133,7 @@ Score Search::search(Board &board, SearchLimits lim)
         bestScore = bestMoveIteration;
     } 
 
+    tt.age();
 
     ////////////////////////////
     // We might have canceled early and do not have a valid move.
