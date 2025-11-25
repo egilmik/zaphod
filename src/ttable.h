@@ -8,7 +8,15 @@
 #include <vector>
 #include <array>
 #include <bit>
+#include <cstddef>
 #include "move.h"
+
+#if defined _MSC_VER
+    #include <__msvc_int128.hpp>
+    using u128 = std::_Unsigned128;
+#elif
+    using u128 = unsigned __int128;
+#endif
 
 enum TType : uint8_t { 
     NO_TYPE = 0,
@@ -40,17 +48,17 @@ public:
         uint64_t bytes = uint64_t(sizeMB) * (1ull << 20);
         uint64_t size = bytes / sizeof(Bucket);
         if (size < 1024) size = 1024;
-        nrOfEntries = size;
-        if (nrOfEntries == 0) nrOfEntries = 1024;   // safety in case sizeMB==0
-        keyMask = nrOfEntries - 1;
-        table.reset(new Bucket[nrOfEntries]);
+        nrOfBuckets = size;
+        if (nrOfBuckets == 0) nrOfBuckets = 1024;   // safety in case sizeMB==0
+        keyMask = nrOfBuckets - 1;
+        table.reset(new Bucket[nrOfBuckets]);
     }
 
     TTable(const TTable&) = delete;
     TTable& operator=(const TTable&) = delete;
 
     void clear() noexcept {
-        table.reset(new Bucket[nrOfEntries]);
+        table.reset(new Bucket[nrOfBuckets]);
         tableAge = 0;
     }
 
@@ -87,7 +95,11 @@ public:
     }
 
 private:
-    inline uint64_t index(uint64_t key) const noexcept { return key & keyMask; }
+    
+
+    inline uint64_t index(uint64_t key) const noexcept { 
+        return static_cast<uint64_t>((static_cast<u128>(key) * static_cast<u128>(nrOfBuckets)) >> 64);
+    }
 
     struct InternalEntry {
         static constexpr uint32_t ageBits = 5;
@@ -119,14 +131,16 @@ private:
 
     };
 
-    struct Bucket {
+    struct alignas(32) Bucket {
         static constexpr uint8_t size = 3;
         std::array<InternalEntry, size> entries{};
+        std::array < uint8_t, std::bit_ceil(sizeof(InternalEntry)* size) - sizeof(InternalEntry) * size> padding{};
+
     };
 
 
     std::unique_ptr<Bucket[]> table;
-    uint64_t nrOfEntries = 0;
+    uint64_t nrOfBuckets = 0;
     uint64_t keyMask = 0;
     uint16_t tableAge = 0;
 };
