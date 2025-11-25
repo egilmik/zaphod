@@ -463,10 +463,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;
     
-    if (tte.type == TType::NO_TYPE || (tte.type != TType::NO_TYPE && tte.depth <= depth)) {
-        tt.put(key, bestScore, ss[ply].staticEval, depth, alphaMove, bound, pvNode);
-    }
     
+    tt.put(key, bestScore, ss[ply].staticEval, depth, alphaMove, bound, pvNode);
     
 
     return bestScore;
