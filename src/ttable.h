@@ -14,7 +14,7 @@
 #if defined _MSC_VER
     #include <__msvc_int128.hpp>
     using u128 = std::_Unsigned128;
-#elif
+#else
     using u128 = unsigned __int128;
 #endif
 
