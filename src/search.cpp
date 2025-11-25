@@ -220,7 +220,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     Move alphaMove{};
     
     
-    sortMoveList(board, moveList, ply, ttHit ? tte.bestMove : 0);
+    sortMoveList(board, moveList, ply, ttHit ? tte.move : 0);
 
     int validMoves = moveList.counter;
     bool inCheck = moveList.checkers > 0;
@@ -464,7 +464,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;
     
     if (tte.type == TType::NO_TYPE || (tte.type != TType::NO_TYPE && tte.depth <= depth)) {
-        tt.put(key, bestScore, ss[ply].staticEval, depth, alphaMove, bound);
+        tt.put(key, bestScore, ss[ply].staticEval, depth, alphaMove, bound, pvNode);
     }
     
     
@@ -561,7 +561,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
 
 
-    sortMoveList(board, moveListReduced,ply,tte.type != TType::NO_TYPE? tte.bestMove:0);
+    sortMoveList(board, moveListReduced,ply,tte.type != TType::NO_TYPE? tte.move:0);
 
 
     int score = 0;

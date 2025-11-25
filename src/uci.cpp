@@ -253,6 +253,7 @@ void UCI::bench() {
     limits.depthLimit = 12;
 
     for (std::string fen : fenList) {
+        search.setNewGame();
         motherBoard.parseFen(fen);
         std::cout << fen << std::endl;
         Score move = search.search(motherBoard, limits);

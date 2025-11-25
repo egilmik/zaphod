@@ -10,15 +10,20 @@
 #include <bit>
 #include "move.h"
 
-enum TType : uint8_t { EXACT, UPPER, LOWER, NO_TYPE };
+enum TType : uint8_t { 
+    NO_TYPE = 0,
+    EXACT = 1,
+    UPPER = 2,
+    LOWER = 3 };
 
 struct TTEntry {
     uint64_t key = 0;
     int16_t  score = 0;
     int16_t staticEval = 0;
     int8_t depth = 0;
+    bool pv = false;
     TType    type = NO_TYPE;
-    Move     bestMove{};
+    Move     move{};
     uint16_t age;
 };
 
@@ -50,29 +55,73 @@ public:
     }
 
     TTEntry probe(uint64_t key) const noexcept {
-        int idx = index(key);
+        auto packedKey = packKey(key);
         const Bucket& entries = table[index(key)];
-        for (const auto tte : entries.entries) {
-            if (tte.key == key) {
-                return tte;
+        TTEntry entry{};
+
+        for (const auto internal : entries.entries) {
+            if (internal.shortKey == packedKey) {
+                entry.key = key;
+                entry.score = internal.score;
+                entry.staticEval = internal.staticEval;
+                entry.move = internal.move;
+                entry.depth = internal.depth;
+                entry.pv = internal.pv();
+                entry.type = internal.type();
+
+                break;
             }
         }
 
-        return TTEntry{};
+        return entry;
     }
 
-    void put(uint64_t key, int score, int staticEval, int depth, Move move, TType type);
+    void put(uint64_t key, int score, int staticEval, int depth, Move move, TType type, bool pv);
 
     void age() {
-        tableAge++;
+        tableAge = (tableAge + 1) % (1 << InternalEntry::ageBits); 
+    }
+
+    uint16_t packKey(uint64_t key) const {
+        return static_cast<uint16_t>(key);
     }
 
 private:
     inline uint64_t index(uint64_t key) const noexcept { return key & keyMask; }
 
+    struct InternalEntry {
+        static constexpr uint32_t ageBits = 5;
+        static constexpr uint32_t ageCycle = 1 << ageBits;
+        static constexpr uint32_t ageMask = ageCycle - 1;
+
+        uint16_t shortKey;
+        int16_t score;
+        int16_t staticEval;
+        Move move;
+        uint8_t depth;
+        uint8_t agePVType;
+
+        uint32_t age() const {
+            return static_cast<uint32_t>(agePVType >> 3);
+        }
+        
+        bool pv() const {
+            return (static_cast<uint32_t>(agePVType >> 2) & 1) != 0;
+        }
+
+        TType type() const {
+            return static_cast<TType>(agePVType & 0x3);
+        }
+
+        void setAgePVType(uint32_t age, bool pv, TType type) {
+            agePVType = (age << 3) | (static_cast<uint32_t>(pv) << 2) | static_cast<uint32_t>(type);
+        }
+
+    };
+
     struct Bucket {
         static constexpr uint8_t size = 3;
-        std::array<TTEntry, size> entries{};
+        std::array<InternalEntry, size> entries{};
     };
 
 
