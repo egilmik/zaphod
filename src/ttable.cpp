@@ -14,7 +14,7 @@ void TTable::put(uint64_t key, int score, int staticEval, int depth, Move move, 
             break;
         }
 
-        const auto relativeAge = candidate.depth - (tableAge - candidate.age);
+        const auto relativeAge = candidate.depth - (tableAge - candidate.age)*2;
 
         if (relativeAge < minAge) {
             entryPtr = &candidate;
