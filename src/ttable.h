@@ -40,7 +40,7 @@ public:
         uint64_t bytes = uint64_t(sizeMB) * (1ull << 20);
         uint64_t size = bytes / sizeof(Bucket);
         if (size < 1024) size = 1024;
-        nrOfEntries = std::bit_floor(size);
+        nrOfEntries = size;
         if (nrOfEntries == 0) nrOfEntries = 1024;   // safety in case sizeMB==0
         keyMask = nrOfEntries - 1;
         table.reset(new Bucket[nrOfEntries]);
