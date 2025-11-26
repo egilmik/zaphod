@@ -50,7 +50,6 @@ public:
         if (size < 1024) size = 1024;
         nrOfBuckets = size;
         if (nrOfBuckets == 0) nrOfBuckets = 1024;   // safety in case sizeMB==0
-        keyMask = nrOfBuckets - 1;
         table.reset(new Bucket[nrOfBuckets]);
     }
 
@@ -141,8 +140,7 @@ private:
 
     std::unique_ptr<Bucket[]> table;
     uint64_t nrOfBuckets = 0;
-    uint64_t keyMask = 0;
-    uint16_t tableAge = 0;
+    uint32_t tableAge = 0;
 };
 
 #endif // TTABLE_H
