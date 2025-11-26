@@ -48,7 +48,7 @@ enable_testing()
 
 add_executable(
   zaphod_test
-  test/testboard.cpp test/testttable.cpp test/testperft.cpp src/move.h src/bitboard.h test/testtranspositiontable.cpp test/testsearch.cpp test/testuci.cpp src/uci.cpp src/tools.h src/uci.h src/board.h src/board.cpp src/search.h src/search.cpp "src/perft/perft.h" src/perft/perfttest.cpp src/perft/perfttest.h src/movegenerator.cpp  src/movegenerator.h
+  test/testboard.cpp test/testttable.cpp test/testperft.cpp src/move.h src/bitboard.h test/testsearch.cpp test/testuci.cpp src/uci.cpp src/tools.h src/uci.h src/board.h src/board.cpp src/search.h src/search.cpp "src/perft/perft.h" src/perft/perfttest.cpp src/perft/perfttest.h src/movegenerator.cpp  src/movegenerator.h
  "test/testtools.cpp" "test/testmove.cpp" "test/testmaterial.cpp"   "src/ttable.h"     "src/nnueq.h" "src/nnueq.cpp" "src/tools/openingbook.h" "src/tools/openingbook.cpp" "src/tools/fentools.h" "src/ttable.cpp")
 
 
