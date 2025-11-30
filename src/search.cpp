@@ -12,10 +12,6 @@ Search::Search() {
 Score Search::search(Board &board, SearchLimits lim)
 {   
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-    if (clearTTOnSearch) {
-        tt.clear();
-    }
-    
 
     for (int i = 0; i < MAXPLY; i++) {
         ss[i].checkExt = 0;
@@ -137,6 +133,7 @@ Score Search::search(Board &board, SearchLimits lim)
         bestScore = bestMoveIteration;
     } 
 
+    tt.age();
 
     ////////////////////////////
     // We might have canceled early and do not have a valid move.
@@ -158,54 +155,60 @@ Score Search::search(Board &board, SearchLimits lim)
 int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool pvNode)
 {
     assert(ply <= MAXPLY);
-    if (depth <= 0) return quinesence(board, alpha, beta, 1,ply,pvNode);
+    
     
     BitBoard key = board.getHashKey();    
     bool isRoot = ply == 0;
     int alphaOrginal = alpha;
     bool improving = false;
+    int bestScore = -MATESCORE;
 
 
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
-    if ((evaluatedNodes % 100) == 0 && isSearchStopped()) {
+    if (isSearchStopped()) {
         return beta;
     }
     //////////////////////////
     // Has repeated 3-fold
     //////////////////////////
     if (board.hasPositionRepeated() || board.getHalfMoveClock() >= 100) {
-        return 0;
+        return drawScore();
     }
 
     if (ply >= MAXPLY) {
         return evaluate(board);
     }
+
+    // Mate distance pruning
+    alpha = std::max(alpha, -MATESCORE+ply);
+    beta = std::min((int)beta, MATESCORE-ply);
+    if (alpha >= beta) {
+        return alpha;
+    }
+
+
+    if (depth <= 0) return quinesence(board, alpha, beta, 1, ply, pvNode);
     
     auto tte = tt.probe(key);    
 
-    if (!pvNode && tte != std::nullopt && tte->depth >= depth) {
-        if (tte->type == EXACT) {
+    if (!pvNode && tte.depth >= depth) {
+        
+        if (tte.type == EXACT) {
             exactHit++;
-            if (isRoot) {
-                bestMoveIteration.bestMove = tte->bestMove;
-                bestMoveIteration.score = tte->score;
-                bestMoveIteration.depth = tte->depth;
-            }
-            return tte->score;
+            return tte.score;
         }
-        else if (tte->type == LOWER && tte->score > alpha) {
+        else if (tte.type == LOWER && tte.score >= beta) {
             lowerBoundHit++;
-            alpha = tte->score;
+            return tte.score;
         }
-        else if (tte->type == UPPER && tte->score < beta) {
+        else if (tte.type == UPPER && tte.score <= alpha) {
             upperBoundHit++;
-            beta = tte->score;
-        }
-        if (alpha >= beta) {
-            return tte->score;
+            return tte.score;
         }
     }
+
+    bool ttHit = tte.type != TType::NO_TYPE;
 
     
 
@@ -217,10 +220,21 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     Move alphaMove{};
     
     
-    sortMoveList(board, moveList, ply, tte ? tte->bestMove : 0);
+    sortMoveList(board, moveList, ply, ttHit ? tte.move : 0);
 
     int validMoves = moveList.counter;
     bool inCheck = moveList.checkers > 0;
+
+    if (inCheck) {
+        ss[ply].staticEval = -MATESCORE - 1;
+    }
+    else if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
+        ss[ply].staticEval = tte.staticEval;
+    }
+    else {
+        ss[ply].staticEval = evaluate(board);
+    }
+
 
     if (ply >= 4 && !inCheck) {
         improving = (ss[ply].staticEval > ss[ply - 2].staticEval && ss[ply - 2].staticEval > ss[ply - 4].staticEval);
@@ -334,14 +348,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
         }
-
-
         
         board.makeMove(move);      
+        evaluatedNodes++;
 
-        int staticEval = 0;
-        int newDepth = depth - 1;
-        ss[ply + 1].staticEval = staticEval = board.evaluate();
+        
+        int newDepth = depth - 1;        
 
         ////////////
         // Check extension
@@ -403,39 +415,43 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         
         board.revertLastMove();
 
-        if (score > alpha) {
-            alpha = score;
-            alphaMove = move;
-            if (isRoot) {
-                bestMoveIteration.bestMove = move;
-                bestMoveIteration.score = alpha;
-                bestMoveIteration.depth = depth;
-            }
-        }
+        if (score > bestScore) {
+            bestScore = score;
 
-        if (score >= beta) {
-            
-            if (!isCapture) {
-                if (move.value != ss[ply].killerMove[0].value) {
-                    ss[ply].killerMove[0] = move;
+            if (score > alpha) {
+                alpha = score;
+                alphaMove = move;
+                if (isRoot) {
+                    bestMoveIteration.bestMove = move;
+                    bestMoveIteration.score = alpha;
+                    bestMoveIteration.depth = depth;
                 }
-                else {
-                    ss[ply].killerMove[1] = move;
-                }
-
-                int side = 0;
-                if (board.getSideToMove() == Black) {
-                    side = 1;
-                }
-                hist.quiet[side][move.from()][move.to()] += depth * depth;
-
             }
 
-            /*if (it == transpositionMap.end() || it->second.depth < depth) {
-                transpositionMap[key] = { move, TEType::lower, depth, beta };
-            }*/
-                
-            break;
+            if (alpha >= beta) {
+
+                if (!isCapture) {
+                    if (move.value != ss[ply].killerMove[0].value) {
+                        ss[ply].killerMove[0] = move;
+                    }
+                    else {
+                        ss[ply].killerMove[1] = move;
+                    }
+
+                    int side = 0;
+                    if (board.getSideToMove() == Black) {
+                        side = 1;
+                    }
+                    hist.quiet[side][move.from()][move.to()] += depth * depth;
+
+                }
+
+                /*if (it == transpositionMap.end() || it->second.depth < depth) {
+                    transpositionMap[key] = { move, TEType::lower, depth, beta };
+                }*/
+
+                break;
+            }
         }
 
         
@@ -443,33 +459,16 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     if (validMoves == 0) {
-
-        if (inCheck) {
-            // We are check mate
-            alpha = -MATESCORE+ply;
-        }
-        else {
-            // Stalemate
-            alpha = 0;
-        }
+        return inCheck ? -MATESCORE + ply : 0;
     }
 
+    TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;
     
-    //Replace if depth is higher
-    if (!tte || (tte && tte->depth < depth)) {
-        if (alpha <= alphaOrginal) {
-            tt.put(key, alpha, depth, alphaMove, UPPER);
-        }
-        else if (alpha >= beta) {
-            tt.put(key, alpha, depth, alphaMove, LOWER);
-        } 
-        if (alpha < beta && alpha > alphaOrginal) {
-            tt.put(key, alpha, depth, alphaMove, EXACT);
-        }
-    }
+    
+    tt.put(key, bestScore, ss[ply].staticEval, depth, alphaMove, bound, pvNode);
     
 
-    return alpha;
+    return bestScore;
 }
 
 
@@ -481,7 +480,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     // Has repeated 3-fold
     //////////////////////////
     if (board.hasPositionRepeated() || board.getHalfMoveClock() >= 100) {
-        return 0;
+        return drawScore();
     }
     
     if (maxQuinesenceDepthThisSearch < depth) {
@@ -496,7 +495,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
     //////////////////////////
-    if ((evaluatedNodes % 1000) == 0 && isSearchStopped()) {
+    if (isSearchStopped()) {
         return beta;
     }
 
@@ -504,17 +503,25 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         return evaluate(board);
     }
     
+    // Mate distance pruning
+    alpha = std::max(alpha, -MATESCORE + ply);
+    beta = std::min((int)beta, MATESCORE - ply);
+    if (alpha >= beta) {
+        return alpha;
+    }
+
+
     auto tte = tt.probe(board.getHashKey());
+    bool ttHit = tte.type != TType::NO_TYPE;
+
 
     //////////////////////////
     // Transposition Table
     //////////////////////////
-    if (!pvNode && tte &&  (tte->type == EXACT || (tte->type == LOWER && tte->score >= beta) || (tte->type == UPPER && tte->score <= alpha)))  {
+    if (!pvNode &&  (tte.type == EXACT || (tte.type == LOWER && tte.score >= beta) || (tte.type == UPPER && tte.score <= alpha)))  {
         qsearchTTHit++;            
-        return tte->score;
+        return tte.score;
     }
-
-    int staticEval =  evaluate(board);
 
 
     MoveList moveList;
@@ -528,15 +535,30 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
     bool inCheck = moveList.checkers > 0;
 
-    if (!inCheck && staticEval >= beta) {
-        return beta;
+    if (inCheck) {
+        ss[ply].staticEval = -MATESCORE - 1;
     }
-    else if (!inCheck && alpha < staticEval) {
-        alpha = staticEval;
+    else {
+        if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
+            ss[ply].staticEval = tte.staticEval;
+        }
+        else {
+            ss[ply].staticEval = evaluate(board);
+        }
+
+        if (ss[ply].staticEval >= beta) {
+            return beta;
+        }
+
+        if (ss[ply].staticEval > alpha) {
+            alpha = ss[ply].staticEval;
+        }
     }
+    
 
 
-    sortMoveList(board, moveListReduced,ply,tte? tte->bestMove:0);
+
+    sortMoveList(board, moveListReduced,ply,tte.type != TType::NO_TYPE? tte.move:0);
 
 
     int score = 0;
@@ -553,7 +575,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         */
 
         
-        
+        evaluatedNodes++;
         bool valid = board.makeMove(move);
         score = -quinesence(board,-beta,-alpha,depth-1, ply+1,pvNode);
 
@@ -582,6 +604,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     }
 
     return alpha;
+}
+
+int Search::drawScore() {
+    return 2 - (evaluatedNodes % 4);
 }
 
 int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
@@ -833,7 +859,6 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 
 int Search::evaluate(Board &board)
 {
-    evaluatedNodes++;
     return board.evaluate();
 }
 
@@ -844,29 +869,22 @@ bool Search::equal(Move &a, Move &b)
             a.to() == b.to());
 }
 
-MoveList Search::reconstructPV(Board& board, int depth)
-{
-    MoveList list;
-
-    for (int i = 0; i < depth; i++) {
-        
-        auto tte = tt.probe(board.getHashKey());
-
-        if (tte && tte->type == EXACT) {
-            board.makeMove(tte->bestMove);
-            list.moves[list.counter++] = tte->bestMove;
-        }
-        else {
-            return list;
-        }
-
-    }
-
-    return list;
+void Search::setNewGame() {
+    tt.clear();
 }
 
 bool Search::isSearchStopped()
 {
+    if (stopSearch) {
+        return true;
+    }
+
+    // We only check every 1000 nodes, if it is not already stopped, this will return false
+    if ((evaluatedNodes % 1000) == 0) {
+        return false;
+    }
+
+
     auto end = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();
     auto diff = end - startTime;
