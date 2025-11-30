@@ -3,7 +3,6 @@
 
 #include <string>
 #include <algorithm>
-#include "../board.h"
 
 namespace zaphod::params {
 
