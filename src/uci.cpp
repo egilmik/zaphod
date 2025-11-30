@@ -23,7 +23,9 @@ void UCI::loop(/*int argc, char* argv[]*/) {
         is >> std::skipws >> token;
         
         if (token == "quit") break;
+
         else if (token == "uci") sendID();
+        else if (token == "ucinewgame") setUCINewGame();
         else if (token == "position") setPosition(is);
         else if (token == "go") startSearch(is);
         else if (token == "setoption") setOption(is);
@@ -59,6 +61,10 @@ void UCI::setPosition(std::istringstream &is)
     }
 
     
+}
+
+void UCI::setUCINewGame() {
+    search.setNewGame();
 }
 
 void UCI::startSearch(std::istringstream &is)
@@ -277,11 +283,11 @@ void UCI::bench() {
     auto start = std::chrono::high_resolution_clock::now();
     uint64_t nodes = 0;
 
-    Search search;
     SearchLimits limits;
     limits.depthLimit = 12;
 
     for (std::string fen : fenList) {
+        search.setNewGame();
         motherBoard.parseFen(fen);
         std::cout << fen << std::endl;
         Score move = search.search(motherBoard, limits);

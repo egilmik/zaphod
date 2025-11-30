@@ -6,47 +6,36 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <array>
+#include <bit>
+#include <cstddef>
 #include "move.h"
 
-// ---------- portable bit_floor ----------
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#include <intrin.h>
-static inline uint64_t bit_floor_64(uint64_t x) {
-    if (!x) return 0;
-    unsigned long idx;
-    _BitScanReverse64(&idx, x);
-    return 1ull << idx;
-}
+#if defined _MSC_VER
+    #include <__msvc_int128.hpp>
+    using u128 = std::_Unsigned128;
 #else
-static inline uint64_t bit_floor_64(uint64_t x) {
-    if (!x) return 0;
-    x |= (x >> 1);
-    x |= (x >> 2);
-    x |= (x >> 4);
-    x |= (x >> 8);
-    x |= (x >> 16);
-    x |= (x >> 32);
-    return x - (x >> 1);
-}
+    using u128 = unsigned __int128;
 #endif
-// ----------------------------------------
 
-enum TType : uint8_t { EXACT, UPPER, LOWER };
+enum TType : uint8_t { 
+    NO_TYPE = 0,
+    EXACT = 1,
+    UPPER = 2,
+    LOWER = 3 };
 
 struct TTEntry {
     uint64_t key = 0;
-    int32_t  score = 0;
-    uint16_t depth = 0;
-    TType    type = EXACT;
-    Move     bestMove{};
+    int16_t  score = 0;
+    int16_t staticEval = 0;
+    int8_t depth = 0;
+    bool pv = false;
+    TType    type = NO_TYPE;
+    Move     move{};
+    uint16_t age;
 };
 
-struct alignas(64) Bucket {          // 64 avoids false sharing
-    std::atomic<uint64_t> key{ 0 };    // publish
-    std::atomic<uint64_t> lo{ 0 };     // [score:int32][move:uint32]
-    std::atomic<uint64_t> hi{ 0 };     // [depth:uint16][type:uint8][pad:40]
-};
+
 
 class TTable {
 public:
@@ -57,11 +46,10 @@ public:
     void setSize(size_t sizeMB) {
         // choose power-of-two bucket count
         uint64_t bytes = uint64_t(sizeMB) * (1ull << 20);
-        uint64_t buckets = bytes / sizeof(Bucket);
-        if (buckets < 1024) buckets = 1024;
-        nrOfBuckets = bit_floor_64(buckets);
+        uint64_t size = bytes / sizeof(Bucket);
+        if (size < 1024) size = 1024;
+        nrOfBuckets = size;
         if (nrOfBuckets == 0) nrOfBuckets = 1024;   // safety in case sizeMB==0
-        keyMask = nrOfBuckets - 1;
         table.reset(new Bucket[nrOfBuckets]);
     }
 
@@ -69,48 +57,90 @@ public:
     TTable& operator=(const TTable&) = delete;
 
     void clear() noexcept {
-        for (uint64_t i = 0; i < nrOfBuckets; ++i)
-            table[i].key.store(0, std::memory_order_relaxed);
+        table.reset(new Bucket[nrOfBuckets]);
+        tableAge = 0;
     }
 
-    std::optional<TTEntry> probe(uint64_t key) const noexcept {
-        const Bucket& b = table[index(key)];
-        uint64_t k = b.key.load(std::memory_order_acquire);
-        if (k != key) return std::nullopt;
-        uint64_t lo = b.lo.load(std::memory_order_relaxed);
-        uint64_t hi = b.hi.load(std::memory_order_relaxed);
-        TTEntry e;
-        e.key = k;
-        e.score = static_cast<int32_t>(lo >> 32);
-        e.bestMove = Move(static_cast<uint32_t>(lo));
-        e.depth = static_cast<uint16_t>(hi >> 8);
-        e.type = static_cast<TType>(hi & 0xFF);
-        return e;
-    }
+    TTEntry probe(uint64_t key) const noexcept {
+        auto packedKey = packKey(key);
+        const Bucket& entries = table[index(key)];
+        TTEntry entry{};
 
-    void put(uint64_t key, int score, int depth, Move move, TType type) noexcept {
-        Bucket& b = table[index(key)];
-        uint64_t existingKey = b.key.load(std::memory_order_acquire);
-        if (existingKey == key) {
-            uint64_t oldHi = b.hi.load(std::memory_order_relaxed);
-            uint16_t oldDepth = static_cast<uint16_t>(oldHi >> 8);
-            if (depth <= oldDepth) return;
+        for (const auto internal : entries.entries) {
+            if (internal.shortKey == packedKey) {
+                entry.key = key;
+                entry.score = internal.score;
+                entry.staticEval = internal.staticEval;
+                entry.move = internal.move;
+                entry.depth = internal.depth;
+                entry.pv = internal.pv();
+                entry.type = internal.type();
+
+                break;
+            }
         }
-        uint64_t lo = (uint64_t(uint32_t(score)) << 32) | uint64_t(move.value);
-        uint64_t hi = (uint64_t(uint16_t(depth)) << 8) | uint64_t(uint8_t(type));
-        b.lo.store(lo, std::memory_order_relaxed);
-        b.hi.store(hi, std::memory_order_relaxed);
-        b.key.store(key, std::memory_order_release);
+
+        return entry;
+    }
+
+    void put(uint64_t key, int score, int staticEval, int depth, Move move, TType type, bool pv);
+
+    void age() {
+        tableAge = (tableAge + 1) % (1 << InternalEntry::ageBits); 
+    }
+
+    uint16_t packKey(uint64_t key) const {
+        return static_cast<uint16_t>(key);
     }
 
 private:
-    inline uint64_t index(uint64_t key) const noexcept { return key & keyMask; }
+    
 
+    inline uint64_t index(uint64_t key) const noexcept { 
+        return static_cast<uint64_t>((static_cast<u128>(key) * static_cast<u128>(nrOfBuckets)) >> 64);
+    }
+
+    struct InternalEntry {
+        static constexpr uint32_t ageBits = 5;
+        static constexpr uint32_t ageCycle = 1 << ageBits;
+        static constexpr uint32_t ageMask = ageCycle - 1;
+
+        uint16_t shortKey;
+        int16_t score;
+        int16_t staticEval;
+        Move move;
+        uint8_t depth;
+        uint8_t agePVType;
+
+        uint32_t age() const {
+            return static_cast<uint32_t>(agePVType >> 3);
+        }
+        
+        bool pv() const {
+            return (static_cast<uint32_t>(agePVType >> 2) & 1) != 0;
+        }
+
+        TType type() const {
+            return static_cast<TType>(agePVType & 0x3);
+        }
+
+        void setAgePVType(uint32_t age, bool pv, TType type) {
+            agePVType = (age << 3) | (static_cast<uint32_t>(pv) << 2) | static_cast<uint32_t>(type);
+        }
+
+    };
+
+    struct alignas(32) Bucket {
+        static constexpr uint8_t size = 3;
+        std::array<InternalEntry, size> entries{};
+        std::array < uint8_t, std::bit_ceil(sizeof(InternalEntry)* size) - sizeof(InternalEntry) * size> padding{};
+
+    };
 
 
     std::unique_ptr<Bucket[]> table;
     uint64_t nrOfBuckets = 0;
-    uint64_t keyMask = 0;
+    uint32_t tableAge = 0;
 };
 
 #endif // TTABLE_H

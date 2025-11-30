@@ -54,7 +54,6 @@ void worker_fn(WorkerArgs a) {
     Board board;
     board.loadNetwork(a.networkPath);
     Search search;
-    search.setTTclearEnabled(false);
     search.setPrintInfo(false);
 
     SearchLimits limits{};
@@ -66,7 +65,7 @@ void worker_fn(WorkerArgs a) {
     std::vector<PositionData> posData{};
     float wdl = 1;
     while (a.produced->load(std::memory_order_relaxed) < a.quota) {
-
+        search.setNewGame();
         if (a.book) {
             std::string fen = a.book->nextFen();
 	    if(fen.empty()){
@@ -99,11 +98,12 @@ void worker_fn(WorkerArgs a) {
             board.makeMove(l.moves[d(gen)]);
         }
         
+        int moveCounter = 0;
 
         while(true){
             MoveList list;
             MoveGenerator::generateMoves(board, list);
-            if (list.counter == 0 || board.hasPositionRepeated() || board.hasInsufficientMaterial()) {
+            if (list.counter == 0 || board.hasPositionRepeated() || board.hasInsufficientMaterial() || moveCounter > 200) {
                 wdl = 0.5;
                 break;
             }
@@ -151,6 +151,7 @@ void worker_fn(WorkerArgs a) {
             
         
             board.makeMove(best);
+            moveCounter++;
         }
         a.produced->fetch_add(posData.size(), std::memory_order_relaxed);
         
