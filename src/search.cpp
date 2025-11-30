@@ -523,8 +523,6 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         return tte.score;
     }
 
-    int staticEval =  evaluate(board);
-
 
     MoveList moveList;
     MoveList moveListReduced;
