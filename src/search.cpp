@@ -166,14 +166,14 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
-    if ((evaluatedNodes % 100) == 0 && isSearchStopped()) {
+    if (isSearchStopped()) {
         return beta;
     }
     //////////////////////////
     // Has repeated 3-fold
     //////////////////////////
     if (board.hasPositionRepeated() || board.getHalfMoveClock() >= 100) {
-        return 0;
+        return drawScore();
     }
 
     if (ply >= MAXPLY) {
@@ -350,6 +350,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         }
         
         board.makeMove(move);      
+        evaluatedNodes++;
 
         
         int newDepth = depth - 1;        
@@ -479,7 +480,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     // Has repeated 3-fold
     //////////////////////////
     if (board.hasPositionRepeated() || board.getHalfMoveClock() >= 100) {
-        return 0;
+        return drawScore();
     }
     
     if (maxQuinesenceDepthThisSearch < depth) {
@@ -494,7 +495,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     // Check if max search time has been exhausted
     // Returns beta to prevent things going to shit
     //////////////////////////
-    if ((evaluatedNodes % 1000) == 0 && isSearchStopped()) {
+    if (isSearchStopped()) {
         return beta;
     }
 
@@ -576,7 +577,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         */
 
         
-        
+        evaluatedNodes++;
         bool valid = board.makeMove(move);
         score = -quinesence(board,-beta,-alpha,depth-1, ply+1,pvNode);
 
@@ -605,6 +606,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     }
 
     return alpha;
+}
+
+int Search::drawScore() {
+    return 2 - (evaluatedNodes % 4);
 }
 
 int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
@@ -856,7 +861,6 @@ void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
 
 int Search::evaluate(Board &board)
 {
-    evaluatedNodes++;
     return board.evaluate();
 }
 
@@ -873,6 +877,16 @@ void Search::setNewGame() {
 
 bool Search::isSearchStopped()
 {
+    if (stopSearch) {
+        return true;
+    }
+
+    // We only check every 1000 nodes, if it is not already stopped, this will return false
+    if ((evaluatedNodes % 1000) == 0) {
+        return false;
+    }
+
+
     auto end = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();
     auto diff = end - startTime;

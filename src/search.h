@@ -63,6 +63,8 @@ class Search {
         int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove);
         BitBoard getPinned(Board& board, BitBoardEnum otherSide);
 
+        int drawScore();
+
         void setNewGame();
         
         int currentFinishedDepth = 0;
