@@ -4,7 +4,9 @@
 #include <algorithm>
 #include <chrono>
 #include <cassert>
+#include "params.h"
 
+using namespace zaphod::params;
 
 Search::Search() {
 }
@@ -382,12 +384,18 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         // LMR
         ////////////
 
-        if (depth >= 2 && i > 1 + isRoot) {       
-            int r = (int)std::max(0.0, (isCapture ? lmrBaseNoisy: lmrBaseQuiet) + std::log(depth) * std::log(i) / lmrDivider);
+        if (depth >= 2 && i > 1 + isRoot) {
+            int lnDepth = std::log(depth) * 100;
+            int lnMoves = std::log(i) * 100;
+            int base = (isCapture ? lmrBaseNoisy() : lmrBaseQuiet());
+            int r = (int)std::max(0, base + lnDepth*lnMoves  / lmrDivider());
 
-            r += !pvNode;
-            r -= improving;
-            r -= givesCheck;
+
+            r += !pvNode*lmrPVReduction();
+            r -= improving*lmrImprovingReduction();
+            r -= givesCheck*lmrCheckReduction();
+
+            r /= 100;
 
             score = -negamax(board, newDepth-r, -(alpha + 1), -alpha, ply + 1,false);
             lmrHit++;

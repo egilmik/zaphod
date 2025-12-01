@@ -4,6 +4,9 @@
 #include "perft/perft.h"
 #include "material.h"
 #include "tools/fentools.h"
+#include "params.h"
+
+using namespace zaphod::params;
 
 void UCI::setNetworkPath(std::string path) {
     motherBoard.loadNetwork(path);
@@ -152,9 +155,15 @@ void UCI::sendID()
     std::cout << "option name Hash type spin default 256 min 1 max 2048" << std::endl;
 
     //Tuner parameters
-    std::cout << "option name tuner.lmrdivider type spin default 225 min 100 max 350" << std::endl;
-    std::cout << "option name tuner.lmrbasenoisy type spin default -10 min -150 max 100" << std::endl;
-    std::cout << "option name tuner.lmrbasequiet type spin default 70 min -50 max 220" << std::endl;
+    //for (zaphod::params::Parameter& param : zaphod::params::tunableParameters.) {
+    auto& vec = zaphod::params::registry();
+    for (int i = 0; i < vec.size() ; i++) {
+        Parameter& param = vec[i];
+        std::cout << "option name " << param.name << " type spin default " << param.value << " min " << param.min << " max " << param.max << std::endl;
+    }
+
+        
+    //}
 
     std::cout << "uciok" << std::endl;
 }
@@ -191,6 +200,22 @@ void UCI::setOption(std::istringstream& is) {
         search.setTTSize(hashSize);
     }
 
+    auto& vec = zaphod::params::registry();
+    for (int i = 0; i < vec.size(); i++) {
+        Parameter& param = vec[i];
+        std::string paramName = param.name;
+        std::transform(paramName.begin(), paramName.end(), paramName.begin(), ::tolower);
+        if (paramName == optionToken) {
+            std::string valueToken;
+            is >> valueToken; //Expected to be the string "value";
+            std::string intToken;
+            is >> intToken;
+            int value = stoi(intToken);
+            param.value = value;
+        }
+    }
+
+    /*
     if (optionToken == "tuner.lmrdivider") {
         std::string valueToken;
         is >> valueToken; //Expected to be the string "value";
@@ -217,6 +242,7 @@ void UCI::setOption(std::istringstream& is) {
         int lmr = stoi(value);
         search.setLMRBaseQuiet((float)lmr);
     }
+    */
 
 
 }

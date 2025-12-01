@@ -82,23 +82,7 @@ class Search {
             tt.setSize(size);
         }
 
-        void setLMRDivider(float lmr) {
-            lmrDivider = lmr / 100.f;
-        }
-
-        void setLMRBaseNoisy(float lmr) {
-            lmrBaseNoisy = lmr / 100.f;
-        }
-
-        void setLMRBaseQuiet(float lmr) {
-            lmrBaseQuiet = lmr / 100.f;
-        }
-
     private:
-
-        float lmrDivider = 2.25;
-        float lmrBaseQuiet = 0.75;
-        float lmrBaseNoisy = -0.1;
 
         Score bestMoveIteration;        
         TTable tt = TTable(256);
