@@ -212,6 +212,7 @@ void UCI::setOption(std::istringstream& is) {
             is >> intToken;
             int value = stoi(intToken);
             param.value = value;
+            break;
         }
     }
 

@@ -2,7 +2,7 @@
 #define PARAMS_H
 
 #include <string>
-#include <vector>
+#include <deque>
 
 
 namespace zaphod::params {
@@ -18,9 +18,9 @@ namespace zaphod::params {
 	};
 
 
-	inline std::vector<Parameter>& registry()
+	inline std::deque<Parameter>& registry()
 	{
-		static std::vector<Parameter> tunableParameters;
+		static std::deque<Parameter> tunableParameters;
 		return tunableParameters;
 	}
 
@@ -33,7 +33,7 @@ namespace zaphod::params {
 #define ZAP_TUNABLE_INT(Name, Value, Min, Max, Step) \
         inline Parameter& param_##Name = addParameter(#Name, Value, Min, Max, Step); \
         [[nodiscard]] inline int32_t Name() { \
-            return Value; \
+            return param_##Name.value; \
         }
 
 	ZAP_TUNABLE_INT(lmrDivider, 225, 150, 300, 10)
