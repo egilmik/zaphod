@@ -36,12 +36,17 @@ namespace zaphod::params {
             return param_##Name.value; \
         }
 
-	ZAP_TUNABLE_INT(lmrDivider, 226, 150, 300, 10)
+	// LMR
+	ZAP_TUNABLE_INT(lmrDividerQuiet, 226, 100, 350, 10)
+	ZAP_TUNABLE_INT(lmrDividerNoisy, 226, 100, 350, 10)
 	ZAP_TUNABLE_INT(lmrBaseQuiet, 81, 0, 150, 10)
 	ZAP_TUNABLE_INT(lmrBaseNoisy, -6, -100, 100, 10)
 	ZAP_TUNABLE_INT(lmrPVReduction, 102, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrImprovingReduction, 99, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrCheckReduction, 97, 0, 200, 10)
+
+	//Razoring
+	ZAP_TUNABLE_INT(razoringMargin, 200, 100, 400, 20)
 
 };
 #endif

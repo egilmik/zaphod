@@ -245,7 +245,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     // Razoring
     ////////////
-    if (!isRoot && depth <= 3 && (ss[ply].staticEval + 200 * depth) < beta) {
+    if (!isRoot && depth <= 3 && (ss[ply].staticEval + razoringMargin() * depth) < beta) {
 
         int value = quinesence(board, alpha, beta, 0, ply, false);
         if (value < beta && std::abs(value) < 20000) {
@@ -388,7 +388,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int lnDepth = std::log(depth) * 100;
             int lnMoves = std::log(i) * 100;
             int base = (isCapture ? lmrBaseNoisy() : lmrBaseQuiet());
-            int r = (int)std::max(0, base + lnDepth*lnMoves  / lmrDivider());
+            int divider = (isCapture ? lmrDividerNoisy() : lmrDividerQuiet());
+            int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
 
 
             r += !pvNode*lmrPVReduction();
