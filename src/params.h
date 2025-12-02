@@ -42,6 +42,7 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(lmrPVReduction, 100, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrImprovingReduction, 100, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrCheckReduction, 100, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrTTCaptureReduction, 100, 0, 200, 10)
 
 };
 #endif
