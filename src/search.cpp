@@ -211,7 +211,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     bool ttHit = tte.type != TType::NO_TYPE;
-    bool ttCapture = ttHit && board.getPieceOnSquare(tte.move.to()) != All;
 
     
 
@@ -395,7 +394,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r += !pvNode*lmrPVReduction();
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
-            r += ttCapture * lmrTTCaptureReduction();
 
             r /= 100;
 
