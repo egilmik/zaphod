@@ -571,6 +571,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
 
     int score = 0;
+    int futilityValue = ss[ply].staticEval + 100;
     
     for(int i = 0; i < moveListReduced.counter; i++){
         Move move = moveListReduced.moves[i];
@@ -582,7 +583,14 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             }
         }
         */
+        
 
+        if (futilityValue > -MATESCORE + MAXPLY && alpha > -MATESCORE + MAXPLY) {
+
+            if (!move.getMoveType() != PROMOTION && i > 2) {
+                continue;
+            }
+        }
         
         evaluatedNodes++;
         bool valid = board.makeMove(move);
