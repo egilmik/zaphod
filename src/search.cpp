@@ -571,7 +571,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
 
     int score = 0;
-    int futilityValue = ss[ply].staticEval + 100;
+    int futilityValue = ss[ply].staticEval + futilityBaseQsearch();
     
     for(int i = 0; i < moveListReduced.counter; i++){
         Move move = moveListReduced.moves[i];
@@ -583,13 +583,20 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             }
         }
         */
+
+        bool isCapture = board.getPieceOnSquare(move.to()) != All;
         
 
         if (futilityValue > -MATESCORE + MAXPLY && alpha > -MATESCORE + MAXPLY) {
 
+            if (isCapture && futilityValue <= alpha && see(board, move.from(), move.to(), board.getSideToMove()) < 0) {
+                continue;
+            }
+            /*
             if (!move.getMoveType() != PROMOTION && i > 2) {
                 continue;
             }
+            */
         }
         
         evaluatedNodes++;

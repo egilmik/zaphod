@@ -48,5 +48,8 @@ namespace zaphod::params {
 	//Razoring
 	ZAP_TUNABLE_INT(razoringMargin, 203, 100, 400, 20)
 
+	//Qsearch
+	ZAP_TUNABLE_INT(futilityBaseQsearch, 200, 0, 300, 20)
+
 };
 #endif
