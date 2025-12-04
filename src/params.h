@@ -50,6 +50,7 @@ namespace zaphod::params {
 
 	//Qsearch
 	ZAP_TUNABLE_INT(futilityBaseQsearch, 200, 0, 300, 20)
+	ZAP_TUNABLE_INT(seeMarginQsearch, -100, -200, 100, 20)
 
 };
 #endif

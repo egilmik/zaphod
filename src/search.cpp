@@ -592,6 +592,11 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             if (isCapture && futilityValue <= alpha && see(board, move.from(), move.to(), board.getSideToMove()) < 0) {
                 continue;
             }
+
+            if (isCapture && see(board, move.from(), move.to(), board.getSideToMove()) < seeMarginQsearch()) {
+                continue;
+            }
+
             /*
             if (!move.getMoveType() != PROMOTION && i > 2) {
                 continue;
