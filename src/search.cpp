@@ -214,18 +214,16 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     
 
-    MoveList moveList{};
-    MoveGenerator::generateMoves(board, moveList);
+    MoveGenerator moveGen;
+    moveGen.init(board, ttHit ? tte.move : Move{}, false);
     int score = 0;
 
     
     Move alphaMove{};
     
-    
-    sortMoveList(board, moveList, ply, ttHit ? tte.move : 0);
 
-    int validMoves = moveList.counter;
-    bool inCheck = moveList.checkers > 0;
+    
+    bool inCheck = moveGen.getCheckers() > 0;
 
     if (inCheck) {
         ss[ply].staticEval = -MATESCORE - 1;
@@ -293,15 +291,15 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     
-
-    for (int i = 0; i < moveList.counter; i++) {
-        Move move = moveList.moves[i];        
+    int moveCounter = 0;
+    Move move;
+    while ((move = moveGen.next())) {
         
         bool isPromo = move.getMoveType() == PROMOTION;
         bool isCapture = board.getPieceOnSquare(move.to()) != All;
         int plyCheckExtension = ss[ply].checkExt;
         int extension = 0;
-        bool firstMove = i == 0;
+        bool firstMove = moveCounter == 0;
         bool givesCheck = false;
         /*
         if (!isRoot && !pvNode && !inCheck && board.getNonPawnMaterial(board.getSideToMove()) > 0 && bestMoveIteration.score > -10000) {
@@ -384,9 +382,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         // LMR
         ////////////
 
-        if (depth >= 2 && i > 1 + isRoot) {
+        if (depth >= 2 && moveCounter > 1 + isRoot) {
             int lnDepth = std::log(depth) * 100;
-            int lnMoves = std::log(i) * 100;
+            int lnMoves = std::log(moveCounter) * 100;
             int base = (isCapture ? lmrBaseNoisy() : lmrBaseQuiet());
             int divider = (isCapture ? lmrDividerNoisy() : lmrDividerQuiet());
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
@@ -423,6 +421,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         
         board.revertLastMove();
+        moveCounter++;
 
         if (score > bestScore) {
             bestScore = score;
@@ -462,12 +461,13 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
                 break;
             }
         }
+        
 
         
 
     }
 
-    if (validMoves == 0) {
+    if (moveCounter == 0) {
         return inCheck ? -MATESCORE + ply : 0;
     }
 
@@ -533,16 +533,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     }
 
 
-    MoveList moveList;
-    MoveList moveListReduced;
-    MoveGenerator::generateMoves(board,moveList);
-    for(int i = 0; i < moveList.counter; i++){
-        if(moveList.checkers != 0 || board.getPieceOnSquare(moveList.moves[i].to()) != All || moveList.moves[i].getMoveType() == PROMOTION) {
-            moveListReduced.moves[moveListReduced.counter++] = moveList.moves[i];
-        }
-    }
+    MoveGenerator moveGen;
+    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true);
 
-    bool inCheck = moveList.checkers > 0;
+    bool inCheck = moveGen.getCheckers() > 0;
 
     if (inCheck) {
         ss[ply].staticEval = -MATESCORE - 1;
@@ -563,18 +557,17 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             alpha = ss[ply].staticEval;
         }
     }
-    
-
-
-
-    sortMoveList(board, moveListReduced,ply,tte.type != TType::NO_TYPE? tte.move:0);
-
 
     int score = 0;
     int futilityValue = ss[ply].staticEval + futilityBaseQsearch();
     
-    for(int i = 0; i < moveListReduced.counter; i++){
-        Move move = moveListReduced.moves[i];
+    int moveCounter = 0;
+    Move move;
+    while((move = moveGen.next())){
+        if (move.getMoveType() == INVALID) {
+            break;
+        }
+
         /*
         if (board.getPieceOnSquare(move.to()) != All) {
             int seeScore = see(board, move.from(), move.to(), board.getSideToMove());
@@ -614,10 +607,11 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         }
         
 
-        board.revertLastMove();               
+        board.revertLastMove();   
+        moveCounter++;
     }
 
-    if (moveList.counter == 0) {
+    if (moveCounter == 0) {
         
         if (inCheck) {
             // We are check mate

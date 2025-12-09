@@ -186,7 +186,7 @@ class Board {
         void popBit(BitBoardEnum piece, int bitNr);
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
-        int popLsb(BitBoard& board);
+        static int popLsb(BitBoard& board);
         int countSetBits(BitBoardEnum piece);
         static int countSetBits(unsigned long long board);
         bool makeMove(Move move);       

@@ -18,10 +18,11 @@ struct Move {
 */
 
 enum MoveType {
-    NORMAL,
-    PROMOTION = 1 << 14,
-    EN_PASSANT = 2 << 14,
-    CASTLING = 3 << 14
+    INVALID = 0 << 14,
+    NORMAL = 1 << 14,
+    PROMOTION = 2 << 14,
+    EN_PASSANT = 3 << 14,
+    CASTLING = 4 << 14
 };
 
 class Move {
@@ -55,6 +56,10 @@ class Move {
         // Add in color plus the 1 subtracted when saving the promotionType
         constexpr BitBoardEnum getPromotionType(BitBoardEnum color) const { 
             return BitBoardEnum(((value >> 12) & 3) + color +1); 
+        }
+
+        constexpr operator bool() const {
+            return static_cast<bool>(value);
         }
 
         uint32_t value;
