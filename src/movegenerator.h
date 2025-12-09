@@ -5,6 +5,7 @@
 #include "move.h"
 #include <vector>
 
+
 enum Stage {
     TT_MOVE,
     GEN_NOISY,
@@ -58,8 +59,10 @@ class MoveGenerator {
         void generateKingQuiet();
         
         void sortNoisyMoves();
+        void scoreQuietMoves();
 
         Board* board;
+        
         std::vector<ScoredMove> noisyMoves;
         std::vector<ScoredMove> quietMoves;       
         int noisyIdx = 0;        

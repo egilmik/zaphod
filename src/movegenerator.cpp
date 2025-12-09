@@ -106,14 +106,14 @@ void MoveGenerator::init(Board& b, Move ttMove, bool onlyCaptures) {
 
 Move MoveGenerator::next() {
 
+  
+
     switch (currentStage) {
 
         case TT_MOVE:
             currentStage = GEN_NOISY;
             if (ttMove.getMoveType() != INVALID) {
-                if (!onlyNoisy) {
-                    return ttMove;
-                }
+                return ttMove;
             }
             [[fallthrough]];
         case GEN_NOISY:
