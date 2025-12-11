@@ -18,11 +18,10 @@ struct Move {
 */
 
 enum MoveType {
-    INVALID = 0 << 14,
-    NORMAL = 1 << 14,
-    PROMOTION = 2 << 14,
-    EN_PASSANT = 3 << 14,
-    CASTLING = 4 << 14
+    NORMAL,
+    PROMOTION = 1 << 14,
+    EN_PASSANT = 2 << 14,
+    CASTLING = 3 << 14
 };
 
 class Move {
@@ -62,7 +61,7 @@ class Move {
             return static_cast<bool>(value);
         }
 
-        uint32_t value;
+        uint32_t value = 0;
     protected:
 };
 

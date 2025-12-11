@@ -564,10 +564,6 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     int moveCounter = 0;
     Move move;
     while((move = moveGen.next())){
-        if (move.getMoveType() == INVALID) {
-            break;
-        }
-
         /*
         if (board.getPieceOnSquare(move.to()) != All) {
             int seeScore = see(board, move.from(), move.to(), board.getSideToMove());
@@ -612,11 +608,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     }
 
     if (moveCounter == 0) {
-        
-        if (inCheck) {
-            // We are check mate
-            alpha = -MATESCORE + ply;
-        }
+        return inCheck ? -MATESCORE + ply : 0;
     }
 
     return alpha;

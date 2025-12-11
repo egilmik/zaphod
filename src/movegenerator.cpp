@@ -60,11 +60,12 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
     board.setLegalMovesForSideToMove(moveList.counter);
 }
 
-void MoveGenerator::init(Board& b, Move ttMove, bool onlyCaptures, Move killer[], HistoryTables* hist) {
+void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], HistoryTables* hist) {
     board = &b;
     onlyNoisy = onlyCaptures;
     killerMove = killer;
     histTable = hist;
+    ttMove = tt;
     BitBoard king = board->getBitboard(K + board->getSideToMove());
     kingSquare = Board::popLsb(king);
     king = board->getBitboard(K + board->getSideToMove());
@@ -114,9 +115,14 @@ Move MoveGenerator::next() {
 
         case TT_MOVE:
             currentStage = GEN_NOISY;
-            if (ttMove.getMoveType() != INVALID) {
-                return ttMove;
+            /*
+            if (ttMove) {
+                BitBoard legal = makeLegalMoves(*board, board->sqBB[ttMove.to()], pinned, checkers, snipers, ttMove.from(), kingSquare);
+                if (legal > 0 && board->getPieceOnSquare(ttMove.from()) != All) {
+                    return ttMove;
+                }
             }
+            */
             [[fallthrough]];
         case GEN_NOISY:
             currentStage = GOOD_NOISY;
