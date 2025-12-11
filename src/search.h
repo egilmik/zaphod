@@ -8,16 +8,12 @@
 #include <chrono>
 #include "ttable.h"
 #include "nnueq.h"
+#include "history.h"
 
 struct Score {
     int depth = 0;
     int score = -100000;
     Move bestMove;
-};
-
-struct SortStruct {
-    int score;
-    Move move;
 };
 
 struct SearchStack {
@@ -31,10 +27,6 @@ struct SearchLimits {
     int depthLimit = -1;
     int nodeLimit = -1;
     int timeLimit = -1;
-};
-
-struct HistoryTables {
-    int16_t quiet[2][64][64] = {};
 };
 
 class Search {
@@ -56,7 +48,6 @@ class Search {
         Score search(Board &board, SearchLimits limits);
         int negamax(Board &board, int depth, int alpha, int beta, int ply, bool pvNode);
         int quinesence(Board &board, int alpha, int beta, int depth, int ply, bool pvNode);
-        void sortMoveList(Board &board,MoveList &list, int ply, Move bestMove);
         int evaluate(Board &board);
         bool equal(Move &a, Move &b);
         bool isSearchStopped();

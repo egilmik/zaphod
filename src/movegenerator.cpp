@@ -60,9 +60,11 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
     board.setLegalMovesForSideToMove(moveList.counter);
 }
 
-void MoveGenerator::init(Board& b, Move ttMove, bool onlyCaptures) {
+void MoveGenerator::init(Board& b, Move ttMove, bool onlyCaptures, Move killer[], HistoryTables* hist) {
     board = &b;
     onlyNoisy = onlyCaptures;
+    killerMove = killer;
+    histTable = hist;
     BitBoard king = board->getBitboard(K + board->getSideToMove());
     kingSquare = Board::popLsb(king);
     king = board->getBitboard(K + board->getSideToMove());
@@ -161,7 +163,7 @@ Move MoveGenerator::next() {
 
                 generateKingQuiet();
             }
-            
+            scoreQuietMoves();
             
             //Remove killer moves
             [[fallthrough]];
@@ -206,6 +208,13 @@ void MoveGenerator::sortNoisyMoves() {
         SortStruct entry{};
 
         entry.move = noisyMoves[i].move;
+
+        if (entry.move.value == ttMove.value) {
+            noisyMoves.erase(noisyMoves.begin() + i);
+            i--;
+            continue;
+        }
+
         if (entry.move.getMoveType() == PROMOTION) {
             //TODO: Promotion capture
             entry.score = 80000;
@@ -254,6 +263,58 @@ void MoveGenerator::sortNoisyMoves() {
     for (int i = 0; i < noisyMoves.size(); i++) {
         noisyMoves[i].move = sortArray[i].move;
         noisyMoves[i].score = sortArray[i].score;
+    }
+}
+
+void MoveGenerator::scoreQuietMoves() {
+
+    int side = 0;
+    if (board->getSideToMove() == Black) {
+        side = 1;
+    }
+
+
+    SortStruct sortArray[256];
+    for (int i = 0; i < quietMoves.size(); i++) {
+        SortStruct entry{};
+        entry.move = quietMoves[i].move;
+        
+        if (entry.move.value == ttMove.value){ 
+            quietMoves.erase(quietMoves.begin() + i);
+            i--;
+            continue;
+        }
+
+        
+
+        
+        
+        if (killerMove[0].value == entry.move.value ||
+            killerMove[1].value == entry.move.value) {
+            entry.score = 60000;
+        }
+        else if (histTable->quiet[side][entry.move.from()][entry.move.to()] != 0) {
+            entry.score = 30000 + histTable->quiet[side][entry.move.from()][entry.move.to()];
+        }
+        else {
+            //quiet move
+            entry.score = 0;
+
+        }
+        sortArray[i] = entry;
+
+        
+    }
+
+    std::stable_sort(sortArray, sortArray + quietMoves.size(),
+        [](const SortStruct& a, const SortStruct& b) {
+            if (a.score != b.score) return a.score > b.score;     // strict order
+            return a.move.value < b.move.value;                   // total tie-break
+        });
+
+    for (int i = 0; i < quietMoves.size(); i++) {
+        quietMoves[i].move = sortArray[i].move;
+        quietMoves[i].score = sortArray[i].score;
     }
 }
 

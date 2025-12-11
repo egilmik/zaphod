@@ -145,7 +145,7 @@ Score Search::search(Board &board, SearchLimits lim)
         MoveList list;
         MoveGenerator::generateMoves(board, list);
         // Lets try sorting to perhaps hit something in TT
-        sortMoveList(board, list,0,0);
+        //sortMoveList(board, list,0,0);
         bestScore = { 0,0, list.moves[0] }; 
     }
     
@@ -215,7 +215,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
 
     MoveGenerator moveGen;
-    moveGen.init(board, ttHit ? tte.move : Move{}, false);
+    moveGen.init(board, ttHit ? tte.move : Move{}, false,ss[ply].killerMove, &hist);
     int score = 0;
 
     
@@ -534,7 +534,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
 
     MoveGenerator moveGen;
-    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true);
+    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true,ss[ply].killerMove, &hist);
 
     bool inCheck = moveGen.getCheckers() > 0;
 
@@ -785,93 +785,6 @@ BitBoard Search::getPinned(Board& board, BitBoardEnum sideToMove) {
     return pinned;
 }
 
-
-
-bool compare(SortStruct a, SortStruct b)
-{
-    return a.score > b.score;
-}
-
-
-void Search::sortMoveList(Board &board, MoveList &list, int ply, Move bestMove)
-{    
-    int side = 0;
-    if (board.getSideToMove() == Black) {
-        side = 1;
-    }
-
-    SortStruct sortArray[256];
-    for (int i = 0; i < list.counter; i++) {
-        SortStruct entry{};
-        entry.move = list.moves[i];
-        if (equal(list.moves[i], bestMove)) {
-            entry.score = 100000;
-        }
-        else if (entry.move.getMoveType() == PROMOTION) {
-            entry.score = 80000;
-
-        }
-        else if (board.getPieceOnSquare(entry.move.to()) != All) {
-
-            BitBoardEnum capturedPiece = board.getPieceOnSquare(entry.move.to());
-            BitBoardEnum attacker = board.getPieceOnSquare(entry.move.from());
-
-            if (entry.move.getMoveType() == EN_PASSANT) {
-                capturedPiece = P;
-                entry.score = 70000;
-            }
-            else {
-                int Mvv = Material::pieceMaterialScoreArray[capturedPiece];
-                int lva = Material::pieceMaterialScoreArray[attacker];
-                
-                int mvvlva = (Mvv - lva) / 100;
-                entry.score = 70000 + mvvlva;
-                
-                if (Mvv > lva) {
-                    entry.score = 70000+ mvvlva;
-                }
-                else {
-                    int seeScore = see(board, entry.move.from(), entry.move.to(), board.getSideToMove());
-                    if (seeScore >= 0) {
-                        entry.score = 70000 + seeScore;
-                    }
-                    else {
-                        entry.score = -70000 - seeScore;
-                    }
-                }
-
-                
-                
-                
-            }
-        }
-        else if (ss[ply].killerMove[0].value == entry.move.value ||
-            ss[ply].killerMove[1].value == entry.move.value) {
-            entry.score = 60000;
-        } else if(hist.quiet[side][entry.move.from()][entry.move.to()] != 0){                
-            entry.score = 30000 + hist.quiet[side][entry.move.from()][entry.move.to()];
-        }
-        else {
-            //quiet move
-            entry.score = 0;
-
-        }
-
-
-        sortArray[i] = entry;
-    }
-    // MVV-LVA sorting
-
-    std::stable_sort(sortArray, sortArray + list.counter,
-        [](const SortStruct& a, const SortStruct& b) {
-            if (a.score != b.score) return a.score > b.score;     // strict order
-            return a.move.value < b.move.value;                   // total tie-break
-        });
-
-    for(int i = 0; i< list.counter; i++){
-        list.moves[i] = sortArray[i].move;
-    }
-}
 
 int Search::evaluate(Board &board)
 {

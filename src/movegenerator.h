@@ -4,7 +4,7 @@
 #include "board.h"
 #include "move.h"
 #include <vector>
-
+#include "history.h"
 
 enum Stage {
     TT_MOVE,
@@ -26,7 +26,7 @@ class MoveGenerator {
 
     public:
         void static generateMoves(Board &board,MoveList &moveList);
-        void init(Board &board, Move ttMove, bool onlyCaptures);
+        void init(Board &board, Move ttMove, bool onlyCaptures, Move *killer, HistoryTables *hist);
         Move next();
 
         BitBoard getCheckers() {
@@ -62,6 +62,8 @@ class MoveGenerator {
         void scoreQuietMoves();
 
         Board* board;
+        Move *killerMove;
+        HistoryTables* histTable;
         
         std::vector<ScoredMove> noisyMoves;
         std::vector<ScoredMove> quietMoves;       
