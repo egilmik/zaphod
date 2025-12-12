@@ -157,7 +157,7 @@ Move MoveGenerator::next() {
             currentStage = QUIET;
             //Generate quite
             //Score
-            if(!onlyNoisy){
+            if(!onlyNoisy || checkers != 0){
 
                 if (board->countSetBits(checkers) < 2) {
                     generateKnightQuiet();
