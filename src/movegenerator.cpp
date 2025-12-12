@@ -115,14 +115,14 @@ Move MoveGenerator::next() {
 
         case TT_MOVE:
             currentStage = GEN_NOISY;
-            /*
+            
             if (ttMove) {
                 BitBoard legal = makeLegalMoves(*board, board->sqBB[ttMove.to()], pinned, checkers, snipers, ttMove.from(), kingSquare);
                 if (legal > 0 && board->getPieceOnSquare(ttMove.from()) != All) {
                     return ttMove;
                 }
             }
-            */
+            
             [[fallthrough]];
         case GEN_NOISY:
             currentStage = GOOD_NOISY;
@@ -168,8 +168,9 @@ Move MoveGenerator::next() {
                 }
 
                 generateKingQuiet();
+                scoreQuietMoves();
             }
-            scoreQuietMoves();
+            
             
             //Remove killer moves
             [[fallthrough]];
@@ -214,13 +215,13 @@ void MoveGenerator::sortNoisyMoves() {
         SortStruct entry{};
 
         entry.move = noisyMoves[i].move;
-        /*
+        
         if (entry.move.value == ttMove.value) {
             noisyMoves.erase(noisyMoves.begin() + i);
             i--;
             continue;
         }
-        */
+        
 
 
         if (entry.move.getMoveType() == PROMOTION) {
@@ -286,16 +287,12 @@ void MoveGenerator::scoreQuietMoves() {
     for (int i = 0; i < quietMoves.size(); i++) {
         SortStruct entry{};
         entry.move = quietMoves[i].move;
-        /*
+        
         if (entry.move.value == ttMove.value){ 
             quietMoves.erase(quietMoves.begin() + i);
             i--;
             continue;
         }
-        */
-
-        
-
         
         
         if (killerMove[0].value == entry.move.value ||
