@@ -467,7 +467,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     }
 
-    if (moveCounter == 0) {
+    if (moveGen.getLegalMoves() == 0) {
         return inCheck ? -MATESCORE + ply : 0;
     }
 
@@ -607,7 +607,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         moveCounter++;
     }
 
-    if (moveCounter == 0) {
+    if (moveGen.getLegalMoves() == 0) {
         return inCheck ? -MATESCORE + ply : 0;
     }
 

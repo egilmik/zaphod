@@ -29,6 +29,10 @@ class MoveGenerator {
         void init(Board &board, Move ttMove, bool onlyCaptures, Move *killer, HistoryTables *hist);
         Move next();
 
+        int getLegalMoves() {
+            return noisyMoves.size() + quietMoves.size();
+        }
+
         BitBoard getCheckers() {
             return checkers;
         }

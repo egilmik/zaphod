@@ -214,12 +214,14 @@ void MoveGenerator::sortNoisyMoves() {
         SortStruct entry{};
 
         entry.move = noisyMoves[i].move;
-
+        /*
         if (entry.move.value == ttMove.value) {
             noisyMoves.erase(noisyMoves.begin() + i);
             i--;
             continue;
         }
+        */
+
 
         if (entry.move.getMoveType() == PROMOTION) {
             //TODO: Promotion capture
@@ -284,12 +286,13 @@ void MoveGenerator::scoreQuietMoves() {
     for (int i = 0; i < quietMoves.size(); i++) {
         SortStruct entry{};
         entry.move = quietMoves[i].move;
-        
+        /*
         if (entry.move.value == ttMove.value){ 
             quietMoves.erase(quietMoves.begin() + i);
             i--;
             continue;
         }
+        */
 
         
 
