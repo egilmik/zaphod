@@ -292,13 +292,12 @@ void MoveGenerator::sortNoisyMoves() {
         side = 1;
     }
 
-    SortStruct sortArray[256];
     for (int i = 0; i < noisyMoves.size(); i++) {
-        SortStruct entry{};
-
-        entry.move = noisyMoves[i].move;
         
-        if (entry.move.value == ttMove.value) {
+
+        
+        
+        if (noisyMoves[i].move.value == ttMove.value) {
             noisyMoves.erase(noisyMoves.begin() + i);
             i--;
             continue;
@@ -306,55 +305,50 @@ void MoveGenerator::sortNoisyMoves() {
         
 
 
-        if (entry.move.getMoveType() == PROMOTION) {
+        if (noisyMoves[i].move.getMoveType() == PROMOTION) {
             //TODO: Promotion capture
-            entry.score = 80000;
+
+            noisyMoves[i].score = 80000;
         }
-        else if (board->getPieceOnSquare(entry.move.to()) != All) {
+        else if (board->getPieceOnSquare(noisyMoves[i].move.to()) != All) {
 
-            BitBoardEnum capturedPiece = board->getPieceOnSquare(entry.move.to());
-            BitBoardEnum attacker = board->getPieceOnSquare(entry.move.from());
+            BitBoardEnum capturedPiece = board->getPieceOnSquare(noisyMoves[i].move.to());
+            BitBoardEnum attacker = board->getPieceOnSquare(noisyMoves[i].move.from());
 
-            if (entry.move.getMoveType() == EN_PASSANT) {
+            if (noisyMoves[i].move.getMoveType() == EN_PASSANT) {
                 capturedPiece = P;
-                entry.score = 70000;
+                noisyMoves[i].score = 70000;
             }
             else {
                 int Mvv = Material::pieceMaterialScoreArray[capturedPiece];
                 int lva = Material::pieceMaterialScoreArray[attacker];
 
                 int mvvlva = (Mvv - lva) / 100;
-                entry.score = 70000 + mvvlva;
+                noisyMoves[i].score = 70000 + mvvlva;
 
                 if (Mvv > lva) {
-                    entry.score = 70000 + mvvlva;
+                    noisyMoves[i].score = 70000 + mvvlva;
                 }
                 else {
                     using namespace See;
-                    int seeScore = see(*board, entry.move.from(), entry.move.to(), board->getSideToMove());
+                    int seeScore = see(*board, noisyMoves[i].move.from(), noisyMoves[i].move.to(), board->getSideToMove());
                     if (seeScore >= 0) {
-                        entry.score = 70000 + seeScore;
+                        noisyMoves[i].score = 70000 + seeScore;
                     }
                     else {
-                        entry.score = -70000 - seeScore;
+                        noisyMoves[i].score = -70000 - seeScore;
                     }
                     
                 }
             }
         }
-        sortArray[i] = entry;
     }
 
-    std::stable_sort(sortArray, sortArray + noisyMoves.size(),
-        [](const SortStruct& a, const SortStruct& b) {
+    std::stable_sort(noisyMoves.begin(), noisyMoves.end(),
+        [](const ScoredMove& a, const ScoredMove& b) {
             if (a.score != b.score) return a.score > b.score;     // strict order
             return a.move.value < b.move.value;                   // total tie-break
         });
-
-    for (int i = 0; i < noisyMoves.size(); i++) {
-        noisyMoves[i].move = sortArray[i].move;
-        noisyMoves[i].score = sortArray[i].score;
-    }
 }
 
 void MoveGenerator::scoreQuietMoves() {
