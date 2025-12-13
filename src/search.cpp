@@ -607,18 +607,6 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         moveCounter++;
     }
 
-    if (moveCounter == 0) {
-
-        if (inCheck) {
-            // We are check mate
-            alpha = -MATESCORE + ply;
-        }
-        else {
-            // Stalemate
-            alpha = 0;
-        }
-    }
-
     return alpha;
 }
 
