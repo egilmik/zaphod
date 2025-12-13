@@ -143,22 +143,13 @@ bool MoveGenerator::isMoveLegal(Move move) {
         }
         break;
     case B:      
-        generateBishopMoves(*board, list, checkers, kingSquare, pinned, snipers);
-        for (int i = 0; i < list.counter; i++) {
-            if (list.moves[i].value == ttMove.value) return true;
-        }
+        if (isMoveLegalSliders(move, isCapture, board->getBishopMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
         break;
     case R:
-        generateRookMoves(*board, list, checkers, kingSquare, pinned, snipers);
-        for (int i = 0; i < list.counter; i++) {
-            if (list.moves[i].value == ttMove.value) return true;
-        }
+        if (isMoveLegalSliders(move, isCapture, board->getRookMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
         break;
     case Q:
-        generateQueenMoves(*board, list, checkers, kingSquare, pinned, snipers);
-        for (int i = 0; i < list.counter; i++) {
-            if (list.moves[i].value == ttMove.value) return true;
-        }
+        if (isMoveLegalSliders(move, isCapture, board->getBishopMagics(move.from()) | board->getRookMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
         break;
     case K:
         generateKingMoves(*board, list, checkers, kingSquare, pinned, snipers);
