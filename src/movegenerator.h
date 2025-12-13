@@ -49,6 +49,9 @@ class MoveGenerator {
         BitBoard static pawnAttacks(Board& board, BitBoardEnum color);
         BitBoard static pawnAttacks(BitBoard pawns, BitBoardEnum color);
 
+        bool isMoveLegal(Move move);
+        bool isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard pieceBoard, BitBoard enemyBoard, BitBoard emptySquares);
+
         void generatePawnNoisy();
         void generatePawnQuiet();
         void generateKnightNoisy();

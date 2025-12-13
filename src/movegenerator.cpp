@@ -107,6 +107,89 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
     
 }
 
+bool MoveGenerator::isMoveLegal(Move move) {
+    BitBoardEnum piece = board->getPieceOnSquare(move.from());
+    BitBoard pieceBoard = board->getBitboard(piece);
+    BitBoard fromBB = board->sqBB[move.from()];
+    BitBoard toBB = board->sqBB[move.to()];
+    BitBoard emptySquares = ~board->getBitboard(BitBoardEnum::All);
+    BitBoard ownBoard = board->getBitboard(board->getSideToMove());
+    BitBoard enemyBoard = board->getBitboard(board->getOtherSide());
+    bool isCapture = (enemyBoard & toBB) > 0;
+
+    //There is no piece to move
+    if (piece == All) return false;
+
+    // We cannot move enemy piece
+    if (fromBB & enemyBoard) return false;
+
+    // If we are not castling we cannot capture own piece
+    if (move.getMoveType() != CASTLING && ownBoard & toBB) return false;
+
+
+    BitBoardEnum normPiece =static_cast<BitBoardEnum>( piece - board->getSideToMove());
+    MoveList list;
+    switch (normPiece) {
+    case P:
+        generatePawnMoves(*board, list, checkers, kingSquare, pinned, snipers);
+        for (int i = 0; i < list.counter; i++) {
+            if (list.moves[i].value == ttMove.value) return true;
+        }
+        break;
+    case N:
+        generateKnightMoves(*board, list, checkers, kingSquare, pinned, snipers);
+        for (int i = 0; i < list.counter; i++) {
+            if (list.moves[i].value == ttMove.value) return true;
+        }
+        break;
+    case B:      
+        if (isMoveLegalSliders(move, isCapture, board->getBishopMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
+        break;
+    case R:
+        if (isMoveLegalSliders(move, isCapture, board->getRookMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
+        break;
+    case Q:
+        if (isMoveLegalSliders(move, isCapture, board->getBishopMagics(move.from()) | board->getRookMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
+        break;
+    case K:
+        generateKingMoves(*board, list, checkers, kingSquare, pinned, snipers);
+        for (int i = 0; i < list.counter; i++) {
+            if (list.moves[i].value == ttMove.value) return true;
+        }
+        break;
+    default:
+        return false;
+    }
+        
+    return false;
+
+}
+
+bool MoveGenerator::isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard pieceBoard, BitBoard enemyBoard, BitBoard emptySquares) {
+    int fromSq = 0;
+    BitBoard toBB = board->sqBB[move.to()];
+    
+    while (pieceBoard) {
+        fromSq = Board::popLsb(pieceBoard);
+        moves = makeLegalMoves(*board, moves, pinned, checkers, snipers, fromSq, kingSquare);
+        int toSq = 0;
+
+        if (isCapture) {
+            BitBoard captures = moves & enemyBoard;                  
+            if ((captures & toBB)> 0) return true;
+        }
+        else {
+            BitBoard silentMoves = moves & emptySquares;
+            while (silentMoves) {
+                toSq = Board::popLsb(silentMoves);
+                if (move.from() == fromSq && move.to() == toSq) return true;
+            }
+        }
+
+    }
+    return false;
+}
+
 Move MoveGenerator::next() {
 
   
@@ -117,8 +200,7 @@ Move MoveGenerator::next() {
             currentStage = GEN_NOISY;
             
             if (ttMove) {
-                BitBoard legal = makeLegalMoves(*board, board->sqBB[ttMove.to()], pinned, checkers, snipers, ttMove.from(), kingSquare);
-                if (legal > 0 && board->getPieceOnSquare(ttMove.from()) != All) {
+                if (isMoveLegal(ttMove)) {
                     return ttMove;
                 }
             }
