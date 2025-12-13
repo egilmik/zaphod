@@ -117,16 +117,6 @@ bool MoveGenerator::isMoveLegal(Move move) {
     BitBoard enemyBoard = board->getBitboard(board->getOtherSide());
     bool isCapture = (enemyBoard & toBB) > 0;
 
-    //There is no piece to move
-    if (piece == All) return false;
-
-    // We cannot move enemy piece
-    if (fromBB & enemyBoard) return false;
-
-    // If we are not castling we cannot capture own piece
-    if (move.getMoveType() != CASTLING && ownBoard & toBB) return false;
-
-
     BitBoardEnum normPiece =static_cast<BitBoardEnum>( piece - board->getSideToMove());
     MoveList list;
     switch (normPiece) {
