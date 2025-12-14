@@ -133,6 +133,10 @@ Score Search::search(Board &board, SearchLimits lim)
         }
         currentFinishedDepth = i;
         bestScore = bestMoveIteration;
+
+        if(isSearchStoppedSoft()){
+            break;
+        }
     } 
 
     tt.age();
@@ -794,6 +798,29 @@ bool Search::equal(Move &a, Move &b)
 void Search::setNewGame() {
     tt.clear();
 }
+
+bool Search::isSearchStoppedSoft()
+{
+    if (stopSearch) {
+        return true;
+    }
+
+    auto end = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    auto diff = end - startTime;
+    if (diff > maxSearchTime) {
+        stopSearch = true;
+        return true;
+    }
+    if (limits.nodeLimit > 0 && evaluatedNodes > limits.nodeLimit) {
+        stopSearch = true;
+        return true;
+    }
+
+    return false;
+}
+
+
 
 bool Search::isSearchStopped()
 {
