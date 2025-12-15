@@ -57,7 +57,7 @@ public:
     TTable& operator=(const TTable&) = delete;
 
     void clear() noexcept {
-        table.reset(new Bucket[nrOfBuckets]);
+        std::memset(table.get(), 0, nrOfBuckets * sizeof(Bucket));
         tableAge = 0;
     }
 
