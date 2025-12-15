@@ -200,6 +200,7 @@ Move MoveGenerator::next() {
             
             if (ttMove) {
                 if (isMoveLegal(ttMove)) {
+                    hasReturnedTTMove = true;
                     return ttMove;
                 }
             }
