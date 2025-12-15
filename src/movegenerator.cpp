@@ -167,26 +167,25 @@ bool MoveGenerator::isMoveLegal(Move move) {
 
 bool MoveGenerator::isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard pieceBoard, BitBoard enemyBoard, BitBoard emptySquares) {
     int fromSq = 0;
-    BitBoard toBB = board->sqBB[move.to()];
+    BitBoard toBB = board->sqBB[move.to()];    
     
-    while (pieceBoard) {
-        fromSq = Board::popLsb(pieceBoard);
-        moves = makeLegalMoves(*board, moves, pinned, checkers, snipers, fromSq, kingSquare);
-        int toSq = 0;
+    fromSq = move.from();
+    moves = makeLegalMoves(*board, moves, pinned, checkers, snipers, fromSq, kingSquare);
+    int toSq = 0;
 
-        if (isCapture) {
-            BitBoard captures = moves & enemyBoard;                  
-            if ((captures & toBB)> 0) return true;
-        }
-        else {
-            BitBoard silentMoves = moves & emptySquares;
-            while (silentMoves) {
-                toSq = Board::popLsb(silentMoves);
-                if (move.from() == fromSq && move.to() == toSq) return true;
-            }
-        }
-
+    if (isCapture) {
+        BitBoard captures = moves & enemyBoard;                  
+        if ((captures & toBB)> 0) return true;
     }
+    else {
+        BitBoard silentMoves = moves & emptySquares;
+        while (silentMoves) {
+            toSq = Board::popLsb(silentMoves);
+            if (move.from() == fromSq && move.to() == toSq) return true;
+        }
+    }
+
+    
     return false;
 }
 
