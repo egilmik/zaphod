@@ -299,7 +299,7 @@ void MoveGenerator::sortNoisyMoves() {
         
         if (noisyMoves[i].move.value == ttMove.value) {
             if (!ttMoveFound) {
-                std::cout << "TTMove not returned, but still present int noisy" << std::endl;
+                std::cout << "info string TTMove not returned, but still present int noisy" << std::endl;
             }
 
             noisyMoves.erase(noisyMoves.begin() + i);
@@ -371,7 +371,7 @@ void MoveGenerator::scoreQuietMoves() {
         if (entry.move.value == ttMove.value){ 
             if (!ttMoveFound) {
                 //bool test = isMoveLegal(ttMove);
-                std::cout << "TTMove not returned, but still present int quiet" << std::endl;
+                std::cout << "info string TTMove not returned, but still present int quiet" << std::endl;
             }
             quietMoves.erase(quietMoves.begin() + i);
             i--;
