@@ -35,17 +35,26 @@ class Perft {
                 return 0;
             }
 
-            MoveList moveList;
-            MoveGenerator::generateMoves(board,moveList);
-            unsigned long long nrOfNodes = moveList.counter;
+            Move killerMove[2] = { 0 };
+            HistoryTables table;
+            MoveGenerator generator;
+            generator.init(board, 0, false, killerMove, &table);
+            
+            unsigned long long nrOfNodes = 0;
             if (depth == 1) {
+                while (Move move = generator.next()) {
+                    nrOfNodes++;
+                }
                 return nrOfNodes;
             }
-            for(int i = 0; i < moveList.counter; i++){
-                board.makeMove(moveList.moves[i]);
-                nrOfNodes += perft(board, depth-1);
+
+            while (Move move = generator.next()) {
+                board.makeMove(move);
+                nrOfNodes++;
+                nrOfNodes += perft(board, depth - 1);
                 board.revertLastMove();
             }
+
             return nrOfNodes;
         }
 
