@@ -150,6 +150,7 @@ Score Search::search(Board &board, SearchLimits lim)
         MoveGenerator::generateMoves(board, list);
         // Lets try sorting to perhaps hit something in TT
         //sortMoveList(board, list,0,0);
+        std::cout << "info string search ended with choosing random move" << std::endl;
         bestScore = { 0,0, list.moves[0] }; 
     }
     
