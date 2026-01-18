@@ -838,7 +838,7 @@ bool Search::isSearchStopped()
     }
 
     // We only check every 1000 nodes, if it is not already stopped, this will return false
-    if ((evaluatedNodes % 1000) == 0) {
+    if ((evaluatedNodes % 1000) != 0) {
         return false;
     }
 
