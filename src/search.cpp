@@ -428,8 +428,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         board.revertLastMove();
         moveCounter++;
 
-        if (moveCounter > 300) {
-            std::cout << "Info string move counter in negamax going haywire" << std::endl;
+        if (isSearchStopped()) {
+            return 0;
         }
 
         if (score > bestScore) {
@@ -615,8 +615,8 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         board.revertLastMove();   
         moveCounter++;
 
-        if (moveCounter > 300) {
-            std::cout << "Info string move counter in qsearch going haywire" << std::endl;
+        if (isSearchStopped()) {
+            return 0;
         }
     }
 
