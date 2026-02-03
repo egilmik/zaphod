@@ -368,13 +368,11 @@ void MoveGenerator::scoreQuietMoves() {
         side = 1;
     }
 
-
-    SortStruct sortArray[256];
     for (int i = 0; i < quietMoves.size(); i++) {
         SortStruct entry{};
         entry.move = quietMoves[i].move;
         
-        if (entry.move.value == ttMove.value){ 
+        if (quietMoves[i].move.value == ttMove.value){
             if (!ttMoveFound) {
                 //bool test = isMoveLegal(ttMove);
                 std::cout << "info string TTMove not returned, but still present int quiet" << std::endl;
@@ -385,33 +383,26 @@ void MoveGenerator::scoreQuietMoves() {
         }
         
         
-        if (killerMove[0].value == entry.move.value ||
-            killerMove[1].value == entry.move.value) {
-            entry.score = 60000;
+        if (killerMove[0].value == quietMoves[i].move.value ||
+            killerMove[1].value == quietMoves[i].move.value) {
+            quietMoves[i].score = 60000;
         }
-        else if (histTable->quiet[side][entry.move.from()][entry.move.to()] != 0) {
-            entry.score = 30000 + histTable->quiet[side][entry.move.from()][entry.move.to()];
+        else if (histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()] != 0) {
+            quietMoves[i].score = 30000 + histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()];
         }
         else {
             //quiet move
-            entry.score = 0;
+            quietMoves[i].score = 0;
 
-        }
-        sortArray[i] = entry;
-
-        
+        }        
     }
 
-    std::stable_sort(sortArray, sortArray + quietMoves.size(),
-        [](const SortStruct& a, const SortStruct& b) {
+    std::stable_sort(quietMoves.begin(), quietMoves.end(),
+        [](const ScoredMove& a, const ScoredMove& b) {
             if (a.score != b.score) return a.score > b.score;     // strict order
             return a.move.value < b.move.value;                   // total tie-break
         });
 
-    for (int i = 0; i < quietMoves.size(); i++) {
-        quietMoves[i].move = sortArray[i].move;
-        quietMoves[i].score = sortArray[i].score;
-    }
 }
 
 void MoveGenerator::generatePawnNoisy() {
