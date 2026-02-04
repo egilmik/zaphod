@@ -280,7 +280,7 @@ Move MoveGenerator::next() {
             }
             currentStage = END;
             [[fallthrough]];
-        case END:
+        default:
             return Move();
 
     };
