@@ -133,13 +133,13 @@ bool MoveGenerator::isMoveLegal(Move move) {
     case P:
         generatePawnMoves(*board, list, checkers, kingSquare, pinned, snipers);
         for (int i = 0; i < list.counter; i++) {
-            if (list.moves[i].value == ttMove.value) return true;
+            if (list.moves[i].value == move.value) return true;
         }
         break;
     case N:
         generateKnightMoves(*board, list, checkers, kingSquare, pinned, snipers);
         for (int i = 0; i < list.counter; i++) {
-            if (list.moves[i].value == ttMove.value) return true;
+            if (list.moves[i].value == move.value) return true;
         }
         break;
     case B:      
@@ -154,7 +154,7 @@ bool MoveGenerator::isMoveLegal(Move move) {
     case K:
         generateKingMoves(*board, list, checkers, kingSquare, pinned, snipers);
         for (int i = 0; i < list.counter; i++) {
-            if (list.moves[i].value == ttMove.value) return true;
+            if (list.moves[i].value == move.value) return true;
         }
         break;
     default:
@@ -287,11 +287,6 @@ Move MoveGenerator::next() {
 
 }
 
-struct SortStruct {
-    int score;
-    Move move;
-};
-
 void MoveGenerator::sortNoisyMoves() {
     int side = 0;
     if (board->getSideToMove() == Black) {
@@ -369,8 +364,6 @@ void MoveGenerator::scoreQuietMoves() {
     }
 
     for (int i = 0; i < quietMoves.size(); i++) {
-        SortStruct entry{};
-        entry.move = quietMoves[i].move;
         
         if (quietMoves[i].move.value == ttMove.value){
             if (!ttMoveFound) {
