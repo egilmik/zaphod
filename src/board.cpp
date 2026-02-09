@@ -1164,13 +1164,13 @@ void Board::makeNullMove() {
     if (enPassantSq != noSq) {
         hashKey ^= ttable.enPassantKeys[enPassantSq];
     }
-    enPassantSq = noSq;
-
-
+    
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
     histMove->hashKeyCopy = hashKey;
     histMove->pawnHashCopy = pawnHash;
+
+    enPassantSq = noSq;
 
     historyPly++;
     changeSideToMove();
