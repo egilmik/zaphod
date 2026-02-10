@@ -584,7 +584,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
         bool isCapture = board.getPieceOnSquare(move.to()) != All;
         
-
+        /*
         if (futilityValue > -MATESCORE + MAXPLY && alpha > -MATESCORE + MAXPLY) {
             if (isCapture && move.getMoveType() != PROMOTION) {
                 int seeValue = see(board, move.from(), move.to(), board.getSideToMove());
@@ -598,6 +598,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
                 }
             }            
         }
+        */
         
         evaluatedNodes++;
         bool valid = board.makeMove(move);
