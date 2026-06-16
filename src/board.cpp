@@ -1161,14 +1161,14 @@ void Board::makeNullMove() {
     histMove->halfMoveClock = halfMoveClock;
     histMove->sideToMove = static_cast<uint8_t>(sideToMove);
 
+    histMove->hashKeyCopy = hashKey;
+    histMove->pawnHashCopy = pawnHash;
+    histMove->enPassantSqCopy = enPassantSq;
+    histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
+
     if (enPassantSq != noSq) {
         hashKey ^= ttable.enPassantKeys[enPassantSq];
     }
-    
-    histMove->enPassantSqCopy = enPassantSq;
-    histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
-    histMove->hashKeyCopy = hashKey;
-    histMove->pawnHashCopy = pawnHash;
 
     enPassantSq = noSq;
 
