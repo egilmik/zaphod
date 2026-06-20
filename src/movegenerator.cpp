@@ -3,6 +3,7 @@
 #include "material.h"
 #include <algorithm>
 #include "see.h"
+#include <cassert>
 
 void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
 {
@@ -67,7 +68,9 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
     histTable = hist;
     ttMove = tt;
     BitBoard king = board->getBitboard(K + board->getSideToMove());
+    assert(king != 0);  // king must exist
     kingSquare = Board::popLsb(king);
+    assert(kingSquare < 64);
     king = board->getBitboard(K + board->getSideToMove());
     snipers = board->getSnipers(kingSquare, board->getOtherSide());
     BitBoard sniperCopy = snipers;
@@ -325,6 +328,8 @@ void MoveGenerator::sortNoisyMoves() {
                 noisyMoves[i].score = 70000;
             }
             else {
+                assert(attacker != All);
+                assert(capturedPiece != All);
                 int Mvv = Material::pieceMaterialScoreArray[capturedPiece];
                 int lva = Material::pieceMaterialScoreArray[attacker];
 
@@ -1095,6 +1100,10 @@ void MoveGenerator::generateKingNoisy() {
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board->getSideToMove());
     BitBoard enemyBoard = board->getEnemyBoard();
     BitBoard king = board->getBitboard(movedPiece);
+    if (!king) {
+        std::cout << "There is no king!!!!!!! in noisy" << std::endl;
+        return;
+    }
     BitBoard otherKingBoard = board->getBitboard(K + board->getOtherSide());
     int otherKingSq = board->popLsb(otherKingBoard);
     BitBoardEnum sideToMove = board->getSideToMove();
@@ -1153,6 +1162,11 @@ void MoveGenerator::generateKingQuiet() {
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board->getSideToMove());
     BitBoard enemyBoard = board->getEnemyBoard();
     BitBoard king = board->getBitboard(movedPiece);
+    if (!king) {
+        std::cout << "There is no king!!!!!!! in quiet" << std::endl;
+        return;
+    }
+
     BitBoard otherKingBoard = board->getBitboard(K + board->getOtherSide());
     int otherKingSq = board->popLsb(otherKingBoard);
     BitBoardEnum sideToMove = board->getSideToMove();
