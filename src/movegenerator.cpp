@@ -123,6 +123,9 @@ bool MoveGenerator::isMoveLegal(Move move) {
     //There is no piece to move
     if (piece == All) return false;
 
+    // Cannot capture the king (guards against TT hash collisions producing king-capture moves)
+    if (toBB & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))) return false;
+
     // We cannot move enemy piece
     if (fromBB & enemyBoard) return false;
 
