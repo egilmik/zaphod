@@ -84,7 +84,7 @@ class Search {
         int64_t maxSearchTime = 0;
         bool stopSearch = false;
         SearchLimits limits;
-        SearchStack ss[MAXPLY];
+        SearchStack ss[MAXPLY + 1];
         bool printInfo = true;
         bool clearTTOnSearch = true;
           
