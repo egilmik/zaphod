@@ -354,17 +354,23 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         }
         
-        board.makeMove(move);      
+        board.makeMove(move);
         evaluatedNodes++;
 
-        
-        int newDepth = depth - 1;        
+        // Reject illegal moves (primarily TT hash collisions): own king must not be in check.
+        BitBoard movedSideKing = board.getBitboard(K + board.getOtherSide());
+        if (movedSideKing == 0 || board.isSquareAttacked(movedSideKing, board.getSideToMove())) {
+            board.revertLastMove();
+            continue;
+        }
+
+        int newDepth = depth - 1;
 
         ////////////
         // Check extension
         ////////////
         BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
-        if (board.isSquareAttacked(kingBB, board.getOtherSide())) {           
+        if (board.isSquareAttacked(kingBB, board.getOtherSide())) {
            givesCheck = true;
         }
 
@@ -601,7 +607,12 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         */
         
         evaluatedNodes++;
-        bool valid = board.makeMove(move);
+        board.makeMove(move);
+        BitBoard qKing = board.getBitboard(K + board.getOtherSide());
+        if (qKing == 0 || board.isSquareAttacked(qKing, board.getSideToMove())) {
+            board.revertLastMove();
+            continue;
+        }
         score = -quinesence(board,-beta,-alpha,depth-1, ply+1,pvNode);
 
         if(score > alpha){
