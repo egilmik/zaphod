@@ -523,16 +523,19 @@ void MoveGenerator::generatePawnNoisy() {
 
     while (nwAttacks) {
         square = Board::popLsb(nwAttacks);
+        assert(!(board->sqBB[square] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
         noisyMoves.push_back({ 0, Move::make<NORMAL>(square - pawnCaptureRightIncrement, square) });
     };
 
     while (neAttacks) {
         square = Board::popLsb(neAttacks);
+        assert(!(board->sqBB[square] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
         noisyMoves.push_back({ 0, Move::make<NORMAL>(square - pawnCaptureLeftIncrement, square) });
     }
 
     while (promoNEAttacks) {
         square = Board::popLsb(promoNEAttacks);
+        assert(!(board->sqBB[square] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
         noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, Q) });
         noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, B) });
         noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, R) });
@@ -541,6 +544,7 @@ void MoveGenerator::generatePawnNoisy() {
 
     while (promoNWAttacks) {
         square = Board::popLsb(promoNWAttacks);
+        assert(!(board->sqBB[square] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
         noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, Q) });
         noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, B) });
         noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, R) });
@@ -566,10 +570,13 @@ void MoveGenerator::generatePawnNoisy() {
             while (attack != 0) {
 
                 toSq = Board::popLsb(attack);
+                int capturedPawnSq = board->getEnPassantSq() - pawnIncrement;
+                assert(capturedPawnSq >= 0 && capturedPawnSq < 64);
+                assert(board->sqBB[capturedPawnSq] & board->getBitboard(static_cast<BitBoardEnum>(P + board->getOtherSide())));
                 BitBoard checkers = 0;
                 BitBoard all = board->getBitboard(All);
                 //Removing current attacking pawn and enpassant pawn from board to perform check check
-                BitBoard toBeRemoved = (Board::sqBB[fromSq] | Board::sqBB[board->getEnPassantSq() - pawnIncrement]);
+                BitBoard toBeRemoved = (Board::sqBB[fromSq] | Board::sqBB[capturedPawnSq]);
 
                 //Remove both pawns from old pos, then add in new pos
                 all &= ~toBeRemoved;
@@ -856,10 +863,13 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
             while (attack != 0) {
 
                 toSq = board.popLsb(attack);
+                int capturedPawnSq = board.getEnPassantSq() - pawnIncrement;
+                assert(capturedPawnSq >= 0 && capturedPawnSq < 64);
+                assert(board.sqBB[capturedPawnSq] & board.getBitboard(static_cast<BitBoardEnum>(P + board.getOtherSide())));
                 BitBoard checkers = 0;
                 BitBoard all = board.getBitboard(All);
                 //Removing current attacking pawn and enpassant pawn from board to perform check check
-                BitBoard toBeRemoved = (board.sqBB[fromSq] | board.sqBB[board.getEnPassantSq()- pawnIncrement]);
+                BitBoard toBeRemoved = (board.sqBB[fromSq] | board.sqBB[capturedPawnSq]);
 
                 //Remove both pawns from old pos, then add in new pos
                 all &= ~toBeRemoved;
@@ -913,6 +923,7 @@ void MoveGenerator::generateKnightNoisy() {
 
         while (captures != 0) {
             toSq = Board::popLsb(captures);
+            assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
             noisyMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
         }
     }
@@ -979,6 +990,7 @@ void MoveGenerator::generateBishopNoisy() {
 
         while (captures != 0) {
             toSq = Board::popLsb(captures);
+            assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
             noisyMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
         }
 
@@ -1025,6 +1037,7 @@ void MoveGenerator::generateRookNoisy() {
         int toSq = 0;
         while (captures != 0) {
             toSq = Board::popLsb(captures);
+            assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
             noisyMoves.push_back({0, Move::make<NORMAL>(fromSq, toSq) });
         }
     }
@@ -1069,6 +1082,7 @@ void MoveGenerator::generateQueenNoisy() {
         int toSq = 0;
         while (captures) {
             toSq = Board::popLsb(captures);
+            assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
             noisyMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
         }
 
@@ -1155,6 +1169,7 @@ void MoveGenerator::generateKingNoisy() {
     int toSq = 0;
     while (captures != 0) {
         toSq = board->popLsb(captures);
+        assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
         noisyMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
     }
 }
