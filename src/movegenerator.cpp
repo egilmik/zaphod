@@ -132,8 +132,11 @@ bool MoveGenerator::isMoveLegal(Move move) {
     // If we are not castling we cannot capture own piece
     if (move.getMoveType() != CASTLING && ownBoard & toBB) return false;
 
+    BitBoardEnum normPiece = static_cast<BitBoardEnum>(piece - board->getSideToMove());
 
-    BitBoardEnum normPiece =static_cast<BitBoardEnum>( piece - board->getSideToMove());
+    // In double check only king moves are legal — a non-king move can capture one checker
+    // but the second checker still gives check, so it doesn't resolve the position
+    if (board->countSetBits(checkers) >= 2 && normPiece != K) return false;
     MoveList list;
     switch (normPiece) {
     case P:
