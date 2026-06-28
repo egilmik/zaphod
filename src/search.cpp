@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cassert>
+#include "tools/fentools.h"
 #include "params.h"
 
 using namespace zaphod::params;
@@ -367,7 +368,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         if (kingCapturable) {
             std::cerr << "ILLEGAL MOVE DETECTED\n";
-            std::cerr << "FEN before move: <log the pre-move FEN here>\n";
+            std::cerr << "FEN before move:" << FenTools::boardToFen(board) << std::endl;
             std::cerr << "Illegal move: " << move.from() << "->" << move.to() << "\n";
             abort();
         }
@@ -637,9 +638,8 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
         if (kingCapturable) {
             std::cerr << "ILLEGAL MOVE DETECTED\n";
-            std::cerr << "FEN before move: <log the pre-move FEN here>\n";
+            std::cerr << "FEN before move:" << FenTools::boardToFen(board) << std::endl;
             std::cerr << "Illegal move: " << move.from() << "->" << move.to() << "\n";
-            board.printBoard();
             abort();
         }
 
