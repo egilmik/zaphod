@@ -639,6 +639,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             std::cerr << "ILLEGAL MOVE DETECTED\n";
             std::cerr << "FEN before move: <log the pre-move FEN here>\n";
             std::cerr << "Illegal move: " << move.from() << "->" << move.to() << "\n";
+            board.printBoard();
             abort();
         }
 
