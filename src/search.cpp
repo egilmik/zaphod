@@ -355,6 +355,23 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         }
         
         board.makeMove(move);
+        // Verify the side that just moved didn't leave their own king capturable
+        BitBoardEnum justMoved = board.getOtherSide();  // the side that just moved
+        BitBoard theirKing = board.getBitboard(K + justMoved);
+        BitBoard ourPawns = board.getBitboard(P + board.getSideToMove());
+        bool kingCapturable = false;
+        if (board.getSideToMove() == White)
+            kingCapturable = (((ourPawns & ~Board::FileHMask) << 7) | ((ourPawns & ~Board::FileAMask) << 9)) & theirKing;
+        else
+            kingCapturable = (((ourPawns & ~Board::FileAMask) >> 7) | ((ourPawns & ~Board::FileHMask) >> 9)) & theirKing;
+
+        if (kingCapturable) {
+            std::cerr << "ILLEGAL MOVE DETECTED\n";
+            std::cerr << "FEN before move: <log the pre-move FEN here>\n";
+            std::cerr << "Illegal move: " << move.from() << "->" << move.to() << "\n";
+            abort();
+        }
+
         evaluatedNodes++;
 
         // Reject illegal moves (primarily TT hash collisions): own king must not be in check.
@@ -608,6 +625,24 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         
         evaluatedNodes++;
         board.makeMove(move);
+        // Verify the side that just moved didn't leave their own king capturable
+        BitBoardEnum justMoved = board.getOtherSide();  // the side that just moved
+        BitBoard theirKing = board.getBitboard(K + justMoved);
+        BitBoard ourPawns = board.getBitboard(P + board.getSideToMove());
+        bool kingCapturable = false;
+        if (board.getSideToMove() == White)
+            kingCapturable = (((ourPawns & ~Board::FileHMask) << 7) | ((ourPawns & ~Board::FileAMask) << 9)) & theirKing;
+        else
+            kingCapturable = (((ourPawns & ~Board::FileAMask) >> 7) | ((ourPawns & ~Board::FileHMask) >> 9)) & theirKing;
+
+        if (kingCapturable) {
+            std::cerr << "ILLEGAL MOVE DETECTED\n";
+            std::cerr << "FEN before move: <log the pre-move FEN here>\n";
+            std::cerr << "Illegal move: " << move.from() << "->" << move.to() << "\n";
+            abort();
+        }
+
+
         BitBoard qKing = board.getBitboard(K + board.getOtherSide());
         if (qKing == 0 || board.isSquareAttacked(qKing, board.getSideToMove())) {
             board.revertLastMove();
