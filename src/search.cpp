@@ -367,9 +367,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             kingCapturable = (((ourPawns & ~Board::FileAMask) >> 7) | ((ourPawns & ~Board::FileHMask) >> 9)) & theirKing;
 
         if (kingCapturable) {
+            board.revertLastMove();
             std::cerr << "ILLEGAL MOVE DETECTED\n";
             std::cerr << "FEN before move:" << FenTools::boardToFen(board) << std::endl;
-            std::cerr << "Illegal move: " << move.from() << "->" << move.to() << "\n";
+            std::cerr << "Illegal move: " << move.from() << "->" << move.to() << " " << move.getMoveType() << "\n";
             abort();
         }
 
@@ -637,9 +638,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             kingCapturable = (((ourPawns & ~Board::FileAMask) >> 7) | ((ourPawns & ~Board::FileHMask) >> 9)) & theirKing;
 
         if (kingCapturable) {
+            board.revertLastMove();
             std::cerr << "ILLEGAL MOVE DETECTED\n";
             std::cerr << "FEN before move:" << FenTools::boardToFen(board) << std::endl;
-            std::cerr << "Illegal move: " << move.from() << "->" << move.to() << "\n";
+            std::cerr << "Illegal move: " << move.from() << "->" << move.to() << " " << move.getMoveType()  << "\n";
             abort();
         }
 
