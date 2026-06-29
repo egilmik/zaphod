@@ -160,12 +160,21 @@ bool MoveGenerator::isMoveLegal(Move move) {
     case Q:
         if (isMoveLegalSliders(move, isCapture, board->getBishopMagics(move.from()) | board->getRookMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
         break;
-    case K:
+    case K: {
+        // Guard against TT-collision moves targeting a pawn-attacked square.
+        // generateKingMoves filters via the pawn bitboard, but an inconsistent
+        // board state can cause it to miss this check.  A direct bitboard query
+        // here is always safe (pawns are not blocked by intervening pieces).
+        BitBoard enemyPawnAtks = pawnAttacks(
+            board->getBitboard(static_cast<BitBoardEnum>(P + board->getOtherSide())),
+            board->getOtherSide());
+        if (enemyPawnAtks & toBB) return false;
         generateKingMoves(*board, list, checkers, kingSquare, pinned, snipers);
         for (int i = 0; i < list.counter; i++) {
             if (list.moves[i].value == move.value) return true;
         }
         break;
+    }
     default:
         return false;
     }
