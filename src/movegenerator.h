@@ -37,6 +37,9 @@ class MoveGenerator {
             return checkers;
         }
 
+        std::vector<ScoredMove> noisyMoves;
+        std::vector<ScoredMove> quietMoves;
+
     private:
         void static generatePawnMoves(Board &board,MoveList &moveList,BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
         void static generateKnightMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
@@ -72,8 +75,7 @@ class MoveGenerator {
         Move *killerMove;
         HistoryTables* histTable;
         
-        std::vector<ScoredMove> noisyMoves;
-        std::vector<ScoredMove> quietMoves;       
+            
         int noisyIdx = 0;        
         int quietIdx = 0;
         //int moveListIdx = 0;

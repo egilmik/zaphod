@@ -374,6 +374,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             std::cerr << "Illegal move: " << move.from() << "->" << move.to() << " " << move.getMoveType() << "\n";
             std::cerr << "Mailbox consistent " << Tools::isMailBoxConsistent(board) << " Board consistent " << Tools::isBoardConsistent(board) << std::endl;
             std::cerr << "Move counter " << moveCounter << std::endl;
+            for (int i = 0; i < moveGen.quietMoves.size(); i++) {
+                std::cerr << "Quiet Move " << i << ": " << moveGen.quietMoves[i].move.from() << "->" << moveGen.quietMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.quietMoves[i].move.from()) << std::endl;
+            }
+            for (int i = 0; i < moveGen.noisyMoves.size(); i++) {
+                std::cerr << "Noisy Move " << i << ": " << moveGen.noisyMoves[i].move.from() << "->" << moveGen.noisyMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.noisyMoves[i].move.from()) << std::endl;
+            }
             abort();
         }
 
@@ -647,6 +653,13 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             std::cerr << "Illegal move: " << move.from() << "->" << move.to() << " " << move.getMoveType()  << "\n";
             std::cerr << "Mailbox consistent " << Tools::isMailBoxConsistent(board) << " Board consistent " << Tools::isBoardConsistent(board) << std::endl;
             std::cerr << "Move counter " << moveCounter << std::endl;
+            for (int i = 0; i < moveGen.quietMoves.size(); i++) {
+                std::cerr << "Quiet Move " << i << ": " << moveGen.quietMoves[i].move.from() << "->" << moveGen.quietMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.quietMoves[i].move.from()) << std::endl;
+            }
+            for (int i = 0; i < moveGen.noisyMoves.size(); i++) {
+                std::cerr << "Noisy Move " << i << ": " << moveGen.noisyMoves[i].move.from() << "->" << moveGen.noisyMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.noisyMoves[i].move.from()) << std::endl;
+            }
+
             abort();
         }
 
