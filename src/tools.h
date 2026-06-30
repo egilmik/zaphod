@@ -6,20 +6,19 @@
 class Tools {
 public:
 	static bool isBoardConsistent(Board& board) {
-		bool isConsistent = false;
 
-		if (checkPiecesAgainstColorBoard(board, White) &&
-			checkPiecesAgainstColorBoard(board, Black)) {
-			isConsistent = true;
+		if (!(checkPiecesAgainstColorBoard(board, White) &&
+			checkPiecesAgainstColorBoard(board, Black))) {
+			return false;
+		} 
+
+		if (!(checkPiecesAgainstAll(board, White) &&
+			checkPiecesAgainstAll(board, Black))) {
+			return false;
 		}
 
-		if (checkPiecesAgainstAll(board, White) &&
-			checkPiecesAgainstAll(board, Black)) {
-			isConsistent = true;
-		}
 
-
-		return isConsistent;
+		return true;
 	};
 
 	static bool isMailBoxConsistent(Board& board) {
