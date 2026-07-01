@@ -385,6 +385,11 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             for (int i = 0; i < moveGen.noisyMoves.size(); i++) {
                 std::cerr << "Noisy Move " << i << ": " << moveGen.noisyMoves[i].move.from() << "->" << moveGen.noisyMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.noisyMoves[i].move.from()) << std::endl;
             }
+            std::cerr << "Pieces:\n" << board.boardToString();
+            static const char* bbNames[] = {"White","R","N","B","Q","K","P","Black","r","n","b","q","k","p","All"};
+            for (int bi = White; bi <= All; bi++) {
+                std::cerr << "BitBoard[" << bbNames[bi] << "]:\n" << board.boardToString(board.getBitboard(static_cast<BitBoardEnum>(bi)));
+            }
             abort();
         }
 
@@ -667,7 +672,11 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             for (int i = 0; i < moveGen.noisyMoves.size(); i++) {
                 std::cerr << "Noisy Move " << i << ": " << moveGen.noisyMoves[i].move.from() << "->" << moveGen.noisyMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.noisyMoves[i].move.from()) << std::endl;
             }
-
+            std::cerr << "Pieces:\n" << board.boardToString();
+            static const char* bbNames[] = {"White","R","N","B","Q","K","P","Black","r","n","b","q","k","p","All"};
+            for (int bi = White; bi <= All; bi++) {
+                std::cerr << "BitBoard[" << bbNames[bi] << "]:\n" << board.boardToString(board.getBitboard(static_cast<BitBoardEnum>(bi)));
+            }
             abort();
         }
 

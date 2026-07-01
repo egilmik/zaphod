@@ -1259,91 +1259,57 @@ int Board::evaluate() {
     return nnue.forward(getSideToMove());
 }
 
-void Board::printBoard(){
-    uint64_t count = 0;
-    char printBoard[64];
-
-    for(int i = 0; i < 64; i++){
-        printBoard[i] = '*';
-
-        if(checkBit(BitBoardEnum::R,i)){
-            printBoard[i] = 'R';
-        } else if(checkBit(BitBoardEnum::r,i)){
-            printBoard[i] = 'r';
-        } else if(checkBit(BitBoardEnum::N,i)){
-            printBoard[i] = 'N';
-        } else if(checkBit(BitBoardEnum::n,i)){
-            printBoard[i] = 'n';
-        } else if(checkBit(BitBoardEnum::B,i)){
-            printBoard[i] = 'B';
-        } else if(checkBit(BitBoardEnum::b,i)){
-            printBoard[i] = 'b';
-        } else if(checkBit(BitBoardEnum::Q,i)){
-            printBoard[i] = 'Q';
-        } else if(checkBit(BitBoardEnum::q,i)){
-            printBoard[i] = 'q';
-        } else if(checkBit(BitBoardEnum::K,i)){
-            printBoard[i] = 'K';
-        } else if(checkBit(BitBoardEnum::k,i)){
-            printBoard[i] = 'k';
-        } else if(checkBit(BitBoardEnum::P,i)){
-            printBoard[i] = 'P';
-        } else if(checkBit(BitBoardEnum::p,i)){
-            printBoard[i] = 'p';
-        }
+std::string Board::boardToString() {
+    char cells[64];
+    for (int i = 0; i < 64; i++) {
+        cells[i] = '*';
+        if      (checkBit(BitBoardEnum::R, i)) cells[i] = 'R';
+        else if (checkBit(BitBoardEnum::r, i)) cells[i] = 'r';
+        else if (checkBit(BitBoardEnum::N, i)) cells[i] = 'N';
+        else if (checkBit(BitBoardEnum::n, i)) cells[i] = 'n';
+        else if (checkBit(BitBoardEnum::B, i)) cells[i] = 'B';
+        else if (checkBit(BitBoardEnum::b, i)) cells[i] = 'b';
+        else if (checkBit(BitBoardEnum::Q, i)) cells[i] = 'Q';
+        else if (checkBit(BitBoardEnum::q, i)) cells[i] = 'q';
+        else if (checkBit(BitBoardEnum::K, i)) cells[i] = 'K';
+        else if (checkBit(BitBoardEnum::k, i)) cells[i] = 'k';
+        else if (checkBit(BitBoardEnum::P, i)) cells[i] = 'P';
+        else if (checkBit(BitBoardEnum::p, i)) cells[i] = 'p';
     }
-
-    for(int i = 7; i >= 0; i--){
+    std::string result;
+    for (int i = 7; i >= 0; i--) {
         int startSquare = 8 * i;
-        for(int x = 0; x < 8; x++){
-            std::cout << printBoard[startSquare+x] << " ";    
+        for (int x = 0; x < 8; x++) {
+            result += cells[startSquare + x];
+            result += ' ';
         }
-
-        std::cout << std::endl;
-
+        result += '\n';
     }
+    result += '\n';
+    return result;
+}
 
-    /*
-    for(int i = 63;i >= 0; i--){
-        if((i+1)%8== 0){
-            std::cout << std::endl;
+void Board::printBoard(){
+    std::cout << boardToString() << std::endl;
+}
+
+std::string Board::boardToString(BitBoard board) {
+    std::string result;
+    for (int i = 7; i >= 0; i--) {
+        int startSquare = 8 * i;
+        for (int x = 0; x < 8; x++) {
+            result += checkBit(board, startSquare + x) ? 'X' : '*';
+            result += ' ';
         }
-        std::cout << printBoard[i] << " ";
+        result += '\n';
     }
-    */
-
-    std::cout << std::endl;
-    std::cout << std::endl;
-
-    
+    result += '\n';
+    return result;
 }
 
 void Board::printBoard(BitBoard board)
 {
-
-    char printBoard[64];
-
-    for(int i = 0; i< 64; i++){
-        if(checkBit(board,i)){
-            printBoard[i] = 'X';
-        } else {
-            printBoard[i] = '*';
-        }
-        
-    }
-    
-    for (int i = 7; i >= 0; i--) {
-        int startSquare = 8 * i;
-        for (int x = 0; x < 8; x++) {
-            std::cout << printBoard[startSquare + x] << " ";
-        }
-
-        std::cout << std::endl;
-    }
-
-    std::cout << std::endl;
-    std::cout << std::endl;
-
+    std::cout << boardToString(board) << std::endl;
 }
 
 void Board::printBoard(BitBoard board, int origin)

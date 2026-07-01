@@ -176,6 +176,8 @@ class Board {
         void removePiece(int sq, BitBoardEnum color);
 
         void parseFen(std::string fen);
+        std::string boardToString();
+        std::string boardToString(BitBoard board);
         void printBoard();
         void printBoard(BitBoard board);
         void printBoard(BitBoard board, int origin);
