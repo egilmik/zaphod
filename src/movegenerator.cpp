@@ -4,7 +4,7 @@
 #include <algorithm>
 #include "see.h"
 #include <cassert>
-#include "tools\fentools.h"
+#include "tools/fentools.h"
 
 void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
 {
