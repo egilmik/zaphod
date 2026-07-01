@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "see.h"
 #include <cassert>
+#include "tools\fentools.h"
 
 void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
 {
@@ -1248,7 +1249,8 @@ void MoveGenerator::generateKingQuiet() {
         quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
         
 
-        if (board->isSquareAttacked(toSq, board->getOtherSide())) {
+        if (board->isSquareAttacked(board->sqBB[toSq], board->getOtherSide())) {
+
             std::cerr << "Move generation puts king in check " << std::endl;
             BitBoard pawns = 0;
             pawns |= pawnAttacks(*board, board->getOtherSide());
@@ -1256,6 +1258,7 @@ void MoveGenerator::generateKingQuiet() {
                 int toSq = board->popLsb(pawns);
                 std::cerr << "Pawn attack to " << toSq << std::endl;
             }
+            std::cerr << FenTools::boardToFen(*board) << std::endl;
 
         }
 
