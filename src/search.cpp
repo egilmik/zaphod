@@ -390,6 +390,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             for (int bi = White; bi <= All; bi++) {
                 std::cerr << "BitBoard[" << bbNames[bi] << "]:\n" << board.boardToString(board.getBitboard(static_cast<BitBoardEnum>(bi)));
             }
+            int fromSq = board.popLsb(theirKing);
+            BitBoard kingmask = board.getKingMask(fromSq);
+            std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
+
             abort();
         }
 
@@ -677,6 +681,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             for (int bi = White; bi <= All; bi++) {
                 std::cerr << "BitBoard[" << bbNames[bi] << "]:\n" << board.boardToString(board.getBitboard(static_cast<BitBoardEnum>(bi)));
             }
+            int fromSq = board.popLsb(theirKing);
+            BitBoard kingmask = board.getKingMask(fromSq);
+            std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
+
             abort();
         }
 
