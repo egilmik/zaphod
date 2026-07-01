@@ -1237,6 +1237,7 @@ void MoveGenerator::generateKingQuiet() {
     }
 
     attacks |= pawnAttacks(*board, board->getOtherSide());
+    
 
     moves &= ~attacks;
     BitBoard silentMoves = moves & emptySquares;
@@ -1245,6 +1246,19 @@ void MoveGenerator::generateKingQuiet() {
     while (silentMoves) {
         toSq = board->popLsb(silentMoves);
         quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+        
+
+        if (board->isSquareAttacked(toSq, board->getOtherSide())) {
+            std::cerr << "Move generation puts king in check " << std::endl;
+            BitBoard pawns = 0;
+            pawns |= pawnAttacks(*board, board->getOtherSide());
+            while (pawns) {
+                int toSq = board->popLsb(pawns);
+                std::cerr << "Pawn attack to " << toSq << std::endl;
+            }
+
+        }
+
     }
 
     if (sideToMove == BitBoardEnum::White) {
