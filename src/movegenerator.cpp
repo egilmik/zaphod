@@ -108,7 +108,40 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
         checkers |= ((king & ~board->FileAMask) >> 7) & board->getBitboard(P + board->getOtherSide());
         checkers |= ((king & ~board->FileHMask) >> 9) & board->getBitboard(P + board->getOtherSide());
     }
-    
+
+    // Bidirectional consistency check: piece bitboards must agree with mailbox
+    {
+        bool consistent = true;
+        // For every bit set in a piece bitboard, mailbox must show that piece
+        for (int pt = 1; pt < 14; pt++) {
+            if (pt == 7) continue;  // skip Black (color enum, not piece type)
+            BitBoard bb = board->getBitboard(static_cast<BitBoardEnum>(pt));
+            BitBoard tmp = bb;
+            while (tmp) {
+                int sq = Board::popLsb(tmp);
+                if (board->getPieceOnSquare(sq) != static_cast<BitBoardEnum>(pt)) {
+                    std::cerr << "DESYNC: bitboard[" << pt << "] bit " << sq
+                              << " but mailbox[" << sq << "]=" << board->getPieceOnSquare(sq)
+                              << " FEN=" << FenTools::boardToFen(*board) << std::endl;
+                    consistent = false;
+                }
+            }
+        }
+        // For every non-empty mailbox square, its piece bitboard must have that bit
+        for (int sq = 0; sq < 64; sq++) {
+            BitBoardEnum mb = board->getPieceOnSquare(sq);
+            if (mb != All) {
+                if (!(board->getBitboard(mb) & board->sqBB[sq])) {
+                    std::cerr << "DESYNC: mailbox[" << sq << "]=" << mb
+                              << " but bitboard[" << mb << "] missing bit"
+                              << " FEN=" << FenTools::boardToFen(*board) << std::endl;
+                    consistent = false;
+                }
+            }
+        }
+        if (!consistent) std::abort();
+    }
+
 }
 
 bool MoveGenerator::isMoveLegal(Move move) {
