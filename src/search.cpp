@@ -377,6 +377,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             std::cerr << "FEN before move after revert:" << FenTools::boardToFen(board) << std::endl;
             std::cerr << "FEN captured before making move: " << fenBeforeMove << std::endl;
             std::cerr << "Illegal move: " << move.from() << "->" << move.to() << " " << move.getMoveType() << "\n";
+            std::cerr << "TT move: " << tte.move.from() << "->" << tte.move.to() << " " << move.getMoveType() << "\n";
             std::cerr << "Mailbox consistent " << Tools::isMailBoxConsistent(board) << " Board consistent " << Tools::isBoardConsistent(board) << std::endl;
             std::cerr << "Move counter " << moveCounter << std::endl;
             for (int i = 0; i < moveGen.quietMoves.size(); i++) {
@@ -390,6 +391,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             for (int bi = White; bi <= All; bi++) {
                 std::cerr << "BitBoard[" << bbNames[bi] << "]:\n" << board.boardToString(board.getBitboard(static_cast<BitBoardEnum>(bi)));
             }
+            theirKing = board.getBitboard(K + justMoved);
             int fromSq = board.popLsb(theirKing);
             BitBoard kingmask = board.getKingMask(fromSq);
             std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
@@ -681,6 +683,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             for (int bi = White; bi <= All; bi++) {
                 std::cerr << "BitBoard[" << bbNames[bi] << "]:\n" << board.boardToString(board.getBitboard(static_cast<BitBoardEnum>(bi)));
             }
+            theirKing = board.getBitboard(K + justMoved);
             int fromSq = board.popLsb(theirKing);
             BitBoard kingmask = board.getKingMask(fromSq);
             std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
