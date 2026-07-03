@@ -356,6 +356,12 @@ void Board::clearBoard()
 
 void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 {
+    if (mailBoxBoard[sq] != All) {
+        std::cerr << "addPiece on occupied sq=" << sq
+                  << " existing=" << mailBoxBoard[sq]
+                  << " new=" << piece << " color=" << color << std::endl;
+        std::abort();
+    }
     nnue.addPiece(piece, sq);
 
     mailBoxBoard[sq] = piece;
@@ -366,6 +372,10 @@ void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 
 void Board::removePiece(int sq, BitBoardEnum color)
 {
+    if (mailBoxBoard[sq] == All) {
+        std::cerr << "removePiece on empty sq=" << sq << " color=" << color << std::endl;
+        std::abort();
+    }
     nnue.removePiece(mailBoxBoard[sq], sq);
     bitBoardArray[All] &= ~sqBB[sq];
     bitBoardArray[color] &= ~sqBB[sq];
