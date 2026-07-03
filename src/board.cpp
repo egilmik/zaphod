@@ -8,6 +8,7 @@
 #include "tools.h"
 #include <cstdlib>
 #include <cassert>
+#include "tools/fentools.h"
 
 static std::array<BitBoard,64> initSqToBitMapping(){
     std::array<BitBoard, 64> mapping;
@@ -359,7 +360,8 @@ void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
     if (mailBoxBoard[sq] != All) {
         std::cerr << "addPiece on occupied sq=" << sq
                   << " existing=" << mailBoxBoard[sq]
-                  << " new=" << piece << " color=" << color << std::endl;
+                  << " new=" << piece << " color=" << color
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
         std::abort();
     }
     nnue.addPiece(piece, sq);
@@ -373,7 +375,14 @@ void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 void Board::removePiece(int sq, BitBoardEnum color)
 {
     if (mailBoxBoard[sq] == All) {
-        std::cerr << "removePiece on empty sq=" << sq << " color=" << color << std::endl;
+        std::cerr << "removePiece on empty sq=" << sq << " color=" << color
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
+    if (!(bitBoardArray[color] & sqBB[sq])) {
+        std::cerr << "removePiece color mismatch sq=" << sq << " color=" << color
+                  << " mailbox=" << mailBoxBoard[sq]
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
         std::abort();
     }
     nnue.removePiece(mailBoxBoard[sq], sq);
