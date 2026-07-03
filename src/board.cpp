@@ -1099,6 +1099,32 @@ bool Board::makeMove(Move move) {
         }
     } 
     
+    // Castle rights must agree with rook positions
+    if (castleWK && mailBoxBoard[7] != R) {
+        std::cerr << "CASTLE DESYNC after makeMove: castleWK but mailbox[h1]=" << mailBoxBoard[7]
+                  << " move=" << move.from() << "->" << move.to()
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
+    if (castleWQ && mailBoxBoard[0] != R) {
+        std::cerr << "CASTLE DESYNC after makeMove: castleWQ but mailbox[a1]=" << mailBoxBoard[0]
+                  << " move=" << move.from() << "->" << move.to()
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
+    if (castleBK && mailBoxBoard[63] != r) {
+        std::cerr << "CASTLE DESYNC after makeMove: castleBK but mailbox[h8]=" << mailBoxBoard[63]
+                  << " move=" << move.from() << "->" << move.to()
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
+    if (castleBQ && mailBoxBoard[56] != r) {
+        std::cerr << "CASTLE DESYNC after makeMove: castleBQ but mailbox[a8]=" << mailBoxBoard[56]
+                  << " move=" << move.from() << "->" << move.to()
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
+
     changeSideToMove();
     return true;
 }
@@ -1171,7 +1197,32 @@ void Board::revertLastMove()
 
     hashKey = info->hashKeyCopy;
     pawnHash = info->pawnHashCopy;
-    
+
+    // Castle rights must agree with rook positions
+    if (castleWK && mailBoxBoard[7] != R) {
+        std::cerr << "CASTLE DESYNC after revertLastMove: castleWK but mailbox[h1]=" << mailBoxBoard[7]
+                  << " reverted=" << info->move.from() << "->" << info->move.to()
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
+    if (castleWQ && mailBoxBoard[0] != R) {
+        std::cerr << "CASTLE DESYNC after revertLastMove: castleWQ but mailbox[a1]=" << mailBoxBoard[0]
+                  << " reverted=" << info->move.from() << "->" << info->move.to()
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
+    if (castleBK && mailBoxBoard[63] != r) {
+        std::cerr << "CASTLE DESYNC after revertLastMove: castleBK but mailbox[h8]=" << mailBoxBoard[63]
+                  << " reverted=" << info->move.from() << "->" << info->move.to()
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
+    if (castleBQ && mailBoxBoard[56] != r) {
+        std::cerr << "CASTLE DESYNC after revertLastMove: castleBQ but mailbox[a8]=" << mailBoxBoard[56]
+                  << " reverted=" << info->move.from() << "->" << info->move.to()
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::abort();
+    }
 }
 
 void Board::makeNullMove() {
