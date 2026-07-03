@@ -395,7 +395,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int fromSq = board.popLsb(theirKing);
             BitBoard kingmask = board.getKingMask(fromSq);
             std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
-
+            std::cerr.flush();
             abort();
         }
 
@@ -687,7 +687,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             int fromSq = board.popLsb(theirKing);
             BitBoard kingmask = board.getKingMask(fromSq);
             std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
-
+            std::cerr.flush();
             abort();
         }
 

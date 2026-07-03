@@ -109,7 +109,7 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
         checkers |= ((king & ~board->FileHMask) >> 9) & board->getBitboard(P + board->getOtherSide());
     }
 
-    // Bidirectional consistency check: piece bitboards must agree with mailbox
+    // Full consistency check: piece bitboards, color boards, and All board must agree with mailbox
     {
         bool consistent = true;
         // For every bit set in a piece bitboard, mailbox must show that piece
@@ -139,7 +139,38 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
                 }
             }
         }
-        if (!consistent) std::abort();
+        // Verify color boards and All board match mailbox exactly
+        {
+            BitBoard expectedWhite = 0, expectedBlack = 0, expectedAll = 0;
+            for (int sq = 0; sq < 64; sq++) {
+                BitBoardEnum mb = board->getPieceOnSquare(sq);
+                if (mb != All) {
+                    expectedAll |= board->sqBB[sq];
+                    // White pieces: R=1..P=6; Black pieces: r=8..p=13
+                    if (mb >= R && mb <= P) expectedWhite |= board->sqBB[sq];
+                    else if (mb >= r && mb <= p) expectedBlack |= board->sqBB[sq];
+                }
+            }
+            if (board->getBitboard(White) != expectedWhite) {
+                std::cerr << "DESYNC: White board=" << board->getBitboard(White)
+                          << " expected=" << expectedWhite
+                          << " FEN=" << FenTools::boardToFen(*board) << std::endl;
+                consistent = false;
+            }
+            if (board->getBitboard(Black) != expectedBlack) {
+                std::cerr << "DESYNC: Black board=" << board->getBitboard(Black)
+                          << " expected=" << expectedBlack
+                          << " FEN=" << FenTools::boardToFen(*board) << std::endl;
+                consistent = false;
+            }
+            if (board->getBitboard(All) != expectedAll) {
+                std::cerr << "DESYNC: All board=" << board->getBitboard(All)
+                          << " expected=" << expectedAll
+                          << " FEN=" << FenTools::boardToFen(*board) << std::endl;
+                consistent = false;
+            }
+        }
+        if (!consistent) { std::cerr.flush(); std::abort(); }
     }
 
 }
@@ -1280,19 +1311,19 @@ void MoveGenerator::generateKingQuiet() {
     while (silentMoves) {
         toSq = board->popLsb(silentMoves);
         quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
-        
 
         if (board->isSquareAttacked(board->sqBB[toSq], board->getOtherSide())) {
-
-            std::cerr << "Move generation puts king in check " << std::endl;
-            BitBoard pawns = 0;
-            pawns |= pawnAttacks(*board, board->getOtherSide());
-            while (pawns) {
-                int toSq = board->popLsb(pawns);
-                std::cerr << "Pawn attack to " << toSq << std::endl;
-            }
-            std::cerr << FenTools::boardToFen(*board) << std::endl;
-
+            std::cerr << "[generateKingQuiet] quiet move " << fromSq << "->" << toSq << " is under attack!\n";
+            std::cerr << "FEN=" << FenTools::boardToFen(*board) << "\n";
+            std::cerr << "P board=" << board->getBitboard(P) << " p board=" << board->getBitboard(p) << "\n";
+            std::cerr << "White board=" << board->getBitboard(White) << " Black board=" << board->getBitboard(Black) << "\n";
+            std::cerr << "All board=" << board->getBitboard(All) << "\n";
+            std::cerr << "attacks used in filter=" << attacks << "\n";
+            std::cerr << "pawnAttacks fresh=" << pawnAttacks(*board, board->getOtherSide()) << "\n";
+            std::cerr << "emptySquares=" << emptySquares << "\n";
+            std::cerr << "king fromSq=" << fromSq << "\n";
+            std::cerr.flush();
+            std::abort();
         }
 
     }
