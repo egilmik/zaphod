@@ -1131,7 +1131,9 @@ bool Board::makeMove(Move move) {
     // Full bidirectional consistency check: bitboards <-> mailbox
     {
         bool ok = true;
+        // Check only piece-type slots (skip color boards White=0, Black=7, All=14)
         for (int piece = R; piece <= p; piece++) {
+            if (piece == Black) continue; // skip color board slot
             BitBoard bb = bitBoardArray[piece];
             BitBoard tmp = bb;
             while (tmp) {
@@ -1292,8 +1294,9 @@ void Board::revertLastMove()
     // Full bidirectional consistency check: bitboards <-> mailbox
     {
         bool ok = true;
-        // Piece-type boards: every set bit must match mailbox
+        // Piece-type boards: every set bit must match mailbox (skip color boards White=0, Black=7, All=14)
         for (int piece = R; piece <= p; piece++) {
+            if (piece == Black) continue;
             BitBoard bb = bitBoardArray[piece];
             BitBoard tmp = bb;
             while (tmp) {
