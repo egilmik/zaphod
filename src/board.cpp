@@ -357,6 +357,12 @@ void Board::clearBoard()
 
 void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 {
+    if (piece == All || piece == White || piece == Black) {
+        std::cerr << "addPiece invalid piece=" << piece << " sq=" << sq << " color=" << color
+                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::cerr.flush();
+        std::abort();
+    }
     if (mailBoxBoard[sq] != All) {
         std::cerr << "addPiece on occupied sq=" << sq
                   << " existing=" << mailBoxBoard[sq]
@@ -898,6 +904,19 @@ bool Board::makeMove(Move move) {
     int fromSq = move.from();
     BitBoardEnum piece = mailBoxBoard[fromSq];
     BitBoardEnum capturedPiece = mailBoxBoard[toSq];
+
+    // Catch moves from empty squares (phantom bits in piece bitboards)
+    if (piece == All) {
+        std::cerr << "makeMove from empty square: fromSq=" << fromSq << " toSq=" << toSq
+                  << " moveType=" << static_cast<int>(move.getMoveType()) << "\n";
+        for (int i = 0; i < 15; i++) {
+            if (bitBoardArray[i] & sqBB[fromSq])
+                std::cerr << "  bitBoardArray[" << i << "] has bit " << fromSq << "\n";
+        }
+        std::cerr << "FEN=" << FenTools::boardToFen(*this) << std::endl;
+        std::cerr.flush(); std::abort();
+    }
+
     histMove->movedPiece = static_cast<uint8_t>(piece);
     histMove->capturedPiece = static_cast<uint8_t>(capturedPiece);
 
