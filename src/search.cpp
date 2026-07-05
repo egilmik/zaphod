@@ -674,6 +674,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             std::cerr << "Illegal move: " << move.from() << "->" << move.to() << " " << move.getMoveType()  << "\n";
             std::cerr << "Mailbox consistent " << Tools::isMailBoxConsistent(board) << " Board consistent " << Tools::isBoardConsistent(board) << std::endl;
             std::cerr << "Move counter " << moveCounter << std::endl;
+            /*
             for (int i = 0; i < moveGen.quietMoves.size(); i++) {
                 std::cerr << "Quiet Move " << i << ": " << moveGen.quietMoves[i].move.from() << "->" << moveGen.quietMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.quietMoves[i].move.from()) << std::endl;
             }
@@ -689,6 +690,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             int fromSq = board.popLsb(theirKing);
             BitBoard kingmask = board.getKingMask(fromSq);
             std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
+            */
             std::cerr.flush();
             abort();
         }

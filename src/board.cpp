@@ -993,12 +993,25 @@ bool Board::makeMove(Move move) {
 
         if(moveType == MoveType::CASTLING){
             if(toSq == 2){
+
+                if (mailBoxBoard[0] != R) {
+                    std::cerr << "CASTLE DESYNC after makeMove, but mailbox[h1]=" << mailBoxBoard[0]
+                        << " move=" << move.from() << "->" << move.to()
+                        << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+                    std::cerr.flush(); std::abort();
+
                 removePiece(0,White);
                 addPiece(3, R, White);
 
                 hashKey ^= ttable.pieceKeys[R][0];
                 hashKey ^= ttable.pieceKeys[R][3];
             } else {
+                    if (mailBoxBoard[7] != R) {
+                        std::cerr << "CASTLE DESYNC after makeMove, but mailbox[h1]=" << mailBoxBoard[7]
+                            << " move=" << move.from() << "->" << move.to()
+                            << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+                        std::cerr.flush(); std::abort();
+
                 removePiece(7, White);
                 addPiece(5, R, White);
                 
@@ -1011,6 +1024,13 @@ bool Board::makeMove(Move move) {
 
         if(moveType == MoveType::CASTLING){
             if(toSq == 58) {
+
+                if (mailBoxBoard[56] != r) {
+                    std::cerr << "CASTLE DESYNC after makeMove,but mailbox[h1]=" << mailBoxBoard[56]
+                        << " move=" << move.from() << "->" << move.to()
+                        << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+                    std::cerr.flush(); std::abort();
+
                 removePiece(56, Black);
                 addPiece(59, r, Black);
 
@@ -1018,6 +1038,12 @@ bool Board::makeMove(Move move) {
                 hashKey ^= ttable.pieceKeys[r][59];
 
             } else {
+                    if (mailBoxBoard[63] != r) {
+                        std::cerr << "CASTLE DESYNC after makeMove, but mailbox[h1]=" << mailBoxBoard[63]
+                            << " move=" << move.from() << "->" << move.to()
+                            << " FEN=" << FenTools::boardToFen(*this) << std::endl;
+                        std::cerr.flush(); std::abort();
+
                 removePiece(63, Black);
                 addPiece(61, r, Black);
                 
@@ -1147,6 +1173,8 @@ bool Board::makeMove(Move move) {
         std::cerr.flush(); std::abort();
     }
 
+
+    /*
     // Full bidirectional consistency check: bitboards <-> mailbox
     {
         bool ok = true;
@@ -1210,6 +1238,8 @@ bool Board::makeMove(Move move) {
         }
         if (!ok) { std::cerr.flush(); std::abort(); }
     }
+
+    */
 
     changeSideToMove();
     return true;
