@@ -197,6 +197,12 @@ bool MoveGenerator::isMoveLegal(Move move) {
     // If we are not castling we cannot capture own piece
     if (move.getMoveType() != CASTLING && ownBoard & toBB) return false;
 
+    // A CASTLING move must originate from the side's king. Without this check a TT castle move
+    // retrieved via hash collision passes isMoveLegalSliders (which ignores move type) when a
+    // rook happens to occupy the king's former square and can slide to the castle destination.
+    if (move.getMoveType() == CASTLING &&
+        piece != static_cast<BitBoardEnum>(K + board->getSideToMove())) return false;
+
     BitBoardEnum normPiece = static_cast<BitBoardEnum>(piece - board->getSideToMove());
 
     // In double check only king moves are legal — a non-king move can capture one checker
