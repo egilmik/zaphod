@@ -1261,21 +1261,6 @@ void MoveGenerator::generateKingQuiet() {
     while (silentMoves) {
         toSq = board->popLsb(silentMoves);
         quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
-
-        if (board->isSquareAttacked(board->sqBB[toSq], board->getOtherSide())) {
-            std::cerr << "[generateKingQuiet] quiet move " << fromSq << "->" << toSq << " is under attack!\n";
-            std::cerr << "FEN=" << FenTools::boardToFen(*board) << "\n";
-            std::cerr << "P board=" << board->getBitboard(P) << " p board=" << board->getBitboard(p) << "\n";
-            std::cerr << "White board=" << board->getBitboard(White) << " Black board=" << board->getBitboard(Black) << "\n";
-            std::cerr << "All board=" << board->getBitboard(All) << "\n";
-            std::cerr << "attacks used in filter=" << attacks << "\n";
-            std::cerr << "pawnAttacks fresh=" << pawnAttacks(*board, board->getOtherSide()) << "\n";
-            std::cerr << "emptySquares=" << emptySquares << "\n";
-            std::cerr << "king fromSq=" << fromSq << "\n";
-            std::cerr.flush();
-            std::abort();
-        }
-
     }
 
     if (sideToMove == BitBoardEnum::White) {
