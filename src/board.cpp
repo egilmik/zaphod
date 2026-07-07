@@ -357,20 +357,7 @@ void Board::clearBoard()
 
 void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 {
-    if (piece == All || piece == White || piece == Black) {
-        std::cerr << "addPiece invalid piece=" << piece << " sq=" << sq << " color=" << color
-                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush();
-        std::abort();
-    }
-    if (mailBoxBoard[sq] != All) {
-        std::cerr << "addPiece on occupied sq=" << sq
-                  << " existing=" << mailBoxBoard[sq]
-                  << " new=" << piece << " color=" << color
-                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush();
-        std::abort();
-    }
+    assert(piece != All);
     nnue.addPiece(piece, sq);
 
     mailBoxBoard[sq] = piece;
@@ -381,19 +368,8 @@ void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 
 void Board::removePiece(int sq, BitBoardEnum color)
 {
-    if (mailBoxBoard[sq] == All) {
-        std::cerr << "removePiece on empty sq=" << sq << " color=" << color
-                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush();
-        std::abort();
-    }
-    if (!(bitBoardArray[color] & sqBB[sq])) {
-        std::cerr << "removePiece color mismatch sq=" << sq << " color=" << color
-                  << " mailbox=" << mailBoxBoard[sq]
-                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush();
-        std::abort();
-    }
+
+    assert(mailBoxBoard[sq] != All);
     nnue.removePiece(mailBoxBoard[sq], sq);
     bitBoardArray[All] &= ~sqBB[sq];
     bitBoardArray[color] &= ~sqBB[sq];
@@ -905,18 +881,6 @@ bool Board::makeMove(Move move) {
     BitBoardEnum piece = mailBoxBoard[fromSq];
     BitBoardEnum capturedPiece = mailBoxBoard[toSq];
 
-    // Catch moves from empty squares (phantom bits in piece bitboards)
-    if (piece == All) {
-        std::cerr << "makeMove from empty square: fromSq=" << fromSq << " toSq=" << toSq
-                  << " moveType=" << static_cast<int>(move.getMoveType()) << "\n";
-        for (int i = 0; i < 15; i++) {
-            if (bitBoardArray[i] & sqBB[fromSq])
-                std::cerr << "  bitBoardArray[" << i << "] has bit " << fromSq << "\n";
-        }
-        std::cerr << "FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush(); std::abort();
-    }
-
     histMove->movedPiece = static_cast<uint8_t>(piece);
     histMove->capturedPiece = static_cast<uint8_t>(capturedPiece);
 
@@ -994,26 +958,12 @@ bool Board::makeMove(Move move) {
         if(moveType == MoveType::CASTLING){
             if(toSq == 2){
 
-                if (mailBoxBoard[0] != R) {
-                    std::cerr << "CASTLE DESYNC after makeMove, but mailbox[h1]=" << mailBoxBoard[0]
-                        << " move=" << move.from() << "->" << move.to()
-                        << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-                    std::cerr.flush(); std::abort();
-                }
-
                 removePiece(0,White);
                 addPiece(3, R, White);
 
                 hashKey ^= ttable.pieceKeys[R][0];
                 hashKey ^= ttable.pieceKeys[R][3];
             } else {
-                    if (mailBoxBoard[7] != R) {
-                        std::cerr << "CASTLE DESYNC after makeMove, but mailbox[h1]=" << mailBoxBoard[7]
-                            << " move=" << move.from() << "->" << move.to()
-                            << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-                        std::cerr.flush(); std::abort();
-                    }
-
                 removePiece(7, White);
                 addPiece(5, R, White);
                 
@@ -1026,14 +976,6 @@ bool Board::makeMove(Move move) {
 
         if(moveType == MoveType::CASTLING){
             if(toSq == 58) {
-
-                if (mailBoxBoard[56] != r) {
-                    std::cerr << "CASTLE DESYNC after makeMove,but mailbox[h1]=" << mailBoxBoard[56]
-                        << " move=" << move.from() << "->" << move.to()
-                        << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-                    std::cerr.flush(); std::abort();
-                }
-
                 removePiece(56, Black);
                 addPiece(59, r, Black);
 
@@ -1041,13 +983,6 @@ bool Board::makeMove(Move move) {
                 hashKey ^= ttable.pieceKeys[r][59];
 
             } else {
-                    if (mailBoxBoard[63] != r) {
-                        std::cerr << "CASTLE DESYNC after makeMove, but mailbox[h1]=" << mailBoxBoard[63]
-                            << " move=" << move.from() << "->" << move.to()
-                            << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-                        std::cerr.flush(); std::abort();
-                    }
-
                 removePiece(63, Black);
                 addPiece(61, r, Black);
                 
@@ -1150,100 +1085,6 @@ bool Board::makeMove(Move move) {
             castleBK = false;
         }
     } 
-    
-    // Castle rights must agree with rook positions
-    if (castleWK && mailBoxBoard[7] != R) {
-        std::cerr << "CASTLE DESYNC after makeMove: castleWK but mailbox[h1]=" << mailBoxBoard[7]
-                  << " move=" << move.from() << "->" << move.to()
-                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush(); std::abort();
-    }
-    if (castleWQ && mailBoxBoard[0] != R) {
-        std::cerr << "CASTLE DESYNC after makeMove: castleWQ but mailbox[a1]=" << mailBoxBoard[0]
-                  << " move=" << move.from() << "->" << move.to()
-                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush(); std::abort();
-    }
-    if (castleBK && mailBoxBoard[63] != r) {
-        std::cerr << "CASTLE DESYNC after makeMove: castleBK but mailbox[h8]=" << mailBoxBoard[63]
-                  << " move=" << move.from() << "->" << move.to()
-                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush(); std::abort();
-    }
-    if (castleBQ && mailBoxBoard[56] != r) {
-        std::cerr << "CASTLE DESYNC after makeMove: castleBQ but mailbox[a8]=" << mailBoxBoard[56]
-                  << " move=" << move.from() << "->" << move.to()
-                  << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-        std::cerr.flush(); std::abort();
-    }
-
-
-    /*
-    // Full bidirectional consistency check: bitboards <-> mailbox
-    {
-        bool ok = true;
-        // Check only piece-type slots (skip color boards White=0, Black=7, All=14)
-        for (int piece = R; piece <= p; piece++) {
-            if (piece == Black) continue; // skip color board slot
-            BitBoard bb = bitBoardArray[piece];
-            BitBoard tmp = bb;
-            while (tmp) {
-                int sq = popLsb(tmp);
-                if (mailBoxBoard[sq] != piece) {
-                    std::cerr << "MAKE DESYNC: bitboard[" << piece << "] bit " << sq
-                              << " but mailbox[" << sq << "]=" << mailBoxBoard[sq]
-                              << " move=" << move.from() << "->" << move.to()
-                              << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-                    ok = false;
-                }
-            }
-        }
-        for (int sq = 0; sq < 64; sq++) {
-            int piece = mailBoxBoard[sq];
-            if (piece != All) {
-                if (!(bitBoardArray[piece] & sqBB[sq])) {
-                    std::cerr << "MAKE DESYNC: mailbox[" << sq << "]=" << piece
-                              << " but bitboard[" << piece << "] bit " << sq << " not set"
-                              << " move=" << move.from() << "->" << move.to()
-                              << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-                    ok = false;
-                }
-            }
-        }
-        BitBoard expWhite = 0, expBlack = 0, expAll = 0;
-        for (int sq = 0; sq < 64; sq++) {
-            int mb = mailBoxBoard[sq];
-            if (mb != All) {
-                expAll |= sqBB[sq];
-                if (mb >= R && mb <= P) expWhite |= sqBB[sq];
-                else                    expBlack |= sqBB[sq];
-            }
-        }
-        if (bitBoardArray[White] != expWhite) {
-            std::cerr << "MAKE DESYNC: White board=" << bitBoardArray[White]
-                      << " expected=" << expWhite
-                      << " move=" << move.from() << "->" << move.to()
-                      << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-            ok = false;
-        }
-        if (bitBoardArray[Black] != expBlack) {
-            std::cerr << "MAKE DESYNC: Black board=" << bitBoardArray[Black]
-                      << " expected=" << expBlack
-                      << " move=" << move.from() << "->" << move.to()
-                      << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-            ok = false;
-        }
-        if (bitBoardArray[All] != expAll) {
-            std::cerr << "MAKE DESYNC: All board=" << bitBoardArray[All]
-                      << " expected=" << expAll
-                      << " move=" << move.from() << "->" << move.to()
-                      << " FEN=" << FenTools::boardToFen(*this) << std::endl;
-            ok = false;
-        }
-        if (!ok) { std::cerr.flush(); std::abort(); }
-    }
-
-    */
 
     changeSideToMove();
     return true;
