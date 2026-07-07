@@ -250,7 +250,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     // Razoring
     ////////////
-    /*
     if (!isRoot && depth <= 3 && (ss[ply].staticEval + razoringMargin() * depth) < beta) {
 
         int value = quinesence(board, alpha, beta, 0, ply, false);
@@ -259,7 +258,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         }
     }
     
-    */
     
     ////////////
     // Reverse futility pruning
@@ -284,7 +282,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     // Null move pruning
     ////////////
-    /*
     if (!pvNode && !inCheck  && ss[ply].staticEval >= beta && depth >= 3 && !isRoot && !ss[ply - 1].isNullMove) {
         if(board.getNonPawnMaterial(board.getSideToMove()) > 0 ){
             int R = 3 + (depth >= 6) + improving;
@@ -299,7 +296,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             }
         }
     }
-    */
+
     
     int moveCounter = 0;
     Move move;
