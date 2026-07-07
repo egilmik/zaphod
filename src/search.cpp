@@ -361,54 +361,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         std::string fenBeforeMove = FenTools::boardToFen(board);
 
         board.makeMove(move);
-        // Verify the side that just moved didn't leave their own king capturable
-        BitBoardEnum justMoved = board.getOtherSide();  // the side that just moved
-        BitBoard theirKing = board.getBitboard(K + justMoved);
-        BitBoard ourPawns = board.getBitboard(P + board.getSideToMove());
-        bool kingCapturable = false;
-        if (board.getSideToMove() == White)
-            kingCapturable = (((ourPawns & ~Board::FileHMask) << 7) | ((ourPawns & ~Board::FileAMask) << 9)) & theirKing;
-        else
-            kingCapturable = (((ourPawns & ~Board::FileAMask) >> 7) | ((ourPawns & ~Board::FileHMask) >> 9)) & theirKing;
-
-        if (kingCapturable) {
-            board.revertLastMove();
-            std::cerr << "ILLEGAL MOVE DETECTED\n";
-            std::cerr << "FEN before move after revert:" << FenTools::boardToFen(board) << std::endl;
-            std::cerr << "FEN captured before making move: " << fenBeforeMove << std::endl;
-            std::cerr << "Illegal move: " << move.from() << "->" << move.to() << " " << move.getMoveType() << "\n";
-            std::cerr << "TT move: " << tte.move.from() << "->" << tte.move.to() << " " << move.getMoveType() << "\n";
-            std::cerr << "Mailbox consistent " << Tools::isMailBoxConsistent(board) << " Board consistent " << Tools::isBoardConsistent(board) << std::endl;
-            std::cerr << "Move counter " << moveCounter << std::endl;
-            /*
-            for (int i = 0; i < moveGen.quietMoves.size(); i++) {
-                std::cerr << "Quiet Move " << i << ": " << moveGen.quietMoves[i].move.from() << "->" << moveGen.quietMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.quietMoves[i].move.from()) << std::endl;
-            }
-            for (int i = 0; i < moveGen.noisyMoves.size(); i++) {
-                std::cerr << "Noisy Move " << i << ": " << moveGen.noisyMoves[i].move.from() << "->" << moveGen.noisyMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.noisyMoves[i].move.from()) << std::endl;
-            }
-            std::cerr << "Pieces:\n" << board.boardToString();
-            static const char* bbNames[] = {"White","R","N","B","Q","K","P","Black","r","n","b","q","k","p","All"};
-            for (int bi = White; bi <= All; bi++) {
-                std::cerr << "BitBoard[" << bbNames[bi] << "]:\n" << board.boardToString(board.getBitboard(static_cast<BitBoardEnum>(bi)));
-            }
-            theirKing = board.getBitboard(K + justMoved);
-            int fromSq = board.popLsb(theirKing);
-            BitBoard kingmask = board.getKingMask(fromSq);
-            std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
-            */
-            std::cerr.flush();
-            abort();
-        }
-
         evaluatedNodes++;
-
-        // Reject illegal moves (primarily TT hash collisions): own king must not be in check.
-        BitBoard movedSideKing = board.getBitboard(K + board.getOtherSide());
-        if (movedSideKing == 0 || board.isSquareAttacked(movedSideKing, board.getSideToMove())) {
-            board.revertLastMove();
-            continue;
-        }
 
         int newDepth = depth - 1;
 
@@ -651,56 +604,9 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             }            
         }
         */
-
-        std::string fenBeforeMove = FenTools::boardToFen(board);
         
         evaluatedNodes++;
         board.makeMove(move);
-        // Verify the side that just moved didn't leave their own king capturable
-        BitBoardEnum justMoved = board.getOtherSide();  // the side that just moved
-        BitBoard theirKing = board.getBitboard(K + justMoved);
-        BitBoard ourPawns = board.getBitboard(P + board.getSideToMove());
-        bool kingCapturable = false;
-        if (board.getSideToMove() == White)
-            kingCapturable = (((ourPawns & ~Board::FileHMask) << 7) | ((ourPawns & ~Board::FileAMask) << 9)) & theirKing;
-        else
-            kingCapturable = (((ourPawns & ~Board::FileAMask) >> 7) | ((ourPawns & ~Board::FileHMask) >> 9)) & theirKing;
-
-        if (kingCapturable) {
-            board.revertLastMove();
-            std::cerr << "ILLEGAL MOVE DETECTED\n";
-            std::cerr << "FEN before move:" << FenTools::boardToFen(board) << std::endl;
-            std::cerr << "FEN captured before making move: " << fenBeforeMove << std::endl;
-            std::cerr << "Illegal move: " << move.from() << "->" << move.to() << " " << move.getMoveType()  << "\n";
-            std::cerr << "Mailbox consistent " << Tools::isMailBoxConsistent(board) << " Board consistent " << Tools::isBoardConsistent(board) << std::endl;
-            std::cerr << "Move counter " << moveCounter << std::endl;
-            /*
-            for (int i = 0; i < moveGen.quietMoves.size(); i++) {
-                std::cerr << "Quiet Move " << i << ": " << moveGen.quietMoves[i].move.from() << "->" << moveGen.quietMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.quietMoves[i].move.from()) << std::endl;
-            }
-            for (int i = 0; i < moveGen.noisyMoves.size(); i++) {
-                std::cerr << "Noisy Move " << i << ": " << moveGen.noisyMoves[i].move.from() << "->" << moveGen.noisyMoves[i].move.to() << " Piece: " << board.getPieceOnSquare(moveGen.noisyMoves[i].move.from()) << std::endl;
-            }
-            std::cerr << "Pieces:\n" << board.boardToString();
-            static const char* bbNames[] = {"White","R","N","B","Q","K","P","Black","r","n","b","q","k","p","All"};
-            for (int bi = White; bi <= All; bi++) {
-                std::cerr << "BitBoard[" << bbNames[bi] << "]:\n" << board.boardToString(board.getBitboard(static_cast<BitBoardEnum>(bi)));
-            }
-            theirKing = board.getBitboard(K + justMoved);
-            int fromSq = board.popLsb(theirKing);
-            BitBoard kingmask = board.getKingMask(fromSq);
-            std::cerr << "Kingmask: \n" << board.boardToString(kingmask);
-            */
-            std::cerr.flush();
-            abort();
-        }
-
-
-        BitBoard qKing = board.getBitboard(K + board.getOtherSide());
-        if (qKing == 0 || board.isSquareAttacked(qKing, board.getSideToMove())) {
-            board.revertLastMove();
-            continue;
-        }
         score = -quinesence(board,-beta,-alpha,depth-1, ply+1,pvNode);
 
         if(score > alpha){
