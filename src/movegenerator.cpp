@@ -203,6 +203,15 @@ bool MoveGenerator::isMoveLegal(Move move) {
     if (move.getMoveType() == CASTLING &&
         piece != static_cast<BitBoardEnum>(K + board->getSideToMove())) return false;
 
+    // A PROMOTION or EN_PASSANT move must originate from the side's pawn. Without this check a
+    // TT move of either type retrieved via hash collision passes isMoveLegalSliders when a
+    // slider occupies the pawn's former square. A promotion collision corrupts the board by
+    // turning the slider into a phantom pawn (revert always restores P, not the original piece).
+    // An EP collision removes the wrong captured pawn and misplaces the piece on the board.
+    BitBoardEnum ownPawn = static_cast<BitBoardEnum>(P + board->getSideToMove());
+    if ((move.getMoveType() == PROMOTION || move.getMoveType() == EN_PASSANT) &&
+        piece != ownPawn) return false;
+
     BitBoardEnum normPiece = static_cast<BitBoardEnum>(piece - board->getSideToMove());
 
     // In double check only king moves are legal — a non-king move can capture one checker
