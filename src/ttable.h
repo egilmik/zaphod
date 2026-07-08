@@ -91,7 +91,7 @@ public:
     }
 
     uint16_t packKey(uint64_t key) const {
-        return static_cast<uint16_t>(key);
+        return static_cast<uint32_t>(key);
     }
 
 private:
@@ -106,7 +106,7 @@ private:
         static constexpr uint32_t ageCycle = 1 << ageBits;
         static constexpr uint32_t ageMask = ageCycle - 1;
 
-        uint16_t shortKey;
+        uint32_t shortKey;
         int16_t score;
         int16_t staticEval;
         Move move;
