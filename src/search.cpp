@@ -355,7 +355,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
         }
-        std::string fenBeforeMove = FenTools::boardToFen(board);
 
         board.makeMove(move);
         evaluatedNodes++;
