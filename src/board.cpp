@@ -827,37 +827,19 @@ bool Board::checkBit(BitBoardEnum piece, int bitNr)
 
 int Board::countSetBits(BitBoardEnum piece)
 {
-    #ifdef __linux__
-        return __builtin_popcountll(bitBoardArray[piece]);
-    #elif WIN32
-        return __popcnt64(bitBoardArray[piece]);
-    #endif
-    
+    return __builtin_popcountll(bitBoardArray[piece]);
 }
 
 int Board::countSetBits(unsigned long long board)
 {
-    #ifdef __linux__
-        return __builtin_popcountll(board);
-    #elif WIN32
-        return __popcnt64(board);
-    #endif
+    return __builtin_popcountll(board);
 }
 
 int Board::popLsb(BitBoard& board)
 {   
-    #ifdef __linux__
-        int lsb = __builtin_ctzll(board);
-        board &= board - 1;
-        return lsb;
-    #elif WIN32
-        unsigned long idx = 0;
-        _BitScanForward64(&idx, board);
-        board &= board - 1;
-        return idx;
-    #endif
-
-
+    int lsb = __builtin_ctzll(board);
+    board &= board - 1;
+    return lsb;
 }
 
 bool Board::makeMove(Move move) {
