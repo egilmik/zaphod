@@ -27,7 +27,7 @@ class TranspositionTable {
 
         void initKeys(){
             std::mt19937 gen;
-            gen.seed(220818100915);
+            gen.seed(static_cast<std::mt19937::result_type>(220818100915ULL));
             std::uniform_int_distribution<unsigned long long> dis;
 
             for(int i = 0; i < 15; i++){
