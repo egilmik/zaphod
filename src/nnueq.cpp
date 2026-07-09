@@ -5,8 +5,13 @@
 #include <immintrin.h>
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 using namespace NNUE;
+
+alignas(32) static const unsigned char nnueData[] = {
+    #embed "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin"
+};
 
 static inline int32_t hsum_epi32_avx2(__m256i v) {
     __m128i vlow = _mm256_castsi256_si128(v);
@@ -178,6 +183,28 @@ int NNUEQ::encodeFeature(int piece, int sq, BitBoardEnum color) {
     return piece * 64 + sq;
 }
 
+bool NNUEQ::loadEmbedded() {
+    accumulator.push_back(Accumulator(H));
+    accumulator.push_back(Accumulator(H));
+
+    size_t off = 0;
+    auto take = [&](void* dst, size_t bytes) {
+        std::memcpy(dst, nnueData + off, bytes);
+        off += bytes;
+        };
+
+    take(net->l0w.data(), net->l0w.size() * sizeof(int16_t));
+    take(net->l0b.data(), net->l0b.size() * sizeof(int16_t));
+    take(net->l1w.data(), net->l1w.size() * sizeof(int16_t));
+    take(&net->l1b, sizeof(int16_t));
+
+    clear();
+    isInitialized = true;
+    return true;
+
+    
+
+}
 
 bool NNUEQ::load(const std::string& path) {
     std::ifstream f(path, std::ios::binary);

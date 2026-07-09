@@ -308,7 +308,8 @@ Board::Board(){
 }
 
 void Board::loadNetwork(std::string path) {
-    nnue.load(path);
+    //nnue.load(path);
+    nnue.loadEmbedded();
 }
 
 

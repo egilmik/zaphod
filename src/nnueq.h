@@ -46,6 +46,7 @@ public:
     std::vector<Accumulator> accumulator;
 
     bool load(const std::string& path);
+    bool loadEmbedded();
     int forward(BitBoardEnum stm);
 
     void addPiece(BitBoardEnum piece, int sq);
