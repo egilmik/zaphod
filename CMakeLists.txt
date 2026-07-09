@@ -6,16 +6,12 @@ set(CMAKE_CXX_EXTENSIONS Off)
 
 
 
-if (MSVC)
-    # Flags for MSVC
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /Ob2 /GL /arch:AVX2 /fp:fast /GR- /EHs-")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  /Ob2 /GL /arch:AVX2 /fp:fast /GR- /EHs-")
-    add_compile_options(/std:c++latest)
-else()
-    # Flags for GCC/Clang
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=x86-64-v3 -mavx2")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O3 -march=x86-64-v3 -mavx2")
-endif()
+
+# Flags for GCC/Clang
+set(CMAKE_CXX_FLAGS "${cmake_cxx_flags_relwithdebinfo} -march=x86-64-v3 -mtune=generic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=x86-64-v3 -mtune=generic")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -march=x86-64-v3 -mtune=generic" )
+
 
 file(GLOB src CONFIGURE_DEPENDS "*.h" "*.cpp")
 
