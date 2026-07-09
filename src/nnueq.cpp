@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm>
-#include <string.h>
+#include <string>
 
 using namespace NNUE;
 
