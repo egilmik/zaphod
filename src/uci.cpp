@@ -332,6 +332,7 @@ void UCI::bench() {
         std::cout << "Aspiration window stats " << " Low research : " << search.aspirationLowResearchHit << " High research: " << search.aspirationHighResearchHit << std::endl;
         std::cout << "Reverse futility: " << search.reverseFutilityPruningHit << " Futility pruning: " << search.futilityPruningHit << std::endl;
         std::cout << "Null move: " << search.nullMoveHit << std::endl;
+        std::cout << "Razoring entry hit: " << search.razoringEntryHit << " Razoring return value: " << search.razoringReturnHit << std::endl;
 
         std::cout << std::endl;
 

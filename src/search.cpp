@@ -60,6 +60,8 @@ Score Search::search(Board &board, SearchLimits lim)
     reverseFutilityPruningHit = 0;
     futilityPruningHit = 0;
     nullMoveHit = 0;
+    razoringEntryHit = 0;
+    razoringReturnHit = 0;
 
     bestMoveIteration.depth = 0;
     bestMoveIteration.score = 0;
@@ -250,10 +252,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     // Razoring
     ////////////
-    if (!isRoot && depth <= 3 && (ss[ply].staticEval + razoringMargin() * depth) < beta) {
+    if (!isRoot && ss[ply].staticEval < (alpha - razoringMargin() * depth*depth) ) {
+        razoringEntryHit++;
 
-        int value = quinesence(board, alpha, beta, 0, ply, false);
-        if (value < beta && std::abs(value) < 20000) {
+        int value = quinesence(board, alpha-1, alpha, 0, ply, false);
+        if (value < alpha && std::abs(value) < 20000) {
+            razoringReturnHit++;
             return value;
         }
     }
