@@ -16,10 +16,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    
-
     UCI uci;
-    if (networkPath.empty()) {
+    if (!networkPath.empty()) {
         uci.setNetworkPath(networkPath);
     }
 
