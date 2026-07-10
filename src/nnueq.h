@@ -24,10 +24,6 @@ namespace NNUE{
     constexpr int H = 256;
     constexpr int OUT = 1;
 
-    constexpr int16_t SCALE = 400;
-    constexpr int16_t QA = 255;
-    constexpr int16_t QB = 64;
-
     struct Network {
         alignas(32) std::array<int16_t, IN*H>  l0w;
         alignas(32) std::array<int16_t, H>  l0b;
@@ -68,7 +64,9 @@ private:
     bool isInitialized = false;
     std::unique_ptr<Network> net;
     
-
+    int16_t SCALE = 400;
+    int16_t QA = 255;
+    int16_t QB = 64;
 };
 
 #endif
