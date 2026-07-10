@@ -68,10 +68,6 @@ namespace See {
 
             score[ply] = -score[ply - 1] + Material::pieceMaterialScoreArray[attacker];
 
-            if (score[ply] < 0) {
-                int x = 0;
-            }
-
             if ((attackerBB = attackersTo & board.getBitboard(P + sideToMove))) {
                 fromSq = board.popLsb(attackerBB);
                 attacker = board.getPieceOnSquare(fromSq);
