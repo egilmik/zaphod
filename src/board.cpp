@@ -304,12 +304,11 @@ Board::Board(){
     initMagics(false, magicMovesBishop, bishopMask, magicNumberBishop, magicNumberShiftsBishop);
     initSqBetween();
 
-    //nnue.load(networkPath);
+    nnue.loadEmbedded();
 }
 
 void Board::loadNetwork(std::string path) {
-    //nnue.load(path);
-    nnue.loadEmbedded();
+    nnue.load(path);
 }
 
 

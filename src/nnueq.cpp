@@ -10,8 +10,12 @@
 
 using namespace NNUE;
 
+#ifndef EVALFILE
+#define EVALFILE "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin"   // fallback if compiled without the define
+#endif
+
 alignas(32) static const unsigned char nnueData[] = {
-    #embed "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin"
+    #embed EVALFILE
 };
 
 static inline int32_t hsum_epi32_avx2(__m256i v) {
@@ -185,6 +189,8 @@ int NNUEQ::encodeFeature(int piece, int sq, BitBoardEnum color) {
 }
 
 bool NNUEQ::loadEmbedded() {
+
+    accumulator.clear();
     accumulator.push_back(Accumulator(H));
     accumulator.push_back(Accumulator(H));
 
@@ -211,6 +217,7 @@ bool NNUEQ::load(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
     if (!f) return false;
     
+    accumulator.clear();
 
     accumulator.push_back(Accumulator(H));
     accumulator.push_back(Accumulator(H));

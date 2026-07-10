@@ -12,6 +12,10 @@ set(CMAKE_CXX_FLAGS "${cmake_cxx_flags_relwithdebinfo} -march=x86-64-v3 -mtune=g
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=x86-64-v3 -mtune=generic")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -march=x86-64-v3 -mtune=generic" )
 
+set(EVALFILE "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin" CACHE STRING "Path to the evaluation network file")
+# Pass it as a preprocessor macro, quoted so it becomes a string literal in C++
+
+
 
 file(GLOB src CONFIGURE_DEPENDS "*.h" "*.cpp")
 
@@ -20,6 +24,7 @@ add_executable(Benchmark src/board.cpp src/tools.h src/move.h src/bitboard.h src
 add_executable(GenerateData src/board.cpp src/tools.h src/move.h src/bitboard.h src/board.h src/transpositiontable.h src/material.h src/movegenerator.cpp src/movegenerator.h src/params.h "src/perft/perft.h"  "src/perft/perfttest.cpp" "src/perft/perfttest.h" src/search.h src/search.cpp src/uci.cpp src/uci.h  "src/ttable.h" "src/generatedata.cpp"    "src/nnueq.h" "src/nnueq.cpp" "src/tools/openingbook.h" "src/tools/openingbook.cpp" "src/tools/fentools.h" "src/ttable.cpp"  "src/see.h" "src/history.h")
 
 target_include_directories(Zaphod PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
+target_compile_definitions(Zaphod PRIVATE EVALFILE="${EVALFILE}")
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

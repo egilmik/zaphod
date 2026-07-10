@@ -16,12 +16,13 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (networkPath.empty()) {
-        std::cout << "No network provided" << std::endl;
-        return 0;
-    }
+    
 
     UCI uci;
-    uci.setNetworkPath(networkPath);
+    if (networkPath.empty()) {
+        uci.setNetworkPath(networkPath);
+    }
+
+    
     uci.loop();
 }
