@@ -46,7 +46,7 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(lmrCheckReduction, 101, 0, 200, 10)
 
 	//Razoring
-	ZAP_TUNABLE_INT(razoringMargin, 400, 100, 400, 20)
+	ZAP_TUNABLE_INT(razoringMargin, 300, 100, 400, 20)
 
 	//Qsearch
 	ZAP_TUNABLE_INT(futilityBaseQsearch, 195, 0, 300, 20)

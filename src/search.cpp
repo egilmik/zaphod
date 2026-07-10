@@ -252,11 +252,11 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     // Razoring
     ////////////
-    if (!isRoot && ss[ply].staticEval < (alpha - razoringMargin() * depth*depth) ) {
+    if (!isRoot && depth <= 4 && ss[ply].staticEval < (alpha - razoringMargin() *depth) ) {
         razoringEntryHit++;
 
         int value = quinesence(board, alpha-1, alpha, 0, ply, false);
-        if (value < alpha) {
+        if (value < alpha && std::abs(value) < 20000) {
             razoringReturnHit++;
             return value;
         }
