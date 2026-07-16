@@ -591,33 +591,14 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         */
 
         bool isCapture = board.getPieceOnSquare(move.to()) != All;
-        
-        /*
-        if (futilityValue > -MATESCORE + MAXPLY && alpha > -MATESCORE + MAXPLY) {
-            if (isCapture && move.getMoveType() != PROMOTION) {
-                int seeValue = see(board, move.from(), move.to(), board.getSideToMove());
 
-                if (futilityValue <= alpha && seeValue < 0) {
-                    continue;
-                }
-
-                if (seeValue < seeMarginQsearch()) {
-                    continue;
-                }
-            }            
-        }
-        */
-
+        //////////////////////////
+        // Futility pruning
+        //////////////////////////
         if (isCapture && !inCheck && futilityValue <= alpha && 0 > See::see(board, move.from(), move.to(), board.getSideToMove())) {
             qsearchFutilityPruningHit++;
             continue;
         }
-        /*
-        if (moveCounter >= 2) {
-            qsearchMoveCounterPruningHit++;
-            break;
-        }
-        */
         
         evaluatedNodes++;
         board.makeMove(move);
