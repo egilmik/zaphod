@@ -612,11 +612,12 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             qsearchFutilityPruningHit++;
             continue;
         }
-
+        /*
         if (moveCounter >= 2) {
             qsearchMoveCounterPruningHit++;
             break;
         }
+        */
         
         evaluatedNodes++;
         board.makeMove(move);
