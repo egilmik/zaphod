@@ -333,6 +333,7 @@ void UCI::bench() {
         std::cout << "Reverse futility: " << search.reverseFutilityPruningHit << " Futility pruning: " << search.futilityPruningHit << std::endl;
         std::cout << "Null move: " << search.nullMoveHit << std::endl;
         std::cout << "Razoring entry hit: " << search.razoringEntryHit << " Razoring return value: " << search.razoringReturnHit << std::endl;
+        std::cout << "qsearch futility pruning hit: " << search.qsearchFutilityPruningHit << " Move counter pruning: " << search.qsearchMoveCounterPruningHit << std::endl;
 
         std::cout << std::endl;
 

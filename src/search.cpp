@@ -7,6 +7,7 @@
 #include "tools/fentools.h"
 #include "params.h"
 #include "tools.h"
+#include "see.h"
 
 using namespace zaphod::params;
 
@@ -62,6 +63,8 @@ Score Search::search(Board &board, SearchLimits lim)
     nullMoveHit = 0;
     razoringEntryHit = 0;
     razoringReturnHit = 0;
+    qsearchFutilityPruningHit = 0;
+    qsearchMoveCounterPruningHit = 0;
 
     bestMoveIteration.depth = 0;
     bestMoveIteration.score = 0;
@@ -604,6 +607,16 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
             }            
         }
         */
+
+        if (isCapture && !inCheck && futilityValue <= alpha && 0 > See::see(board, move.from(), move.to(), board.getSideToMove())) {
+            qsearchFutilityPruningHit++;
+            continue;
+        }
+
+        if (moveCounter >= 2) {
+            qsearchMoveCounterPruningHit++;
+            break;
+        }
         
         evaluatedNodes++;
         board.makeMove(move);

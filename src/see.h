@@ -7,7 +7,7 @@
 #include "material.h"
 
 namespace See {
-    int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove) {
+    inline int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove) {
 
         BitBoardEnum us = sideToMove;
         BitBoardEnum otherSide = White;
