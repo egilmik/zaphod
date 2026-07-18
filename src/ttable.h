@@ -90,7 +90,7 @@ public:
         tableAge = (tableAge + 1) % (1 << InternalEntry::ageBits); 
     }
 
-    uint16_t packKey(uint64_t key) const {
+    uint32_t packKey(uint64_t key) const {
         return static_cast<uint32_t>(key);
     }
 
