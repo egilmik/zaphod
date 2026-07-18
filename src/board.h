@@ -12,7 +12,6 @@
 
 struct alignas(32) MoveUndoInfo {
     BitBoard hashKeyCopy = 0; // 8 byte
-    BitBoard pawnHashCopy = 0; // 8 byte    
     Move move = 0; // 2 byte
 
     uint8_t sideToMove = static_cast<uint8_t>(BitBoardEnum::White); // 1 byte
@@ -23,9 +22,6 @@ struct alignas(32) MoveUndoInfo {
     int8_t halfMoveClock = 0; // 1 byte
     int8_t fullMoveClock = 1;
     int8_t enPassantSqCopy = -1; // 1 byte
-    
-    uint8_t _pad[7];
-    
 };
 
 class Board {
@@ -233,7 +229,6 @@ class Board {
         BitBoard generateHashKey();
         BitBoard generatePawnHashKey();
         BitBoard getHashKey(){ return hashKey;};
-        BitBoard getPawnHashKey() { return pawnHash; };
 
         TranspositionTable ttable;
 
@@ -301,7 +296,6 @@ class Board {
         int legalMovesWhite = 0;
         int legalMovesBlack = 0;
         BitBoard hashKey = 0;
-        BitBoard pawnHash = 0;
 
         int gamePhase = 24;
         

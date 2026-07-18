@@ -526,7 +526,6 @@ void Board::parseFen(std::string fen){
     }
 
     hashKey = generateHashKey();
-    pawnHash = generatePawnHashKey();
     historyPly = 0;
 }
 
@@ -853,7 +852,6 @@ bool Board::makeMove(Move move) {
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
     histMove->hashKeyCopy = hashKey;
-    histMove->pawnHashCopy = pawnHash;
     histMove->move = move;
 
     historyPly++;
@@ -894,17 +892,6 @@ bool Board::makeMove(Move move) {
         }
         // Capture resets halfmoveclock
         halfMoveClock = 0;
-    }
-
-    // update Pawn hash
-    if (capturedPiece == P + otherSide) {
-        pawnHash ^= ttable.pieceKeys[P+otherSide][toSq];
-    }
-    if (piece == P + sideToMove) {
-        if(moveType != PROMOTION){
-            pawnHash ^= ttable.pieceKeys[P + sideToMove][toSq];
-        }
-        pawnHash ^= ttable.pieceKeys[P+sideToMove][fromSq];
     }
 
     // Pop and set bits in piece and all board
@@ -1139,7 +1126,6 @@ void Board::revertLastMove()
     }
 
     hashKey = info->hashKeyCopy;
-    pawnHash = info->pawnHashCopy;
 }
 
 void Board::makeNullMove() {
@@ -1149,7 +1135,6 @@ void Board::makeNullMove() {
     histMove->sideToMove = static_cast<uint8_t>(sideToMove);
 
     histMove->hashKeyCopy = hashKey;
-    histMove->pawnHashCopy = pawnHash;
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
 
@@ -1176,7 +1161,6 @@ void Board::revertNullMove() {
     castleBK = (info->castleMask & 4) != 0;
     castleBQ = (info->castleMask & 8) != 0;
     hashKey = info->hashKeyCopy;
-    pawnHash = info->pawnHashCopy;
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
