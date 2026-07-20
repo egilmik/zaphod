@@ -52,5 +52,10 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(futilityBaseQsearch, 195, 0, 300, 20)
 	ZAP_TUNABLE_INT(seeMarginQsearch, -153, -200, 100, 20)
 
+	//Reverse Futility Pruning
+	ZAP_TUNABLE_INT(rfpLinear, 100, 0, 200, 20)
+	ZAP_TUNABLE_INT(rfpQuadratic, 20, 0, 200, 20)
+	ZAP_TUNABLE_INT(rfpImproving, 100, 0, 200, 20)
+
 };
 #endif
