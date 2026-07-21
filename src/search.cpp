@@ -29,7 +29,7 @@ Score Search::search(Board &board, SearchLimits lim)
     for (int s = 0; s < 2; ++s)
         for (int f = 0; f < 64; ++f)
             for (int t = 0; t < 64; ++t)
-                hist.quiet[s][f][t] = 0;
+                hist.quiet[s][f][t] /= 2;
     
     this->limits = lim;
 
@@ -805,6 +805,10 @@ bool Search::equal(Move &a, Move &b)
 
 void Search::setNewGame() {
     tt.clear();
+    for (int s = 0; s < 2; ++s)
+        for (int f = 0; f < 64; ++f)
+            for (int t = 0; t < 64; ++t)
+                hist.quiet[s][f][t] = 0; 
 }
 
 bool Search::isSearchStoppedSoft()
