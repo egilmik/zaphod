@@ -79,6 +79,8 @@ class Search {
 
     private:
 
+	std::unique_ptr<MoveGenerator[]> moveGenStack { new MoveGenerator[MAXPLY +1]};
+
         Score bestMoveIteration;        
         TTable tt = TTable(256);
         HistoryTables hist{};

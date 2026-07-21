@@ -63,6 +63,12 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
 }
 
 void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], HistoryTables* hist) {
+    currentStage = TT_MOVE;
+    noisyIdx = 0;
+    quietIdx = 0;
+    noisyCount = 0;
+    quietCount = 0;
+    ttMoveFound = false;
     board = &b;
     onlyNoisy = onlyCaptures;
     killerMove = killer;

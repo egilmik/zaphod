@@ -226,7 +226,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     
 
-    MoveGenerator moveGen;
+    MoveGenerator& moveGen = moveGenStack[ply];
     moveGen.init(board, ttHit ? tte.move : Move{}, false,ss[ply].killerMove, &hist);
     int score = 0;
 
@@ -548,7 +548,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     }
 
 
-    MoveGenerator moveGen;
+    MoveGenerator& moveGen = moveGenStack[ply];
     moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true,ss[ply].killerMove, &hist);
 
     bool inCheck = moveGen.getCheckers() > 0;
