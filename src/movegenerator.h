@@ -30,15 +30,17 @@ class MoveGenerator {
         Move next();
 
         int getLegalMoves() {
-            return noisyMoves.size() + quietMoves.size();
+            return noisyCount + quietCount;
         }
 
         BitBoard getCheckers() {
             return checkers;
         }
 
-        std::vector<ScoredMove> noisyMoves;
-        std::vector<ScoredMove> quietMoves;
+        ScoredMove noisyMoves[256];
+        ScoredMove quietMoves[256];
+	int noisyCount = 0;
+	int quietCount = 0;
 
     private:
         void static generatePawnMoves(Board &board,MoveList &moveList,BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
@@ -54,6 +56,9 @@ class MoveGenerator {
 
         bool isMoveLegal(Move move);
         bool isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard pieceBoard, BitBoard enemyBoard, BitBoard emptySquares);
+
+	inline void addNoisy(Move m){ noisyMoves[noisyCount++] = { 0, m}; }
+	inline void addQuiet(Move m){ quietMoves[quietCount++] = { 0, m}; }
 
         void generatePawnNoisy();
         void generatePawnQuiet();

@@ -261,7 +261,7 @@ Move MoveGenerator::next() {
         case GOOD_NOISY:
             
             //Return good noisy
-            if (noisyIdx < noisyMoves.size() && noisyMoves[noisyIdx].score > 0) {
+            if (noisyIdx < noisyCount && noisyMoves[noisyIdx].score > 0) {
                 return noisyMoves[noisyIdx++].move;
             } 
 
@@ -298,7 +298,7 @@ Move MoveGenerator::next() {
         case QUIET:
             //Return quiet
             // if no more moves left, next stage
-            if (quietIdx < quietMoves.size()) {
+            if (quietIdx < quietCount) {
                 return quietMoves[quietIdx++].move;
             }
 
@@ -308,7 +308,7 @@ Move MoveGenerator::next() {
         case BAD_NOISY:
             //Return bad noisy
             // if no more moves left, next stage
-            if (noisyIdx < noisyMoves.size()) {
+            if (noisyIdx < noisyCount) {
                 return noisyMoves[noisyIdx++].move;
             }
             currentStage = END;
@@ -326,7 +326,7 @@ void MoveGenerator::sortNoisyMoves() {
         side = 1;
     }
 
-    for (int i = 0; i < noisyMoves.size(); i++) {
+    for (int i = 0; i < noisyCount; i++) {
         
 
         
@@ -335,8 +335,7 @@ void MoveGenerator::sortNoisyMoves() {
             if (!ttMoveFound) {
                 std::cout << "info string TTMove not returned, but still present int noisy" << std::endl;
             }
-
-            noisyMoves.erase(noisyMoves.begin() + i);
+	    noisyMoves[i] = noisyMoves[--noisyCount];
             i--;
             continue;
         }
@@ -384,7 +383,7 @@ void MoveGenerator::sortNoisyMoves() {
         }
     }
 
-    std::stable_sort(noisyMoves.begin(), noisyMoves.end(),
+    std::stable_sort(noisyMoves, noisyMoves+noisyCount,
         [](const ScoredMove& a, const ScoredMove& b) {
             if (a.score != b.score) return a.score > b.score;     // strict order
             return a.move.value < b.move.value;                   // total tie-break
@@ -398,14 +397,14 @@ void MoveGenerator::scoreQuietMoves() {
         side = 1;
     }
 
-    for (int i = 0; i < quietMoves.size(); i++) {
+    for (int i = 0; i < quietCount; i++) {
         
         if (quietMoves[i].move.value == ttMove.value){
             if (!ttMoveFound) {
                 //bool test = isMoveLegal(ttMove);
                 std::cout << "info string TTMove not returned, but still present int quiet" << std::endl;
             }
-            quietMoves.erase(quietMoves.begin() + i);
+            quietMoves[i] = quietMoves[--quietCount]; 
             i--;
             continue;
         }
@@ -425,7 +424,7 @@ void MoveGenerator::scoreQuietMoves() {
         }        
     }
 
-    std::stable_sort(quietMoves.begin(), quietMoves.end(),
+    std::stable_sort(quietMoves, quietMoves+quietCount,
         [](const ScoredMove& a, const ScoredMove& b) {
             if (a.score != b.score) return a.score > b.score;     // strict order
             return a.move.value < b.move.value;                   // total tie-break
@@ -542,40 +541,40 @@ void MoveGenerator::generatePawnNoisy() {
 
     while (promotions) {
         square = Board::popLsb(promotions);
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnIncrement, square, Q) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnIncrement, square, B) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnIncrement, square, R) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnIncrement, square, N) });
+        addNoisy(Move::make<PROMOTION>(square - pawnIncrement, square, Q));
+        addNoisy(Move::make<PROMOTION>(square - pawnIncrement, square, B));
+        addNoisy(Move::make<PROMOTION>(square - pawnIncrement, square, R));
+        addNoisy(Move::make<PROMOTION>(square - pawnIncrement, square, N));
     }
 
     while (nwAttacks) {
         square = Board::popLsb(nwAttacks);
         assert(!(board->sqBB[square] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-        noisyMoves.push_back({ 0, Move::make<NORMAL>(square - pawnCaptureRightIncrement, square) });
+        addNoisy(Move::make<NORMAL>(square - pawnCaptureRightIncrement, square));
     };
 
     while (neAttacks) {
         square = Board::popLsb(neAttacks);
         assert(!(board->sqBB[square] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-        noisyMoves.push_back({ 0, Move::make<NORMAL>(square - pawnCaptureLeftIncrement, square) });
+        addNoisy(Move::make<NORMAL>(square - pawnCaptureLeftIncrement, square));
     }
 
     while (promoNEAttacks) {
         square = Board::popLsb(promoNEAttacks);
         assert(!(board->sqBB[square] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, Q) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, B) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, R) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, N) });
+        addNoisy(Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, Q));
+        addNoisy(Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, B));
+        addNoisy(Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, R));
+        addNoisy(Move::make<PROMOTION>(square - pawnCaptureLeftIncrement, square, N));
     }
 
     while (promoNWAttacks) {
         square = Board::popLsb(promoNWAttacks);
         assert(!(board->sqBB[square] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, Q) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, B) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, R) });
-        noisyMoves.push_back({ 0, Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, N) });
+        addNoisy(Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, Q));
+        addNoisy(Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, B));
+        addNoisy(Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, R));
+        addNoisy(Move::make<PROMOTION>(square - pawnCaptureRightIncrement, square, N));
     }
 
     if (board->getEnPassantSq() != Board::noSq) {
@@ -616,7 +615,7 @@ void MoveGenerator::generatePawnNoisy() {
                 checkers |= (*board->magicMovesBishop)[kingSquare][magic] & (board->getBitboard(Q + board->getOtherSide()) | board->getBitboard(B + board->getOtherSide()));
 
                 if (checkers == 0) {
-                    noisyMoves.push_back({ 0, Move::make<MoveType::EN_PASSANT>(fromSq, toSq) });
+                    addNoisy(Move::make<MoveType::EN_PASSANT>(fromSq, toSq));
                 }
             }
 
@@ -706,12 +705,12 @@ void MoveGenerator::generatePawnQuiet() {
     int square = 0;
     while (singlePush) {
         square = board->popLsb(singlePush);
-        quietMoves.push_back({ 0, Move::make<NORMAL>(square - pawnIncrement, square)});
+        addQuiet(Move::make<NORMAL>(square - pawnIncrement, square));
     }
 
     while (doublePush) {
         square = board->popLsb(doublePush);
-        quietMoves.push_back({ 0, Move::make<NORMAL>(square - pawnDoubleIncrement, square) });
+        addQuiet(Move::make<NORMAL>(square - pawnDoubleIncrement, square));
     }
 
     
@@ -951,7 +950,7 @@ void MoveGenerator::generateKnightNoisy() {
         while (captures != 0) {
             toSq = Board::popLsb(captures);
             assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-            noisyMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+            addNoisy(Move::make<NORMAL>(fromSq, toSq));
         }
     }
 }
@@ -992,7 +991,7 @@ void MoveGenerator::generateKnightQuiet() {
         int toSq = 0;
         while (silentMoves) {
             toSq = Board::popLsb(silentMoves);
-            quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+            addQuiet(Move::make<NORMAL>(fromSq, toSq));
         }
 
     }
@@ -1018,7 +1017,7 @@ void MoveGenerator::generateBishopNoisy() {
         while (captures != 0) {
             toSq = Board::popLsb(captures);
             assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-            noisyMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+            addNoisy(Move::make<NORMAL>(fromSq, toSq));
         }
 
     }
@@ -1042,7 +1041,7 @@ void MoveGenerator::generateBishopQuiet() {
 
         while (silentMoves) {
             toSq = Board::popLsb(silentMoves);
-            quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+            addQuiet(Move::make<NORMAL>(fromSq, toSq));
         }
 
     }
@@ -1065,7 +1064,7 @@ void MoveGenerator::generateRookNoisy() {
         while (captures != 0) {
             toSq = Board::popLsb(captures);
             assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-            noisyMoves.push_back({0, Move::make<NORMAL>(fromSq, toSq) });
+            addNoisy(Move::make<NORMAL>(fromSq, toSq));
         }
     }
 }
@@ -1086,7 +1085,7 @@ void MoveGenerator::generateRookQuiet() {
         int toSq = 0;
         while (silentMoves) {
             toSq = Board::popLsb(silentMoves);
-            quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+            addQuiet(Move::make<NORMAL>(fromSq, toSq));
         }
 
     }
@@ -1110,7 +1109,7 @@ void MoveGenerator::generateQueenNoisy() {
         while (captures) {
             toSq = Board::popLsb(captures);
             assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-            noisyMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+            addNoisy(Move::make<NORMAL>(fromSq, toSq));
         }
 
     }
@@ -1132,7 +1131,7 @@ void MoveGenerator::generateQueenQuiet() {
         int toSq = 0;
         while (silentMoves) {
             toSq = Board::popLsb(silentMoves);
-            quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+            addQuiet(Move::make<NORMAL>(fromSq, toSq));
         }
 
     }
@@ -1197,7 +1196,7 @@ void MoveGenerator::generateKingNoisy() {
     while (captures != 0) {
         toSq = board->popLsb(captures);
         assert(!(board->sqBB[toSq] & board->getBitboard(static_cast<BitBoardEnum>(K + board->getOtherSide()))));
-        noisyMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+        addNoisy(Move::make<NORMAL>(fromSq, toSq));
     }
 }
 
@@ -1260,7 +1259,7 @@ void MoveGenerator::generateKingQuiet() {
     int toSq = 0;
     while (silentMoves) {
         toSq = board->popLsb(silentMoves);
-        quietMoves.push_back({ 0, Move::make<NORMAL>(fromSq, toSq) });
+        addQuiet(Move::make<NORMAL>(fromSq, toSq));
     }
 
     if (sideToMove == BitBoardEnum::White) {
@@ -1269,7 +1268,7 @@ void MoveGenerator::generateKingQuiet() {
             board->setBit(castlineSquares, 5);
             board->setBit(castlineSquares, 6);
             if ((allPieces & castlineSquares) == 0 && !board->isSquareAttacked(castlineSquares | board->sqBB[fromSq], BitBoardEnum::Black)) {
-                quietMoves.push_back({ 0, Move::make<CASTLING>(fromSq, fromSq + 2) });
+                addQuiet(Move::make<CASTLING>(fromSq, fromSq + 2));
             }  //f1,g1;
         }
         if (board->getCastleRightsWQ()) {
@@ -1281,7 +1280,7 @@ void MoveGenerator::generateKingQuiet() {
             board->setBit(emptySquaresWQ, 1);
 
             if ((allPieces & emptySquaresWQ) == 0 && !board->isSquareAttacked(checkSquaresWQ | board->sqBB[fromSq], BitBoardEnum::Black)) {
-                quietMoves.push_back({ 0,  Move::make<CASTLING>(fromSq, fromSq - 2) });
+                addQuiet( Move::make<CASTLING>(fromSq, fromSq - 2));
             }  //b1,c1,d1;
         }
     }
@@ -1291,7 +1290,7 @@ void MoveGenerator::generateKingQuiet() {
             board->setBit(castlineSquares, 61);
             board->setBit(castlineSquares, 62);
             if ((allPieces & castlineSquares) == 0 && !board->isSquareAttacked(castlineSquares | board->sqBB[fromSq], BitBoardEnum::White)) {
-                quietMoves.push_back({ 0, Move::make<CASTLING>(fromSq, fromSq + 2) });
+                addQuiet(Move::make<CASTLING>(fromSq, fromSq + 2));
             }
         }
         if (board->getCastleRightsBQ()) {
@@ -1302,7 +1301,7 @@ void MoveGenerator::generateKingQuiet() {
             BitBoard emptySquaresBQ = checkSquaresBQ;
             board->setBit(emptySquaresBQ, 57);
             if ((allPieces & emptySquaresBQ) == 0 && !board->isSquareAttacked(checkSquaresBQ | board->sqBB[fromSq], BitBoardEnum::White)) {
-                quietMoves.push_back({ 0, Move::make<CASTLING>(fromSq, fromSq - 2) });
+                addQuiet(Move::make<CASTLING>(fromSq, fromSq - 2));
             }
         }
     }
