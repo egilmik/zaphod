@@ -568,6 +568,7 @@ void Board::parseFen(std::string fen){
 
     hashKey = generateHashKey();
     historyPly = 0;
+    calculateCheckersSnipersPins();
 }
 
 BitBoard Board::generatePawnHashKey() {
@@ -894,6 +895,9 @@ bool Board::makeMove(Move move) {
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
     histMove->hashKeyCopy = hashKey;
     histMove->move = move;
+    histMove->checkers = checkers;
+    histMove->pins = pins;
+    histMove->snipers = snipers;
 
     historyPly++;
 
@@ -1112,6 +1116,9 @@ void Board::revertLastMove()
     halfMoveClock = info->halfMoveClock;
     fullMoveClock = info->fullMoveClock;
     enPassantSq = info->enPassantSqCopy;
+    checkers = info->checkers;
+    snipers = info->snipers;
+    pins = info->pins;
 
     castleWK = (info->castleMask & 1) != 0;
     castleWQ = (info->castleMask & 2) != 0;
@@ -1170,8 +1177,6 @@ void Board::revertLastMove()
     }
 
     hashKey = info->hashKeyCopy;
-
-    calculateCheckersSnipersPins();
 }
 
 void Board::makeNullMove() {
@@ -1183,6 +1188,10 @@ void Board::makeNullMove() {
     histMove->hashKeyCopy = hashKey;
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
+    histMove->checkers = checkers;
+    histMove->pins = pins;
+    histMove->snipers = snipers;
+
 
     if (enPassantSq != noSq) {
         hashKey ^= ttable.enPassantKeys[enPassantSq];
@@ -1192,7 +1201,6 @@ void Board::makeNullMove() {
 
     historyPly++;
     changeSideToMove();
-
     calculateCheckersSnipersPins();
 }
 
@@ -1209,8 +1217,9 @@ void Board::revertNullMove() {
     castleBK = (info->castleMask & 4) != 0;
     castleBQ = (info->castleMask & 8) != 0;
     hashKey = info->hashKeyCopy;
-
-    calculateCheckersSnipersPins();
+    checkers = info->checkers;
+    snipers = info->snipers;
+    pins = info->pins;
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)

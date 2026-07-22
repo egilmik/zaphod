@@ -10,7 +10,7 @@
 #include <format>
 #include "nnueq.h"
 
-struct alignas(32) MoveUndoInfo {
+struct alignas(64) MoveUndoInfo {
     BitBoard hashKeyCopy = 0; // 8 byte
     Move move = 0; // 2 byte
 
@@ -18,6 +18,10 @@ struct alignas(32) MoveUndoInfo {
     uint8_t capturedPiece = static_cast<uint8_t>(BitBoardEnum::All); // 1 byte
     uint8_t movedPiece = static_cast<uint8_t>(BitBoardEnum::All); // 1 byte
     uint8_t castleMask = 0; // 1 byte
+
+    BitBoard checkers = 0;
+    BitBoard snipers = 0;
+    BitBoard pins = 0;
 
     int8_t halfMoveClock = 0; // 1 byte
     int8_t fullMoveClock = 1;
