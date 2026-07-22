@@ -433,6 +433,46 @@ bool Board::hasInsufficientMaterial() {
 
 }
 
+void Board::calculateCheckersSnipersPins() {
+    BitBoard king = getBitboard(K + getSideToMove());
+    int kingSquare = Board::popLsb(king);
+    snipers = calculateSnipers(kingSquare, getOtherSide());
+    BitBoard sniperCopy = snipers;
+
+    pins = 0;
+    BitBoard potentialPinned = 0;
+
+
+    while (sniperCopy) {
+        int sniperSquare = Board::popLsb(sniperCopy);
+        potentialPinned = sqBetween[kingSquare][sniperSquare] & getBitboard(All);
+        if (countSetBits(potentialPinned) == 1) {
+            pins |= potentialPinned & getBitboard(getSideToMove());
+        }
+    }
+
+    //  Finding pieces giving check to the current side to move
+    checkers = 0;
+
+    uint64_t magic = ((getBitboard(All) & rookMask[kingSquare]) * magicNumberRook[kingSquare]) >> magicNumberShiftsRook[kingSquare];
+    checkers |= (*magicMovesRook)[kingSquare][magic] & (getBitboard(Q + getOtherSide()) | getBitboard(R + getOtherSide()));
+    magic = ((getBitboard(All) & bishopMask[kingSquare]) * magicNumberBishop[kingSquare]) >> magicNumberShiftsBishop[kingSquare];
+    checkers |= (*magicMovesBishop)[kingSquare][magic] & (getBitboard(Q + getOtherSide()) | getBitboard(B + getOtherSide()));
+
+    checkers |= getKnightMask(kingSquare) & getBitboard(N + getOtherSide());
+
+
+    if (getSideToMove() == White) {
+
+        checkers |= ((king & ~FileHMask) << 7) & getBitboard(P + getOtherSide());
+        checkers |= ((king & ~FileAMask) << 9) & getBitboard(P + getOtherSide());
+    }
+    else {
+        checkers |= ((king & ~FileAMask) >> 7) & getBitboard(P + getOtherSide());
+        checkers |= ((king & ~FileHMask) >> 9) & getBitboard(P + getOtherSide());
+    }
+}
+
 void Board::parseFen(std::string fen){
     clearBoard();
     int count = 0;
@@ -584,7 +624,7 @@ BitBoard Board::generateHashKey(){
 
 
 
-BitBoard Board::getSnipers(int kingSquare, BitBoardEnum attackerColor)
+BitBoard Board::calculateSnipers(int kingSquare, BitBoardEnum attackerColor)
 {
     BitBoard snipers = 0;
 
@@ -1056,6 +1096,9 @@ bool Board::makeMove(Move move) {
     } 
 
     changeSideToMove();
+
+    calculateCheckersSnipersPins();
+
     return true;
 }
 
@@ -1146,6 +1189,8 @@ void Board::makeNullMove() {
 
     historyPly++;
     changeSideToMove();
+
+    calculateCheckersSnipersPins();
 }
 
 void Board::revertNullMove() {

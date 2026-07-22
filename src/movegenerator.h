@@ -33,14 +33,11 @@ class MoveGenerator {
             return noisyCount + quietCount;
         }
 
-        BitBoard getCheckers() {
-            return checkers;
-        }
 
         ScoredMove noisyMoves[256];
         ScoredMove quietMoves[256];
-	int noisyCount = 0;
-	int quietCount = 0;
+	    int noisyCount = 0;
+	    int quietCount = 0;
 
     private:
         void static generatePawnMoves(Board &board,MoveList &moveList,BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
@@ -86,9 +83,6 @@ class MoveGenerator {
         //int moveListIdx = 0;
         Stage currentStage = TT_MOVE;
         Move ttMove{};
-        BitBoard checkers = 0;
-        BitBoard pinned = 0;
-        BitBoard snipers = 0;
         int kingSquare = 0;
         bool onlyNoisy = false;
         bool ttMoveFound = false;

@@ -195,7 +195,7 @@ class Board {
         BitBoardEnum getPieceOnSquare(int sq);
 
 
-        BitBoard getSnipers(int kingSquare, BitBoardEnum attackerColor);
+        
         BitBoard southOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard northOccludedMoves(BitBoard pieces, BitBoard empty);
         BitBoard eastOccludedMoves(BitBoard pieces, BitBoard empty);
@@ -223,6 +223,10 @@ class Board {
         bool getCastleRightsWQ(){return castleWQ;};
         bool getCastleRightsBK(){return castleBK;};
         bool getCastleRightsBQ(){return castleBQ;};
+
+        BitBoard getCheckers() { return checkers; };
+        BitBoard getPins() { return pins; };
+        BitBoard getSnipers() { return snipers; };
 
         
 
@@ -275,9 +279,16 @@ class Board {
         void parseFenPosition(char value, int &bitCout);
         void clearBoard();
 
+        void calculateCheckersSnipersPins();
+        BitBoard calculateSnipers(int kingSquare, BitBoardEnum attackerColor);
+
         constexpr static int MAXMOVEHISTORY = 1024;
         
         NNUEQ nnue;
+
+        BitBoard checkers = 0;
+        BitBoard pins = 0;
+        BitBoard snipers = 0;
 
         MoveUndoInfo moveHistory[MAXMOVEHISTORY];
         int historyPly = 0;

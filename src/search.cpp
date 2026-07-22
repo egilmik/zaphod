@@ -226,8 +226,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     
 
-    MoveGenerator& moveGen = moveGenStack[ply];
-    moveGen.init(board, ttHit ? tte.move : Move{}, false,ss[ply].killerMove, &hist);
     int score = 0;
 
     
@@ -235,7 +233,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
 
     
-    bool inCheck = moveGen.getCheckers() > 0;
+    bool inCheck = board.getCheckers() > 0;
 
     if (inCheck) {
         ss[ply].staticEval = -MATESCORE - 1;
@@ -258,7 +256,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     if (!isRoot && !ttHit && depth <= 4 && ss[ply].staticEval < (alpha - razoringMargin() *depth) ) {
         razoringEntryHit++;
 
-        int value = quinesence(board, alpha-1, alpha, 0, ply+1, false);
+        int value = quinesence(board, alpha-1, alpha, 0, ply, false);
         if (value < alpha && std::abs(value) < 20000) {
             razoringReturnHit++;
             return value;
@@ -302,7 +300,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         }
     }
 
-    
+    MoveGenerator& moveGen = moveGenStack[ply];
+    moveGen.init(board, ttHit ? tte.move : Move{}, false, ss[ply].killerMove, &hist);
     int moveCounter = 0;
     Move move;
     while ((move = moveGen.next())) {
@@ -548,10 +547,9 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     }
 
 
-    MoveGenerator& moveGen = moveGenStack[ply];
-    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true,ss[ply].killerMove, &hist);
+    
 
-    bool inCheck = moveGen.getCheckers() > 0;
+    bool inCheck = board.getCheckers() > 0;
 
     if (inCheck) {
         ss[ply].staticEval = -MATESCORE - 1;
@@ -576,6 +574,8 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     int score = 0;
     int futilityValue = ss[ply].staticEval + futilityBaseQsearch();
     
+    MoveGenerator& moveGen = moveGenStack[ply];
+    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true, ss[ply].killerMove, &hist);
     int moveCounter = 0;
     Move move;
     while((move = moveGen.next())){
@@ -773,7 +773,7 @@ BitBoard Search::getPinned(Board& board, BitBoardEnum sideToMove) {
         otherSide = Black;
     }
 
-    BitBoard snipers = board.getSnipers(kingSquare, otherSide);
+    BitBoard snipers = board.getSnipers();
     BitBoard sniperCopy = snipers;
 
     BitBoard pinned = 0;
