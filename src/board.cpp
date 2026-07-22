@@ -435,7 +435,8 @@ bool Board::hasInsufficientMaterial() {
 
 void Board::calculateCheckersSnipersPins() {
     BitBoard king = getBitboard(K + getSideToMove());
-    int kingSquare = Board::popLsb(king);
+    BitBoard kingCopy = king;
+    int kingSquare = Board::popLsb(kingCopy);
     snipers = calculateSnipers(kingSquare, getOtherSide());
     BitBoard sniperCopy = snipers;
 
@@ -1169,6 +1170,8 @@ void Board::revertLastMove()
     }
 
     hashKey = info->hashKeyCopy;
+
+    calculateCheckersSnipersPins();
 }
 
 void Board::makeNullMove() {
@@ -1206,6 +1209,8 @@ void Board::revertNullMove() {
     castleBK = (info->castleMask & 4) != 0;
     castleBQ = (info->castleMask & 8) != 0;
     hashKey = info->hashKeyCopy;
+
+    calculateCheckersSnipersPins();
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
