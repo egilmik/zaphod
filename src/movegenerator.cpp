@@ -89,10 +89,11 @@ bool MoveGenerator::isMoveLegal(Move move) {
             if (list.moves[i].value == move.value) return true;
         }
         break;
-    case N:
+    case N:{
         if (board->getPins() & fromBB) return false;
         BitBoard targets = board->getKnightMask(move.from()) & board->getCheckers() & ~ownBoard;
         if (targets & toBB) return true;
+    }
         break;
     case B:      
         if (isMoveLegalSliders(move, isCapture, board->getBishopMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
