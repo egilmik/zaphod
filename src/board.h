@@ -240,22 +240,8 @@ class Board {
 
         TranspositionTable ttable;
 
-        void setLegalMovesForSideToMove(int moves) {
-            if (sideToMove == White) {
-                legalMovesWhite = moves;
-            }
-            else {
-                legalMovesBlack = moves;
-            }
-        }
-
         bool hasPositionRepeated();
         bool hasInsufficientMaterial();
-
-        //Returns diff between legal moves, white is positive and black negative.
-        int getMobilityDiff() {
-            return legalMovesWhite - legalMovesBlack;
-        }
 
         int getHalfMoveClock() {
             return halfMoveClock;
@@ -308,8 +294,6 @@ class Board {
         bool castleWQ = false;
         bool castleBK = false;
         bool castleBQ = false;
-        int legalMovesWhite = 0;
-        int legalMovesBlack = 0;
         BitBoard hashKey = 0;
 
         int gamePhase = 24;

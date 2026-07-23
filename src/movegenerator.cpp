@@ -8,58 +8,16 @@
 
 void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
 {
+    MoveGenerator gen;
+    Move killer[2] = {};
+    HistoryTables hist;
+    gen.init(board, Move{}, false, killer, &hist);
     
-    BitBoard king = board.getBitboard(K + board.getSideToMove());
-    int kingSquare = board.popLsb(king);
-    king = board.getBitboard(K + board.getSideToMove());
-    BitBoard snipers = board.getSnipers();
-    BitBoard sniperCopy = snipers;
-
-    BitBoard pinned = 0;
-    BitBoard potentialPinned = 0;
-    
-
-    while (sniperCopy) {
-        int sniperSquare = board.popLsb(sniperCopy);
-        potentialPinned = board.sqBetween[kingSquare][sniperSquare] & board.getBitboard(All);
-        if (board.countSetBits(potentialPinned) == 1) {
-            pinned |= potentialPinned & board.getBitboard(board.getSideToMove());
-        }
+    Move move;
+    while((move = gen.next())){
+        moveList.moves[moveList.counter++] = move;
     }
-
-    //  Finding pieces giving check to the current side to move
-    BitBoard checkers = 0;
-
-    uint64_t magic = ((board.getBitboard(All) & board.rookMask[kingSquare]) * board.magicNumberRook[kingSquare]) >> board.magicNumberShiftsRook[kingSquare];
-    checkers |= (*board.magicMovesRook)[kingSquare][magic] & (board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(R + board.getOtherSide()));
-    magic = ((board.getBitboard(All) & board.bishopMask[kingSquare]) * board.magicNumberBishop[kingSquare]) >> board.magicNumberShiftsBishop[kingSquare];
-    checkers |= (*board.magicMovesBishop)[kingSquare][magic] & (board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(B + board.getOtherSide()));
-
-    checkers |= board.getKnightMask(kingSquare) & board.getBitboard(N + board.getOtherSide());
-    
-
-    if (board.getSideToMove() == White) {
-
-        checkers |= ((king & ~board.FileHMask) << 7) & board.getBitboard(P + board.getOtherSide());
-        checkers |= ((king & ~board.FileAMask) << 9) & board.getBitboard(P + board.getOtherSide());
-    }
-    else {
-        checkers |= ((king & ~board.FileAMask) >> 7) & board.getBitboard(P + board.getOtherSide());
-        checkers |= ((king & ~board.FileHMask) >> 9) & board.getBitboard(P + board.getOtherSide());
-    }
-
-
-    if (board.countSetBits(checkers) < 2) {
-        generateKnightMoves(board, moveList, checkers, kingSquare, pinned, snipers);
-        generateRookMoves(board, moveList, checkers, kingSquare,pinned,snipers);
-        generateBishopMoves(board, moveList, checkers, kingSquare,pinned,snipers);
-        generateQueenMoves(board, moveList, checkers, kingSquare, pinned,snipers);
-        //Pawns last, to prevent promotions to move twice
-        generatePawnMoves(board, moveList,checkers,kingSquare,pinned,snipers);
-    }
-    generateKingMoves(board, moveList, checkers, kingSquare, pinned, snipers);
-    moveList.checkers = checkers;
-    board.setLegalMovesForSideToMove(moveList.counter);
+    moveList.checkers = board.getCheckers();
 }
 
 void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], HistoryTables* hist) {
@@ -132,10 +90,9 @@ bool MoveGenerator::isMoveLegal(Move move) {
         }
         break;
     case N:
-        generateKnightMoves(*board, list, board->getCheckers(), kingSquare, board->getPins(), board->getSnipers());
-        for (int i = 0; i < list.counter; i++) {
-            if (list.moves[i].value == move.value) return true;
-        }
+        if (board->getPins() & fromBB) return false;
+        BitBoard targets = board->getKnightMask(move.from()) & board->getCheckers() & ~ownBoard;
+        if (targets & toBB) return true;
         break;
     case B:      
         if (isMoveLegalSliders(move, isCapture, board->getBishopMagics(move.from()), pieceBoard, enemyBoard, emptySquares)) return true;
@@ -1299,84 +1256,6 @@ BitBoard MoveGenerator::pawnAttacks(Board &board, BitBoardEnum color) {
     
 }
 
-
-
-void MoveGenerator::generateKnightMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
-{
-    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
-    BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::N + board.getSideToMove());
-    BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard knights = board.getBitboard(movedPiece) & ~pinned;
-
-
-    BitBoard inBetween = 0;
-    BitBoard checks = checkers;
-
-    while (checks) {
-        inBetween |= board.sqBetween[kingSquare][board.popLsb(checks)];
-    }
-
-    
-    int fromSq = 0;
-    while (knights)
-    {
-        fromSq = board.popLsb(knights);
-        BitBoard moves = board.getKnightMask(fromSq);
-
-        if ((checkers | inBetween) > 0) {
-            moves &= (inBetween | checkers);
-        }
-
-        BitBoard captures = moves & enemyBoard;
-        BitBoard silentMoves = moves & emptySquares;
-
-        int toSq = 0;
-        while (silentMoves) {
-            toSq = board.popLsb(silentMoves);
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-
-        while (captures != 0) {
-            toSq = board.popLsb(captures);
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-    }
-}
-
-void MoveGenerator::generateRookMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
-{
-    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::R + board.getSideToMove());
-    BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard rooks = board.getBitboard(movedPiece);
-    
-
-
-    int fromSq = 0;
-    while(rooks){
-        fromSq = board.popLsb(rooks);
-
-        
-        BitBoard moves = board.getRookMagics(fromSq);
-
-        moves = makeLegalMoves(board, moves, pinned, checkers, snipers, fromSq, kingSquare);
-        BitBoard captures = moves & enemyBoard;
-        BitBoard silentMoves = moves & emptySquares;
-
-        int toSq = 0;
-        while (silentMoves) {
-            toSq = board.popLsb(silentMoves);
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-
-        while (captures != 0) {
-            toSq = board.popLsb(captures);
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-    }
-}
-
 BitBoard MoveGenerator::makeLegalMoves(Board &board, BitBoard moves, BitBoard pinned, BitBoard checkers, BitBoard snipers, int fromSq, int kingSquare) {
     // Inbetween king and checker
     BitBoard inBetweenKChecker = 0;
@@ -1404,74 +1283,6 @@ BitBoard MoveGenerator::makeLegalMoves(Board &board, BitBoard moves, BitBoard pi
         }
     }
     return moves;
-}
-
-void MoveGenerator::generateBishopMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
-{
-    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::B + board.getSideToMove());
-    BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard bishops = board.getBitboard(movedPiece);
-
-    int fromSq = 0;
-    while(bishops){
-        fromSq = board.popLsb(bishops);
-        BitBoard moves = board.getBishopMagics(fromSq);
-
-        moves = makeLegalMoves(board, moves, pinned, checkers, snipers, fromSq, kingSquare);
-
-        BitBoard captures = moves & enemyBoard;
-        BitBoard silentMoves = moves & emptySquares;
-
-
-
-        int toSq = 0;
-        
-        while(silentMoves){
-            toSq = board.popLsb(silentMoves);
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-
-        while (captures!= 0) {
-            toSq = board.popLsb(captures);
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-        
-    }
-}
-
-void MoveGenerator::generateQueenMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
-{
-    BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::Q + board.getSideToMove());
-    BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard queens = board.getBitboard(movedPiece);
-
-    int fromSq = 0;
-    while(queens){
-        fromSq = board.popLsb(queens);
-
-        BitBoard moves = (board.getBishopMagics(fromSq) | board.getRookMagics(fromSq));
-
-        moves = makeLegalMoves(board, moves, pinned, checkers, snipers, fromSq, kingSquare);
-
-
-        BitBoard captures = moves & enemyBoard;
-        BitBoard silentMoves = moves & emptySquares;
-
-        int toSq = 0;
-
-        while (silentMoves) {
-            toSq = board.popLsb(silentMoves);
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-
-        while (captures) {
-            toSq = board.popLsb(captures);
-            moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
-        }
-        
-    }
 }
 
 void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
