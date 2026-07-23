@@ -91,7 +91,17 @@ bool MoveGenerator::isMoveLegal(Move move) {
         break;
     case N:{
         if (board->getPins() & fromBB) return false;
-        BitBoard targets = board->getKnightMask(move.from()) & board->getCheckers() & ~ownBoard;
+        BitBoard targets = board->getKnightMask(move.from()) & ~ownBoard;
+
+        BitBoard checkers = board->getCheckers();
+        if (checkers) {
+            BitBoard inBetween = 0;
+            BitBoard checksCopy = checkers;
+            while (checksCopy) {
+                inBetween |= board->sqBetween[kingSquare][Board::popLsb(checksCopy)];
+            }
+            targets &= (inBetween | checkers);
+        }
         if (targets & toBB) return true;
     }
         break;
