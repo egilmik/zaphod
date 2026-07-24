@@ -19,7 +19,7 @@
     },
     {
       "name": "x64-Release",
-      "generator": "Visual Studio 17 2022 Win64",
+      "generator": "Ninja",
       "configurationType": "Release",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
