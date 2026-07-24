@@ -37,6 +37,17 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
     assert(king != 0);  // king must exist
     kingSquare = Board::popLsb(king);
     assert(kingSquare < 64);
+
+    checkMask = ~static_cast<BitBoard>(0);
+    BitBoard checkers = board->getCheckers();
+    if (checkers) {
+        BitBoard inBetween = 0;
+        BitBoard checks = checkers;
+        while (checks) {
+            inBetween |= board->sqBetween[kingSquare][Board::popLsb(checks)];
+        }
+        checkMask = inBetween | checkers;
+    }
 }
 
 bool MoveGenerator::isMoveLegal(Move move) {
@@ -91,17 +102,7 @@ bool MoveGenerator::isMoveLegal(Move move) {
         break;
     case N:{
         if (board->getPins() & fromBB) return false;
-        BitBoard targets = board->getKnightMask(move.from()) & ~ownBoard;
-
-        BitBoard checkers = board->getCheckers();
-        if (checkers) {
-            BitBoard inBetween = 0;
-            BitBoard checksCopy = checkers;
-            while (checksCopy) {
-                inBetween |= board->sqBetween[kingSquare][Board::popLsb(checksCopy)];
-            }
-            targets &= (inBetween | checkers);
-        }
+        BitBoard targets = board->getKnightMask(move.from()) & ~ownBoard & checkMask;
         if (targets & toBB) return true;
     }
         break;

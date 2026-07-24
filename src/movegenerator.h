@@ -80,6 +80,7 @@ class MoveGenerator {
         Stage currentStage = TT_MOVE;
         Move ttMove{};
         int kingSquare = 0;
+        BitBoard checkMask = 0;
         bool onlyNoisy = false;
         bool ttMoveFound = false;
 };
