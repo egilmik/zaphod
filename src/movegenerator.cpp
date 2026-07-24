@@ -48,6 +48,8 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
         }
         checkMask = inBetween | checkers;
     }
+
+    computeKingDanger();
 }
 
 bool MoveGenerator::isMoveLegal(Move move) {
@@ -1035,59 +1037,10 @@ void MoveGenerator::generateQueenQuiet() {
 }
 
 void MoveGenerator::generateKingNoisy() {
-    BitBoard emptySquares = ~board->getBitboard(BitBoardEnum::All);
-    BitBoard allPieces = board->getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board->getSideToMove());
-    BitBoard enemyBoard = board->getEnemyBoard();
-    BitBoard king = board->getBitboard(movedPiece);
-    if (!king) {
-        std::cout << "There is no king!!!!!!! in noisy" << std::endl;
-        return;
-    }
-    BitBoard otherKingBoard = board->getBitboard(K + board->getOtherSide());
-    int otherKingSq = board->popLsb(otherKingBoard);
-    BitBoardEnum sideToMove = board->getSideToMove();
-
+    BitBoard king = board->getBitboard(static_cast<BitBoardEnum>(K + board->getSideToMove()));
     int fromSq = board->popLsb(king);
-    BitBoard moves = board->getKingMask(fromSq);
-
-
-
-    //Here we can remove at least knight moves
-    BitBoard enemyKnights = board->getBitboard(static_cast<BitBoardEnum>(BitBoardEnum::N + board->getOtherSide()));
-    int knightSquare = 0;
-    BitBoard enemyKnightAttacks = 0;
-    while (enemyKnights != 0) {
-        knightSquare = board->popLsb(enemyKnights);
-        enemyKnightAttacks |= board->getKnightMask(knightSquare);
-    }
-
-    moves &= ~enemyKnightAttacks;
-    moves &= ~board->getKingMask(otherKingSq);
-
-    BitBoard all = board->getBitboard(All) & ~board->getBitboard(K + board->getSideToMove());
-
-    BitBoard attacks = 0;
-    BitBoard enemyRooks = board->getBitboard(Q + board->getOtherSide()) | board->getBitboard(R + board->getOtherSide());
-    BitBoard enemyBishops = board->getBitboard(Q + board->getOtherSide()) | board->getBitboard(B + board->getOtherSide());
-
-    while (enemyRooks) {
-        int square = board->popLsb(enemyRooks);
-        uint64_t magic = ((all & board->rookMask[square]) * board->magicNumberRook[square]) >> board->magicNumberShiftsRook[square];
-        attacks |= (*board->magicMovesRook)[square][magic];
-    }
-
-    while (enemyBishops) {
-        int square = board->popLsb(enemyBishops);
-        uint64_t magic = ((all & board->bishopMask[square]) * board->magicNumberBishop[square]) >> board->magicNumberShiftsBishop[square];
-        attacks |= (*board->magicMovesBishop)[square][magic];
-    }
-
-    attacks |= pawnAttacks(*board, board->getOtherSide());
-
-    moves &= ~attacks;
-
-    BitBoard captures = moves & enemyBoard;
+    BitBoard moves = board->getKingMask(fromSq) & ~kingDangerMask;
+    BitBoard captures = moves & board->getEnemyBoard();
 
     int toSq = 0;
     while (captures != 0) {
@@ -1099,58 +1052,14 @@ void MoveGenerator::generateKingNoisy() {
 
 void MoveGenerator::generateKingQuiet() {
     BitBoard emptySquares = ~board->getBitboard(BitBoardEnum::All);
-    BitBoard allPieces = board->getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board->getSideToMove());
-    BitBoard enemyBoard = board->getEnemyBoard();
-    BitBoard king = board->getBitboard(movedPiece);
-    if (!king) {
-        std::cout << "There is no king!!!!!!! in quiet" << std::endl;
-        return;
-    }
-
-    BitBoard otherKingBoard = board->getBitboard(K + board->getOtherSide());
-    int otherKingSq = board->popLsb(otherKingBoard);
+    BitBoard allPieces = board->getBitboard(All);
     BitBoardEnum sideToMove = board->getSideToMove();
+    BitBoard king = board->getBitboard(static_cast<BitBoardEnum>(K + board->getSideToMove()));
+
 
     int fromSq = board->popLsb(king);
-    BitBoard moves = board->getKingMask(fromSq);
+    BitBoard moves = board->getKingMask(fromSq) & ~kingDangerMask;
 
-
-
-    //Here we can remove at least knight moves
-    BitBoard enemyKnights = board->getBitboard(static_cast<BitBoardEnum>(BitBoardEnum::N + board->getOtherSide()));
-    int knightSquare = 0;
-    BitBoard enemyKnightAttacks = 0;
-    while (enemyKnights != 0) {
-        knightSquare = board->popLsb(enemyKnights);
-        enemyKnightAttacks |= board->getKnightMask(knightSquare);
-    }
-
-    moves &= ~enemyKnightAttacks;
-    moves &= ~board->getKingMask(otherKingSq);
-
-    BitBoard all = board->getBitboard(All) & ~board->getBitboard(K + board->getSideToMove());
-
-    BitBoard attacks = 0;
-    BitBoard enemyRooks = board->getBitboard(Q + board->getOtherSide()) | board->getBitboard(R + board->getOtherSide());
-    BitBoard enemyBishops = board->getBitboard(Q + board->getOtherSide()) | board->getBitboard(B + board->getOtherSide());
-
-    while (enemyRooks) {
-        int square = board->popLsb(enemyRooks);
-        uint64_t magic = ((all & board->rookMask[square]) * board->magicNumberRook[square]) >> board->magicNumberShiftsRook[square];
-        attacks |= (*board->magicMovesRook)[square][magic];
-    }
-
-    while (enemyBishops) {
-        int square = board->popLsb(enemyBishops);
-        uint64_t magic = ((all & board->bishopMask[square]) * board->magicNumberBishop[square]) >> board->magicNumberShiftsBishop[square];
-        attacks |= (*board->magicMovesBishop)[square][magic];
-    }
-
-    attacks |= pawnAttacks(*board, board->getOtherSide());
-    
-
-    moves &= ~attacks;
     BitBoard silentMoves = moves & emptySquares;
 
     int toSq = 0;
@@ -1244,57 +1153,53 @@ BitBoard MoveGenerator::makeLegalMoves(Board &board, BitBoard moves, BitBoard pi
     return moves;
 }
 
+void MoveGenerator::computeKingDanger() {
+    BitBoard danger = 0;
+
+    // Enemy knights
+    BitBoard enemyKnights = board->getBitboard(static_cast<BitBoardEnum>(N + board->getOtherSide()));
+    while (enemyKnights) {
+        danger |= board->getKnightMask(board->popLsb(enemyKnights));
+    }
+
+    // Enemy king
+    BitBoard otherKing = board->getBitboard(K + board->getOtherSide());
+    danger |= board->getKingMask(board->popLsb(otherKing));
+
+    // Enemy sliders. Our own king is removed from the occupancy so a checking
+    // slider also marks the square *behind* the king as unsafe (king can't retreat along the ray).
+    BitBoard all = board->getBitboard(All) & ~board->getBitboard(K + board->getSideToMove());
+    BitBoard enemyRooks = board->getBitboard(Q + board->getOtherSide()) | board->getBitboard(R + board->getOtherSide());
+    BitBoard enemyBishops = board->getBitboard(Q + board->getOtherSide()) | board->getBitboard(B + board->getOtherSide());
+
+    while (enemyRooks) {
+        int sq = board->popLsb(enemyRooks);
+        uint64_t magic = ((all & board->rookMask[sq]) * board->magicNumberRook[sq]) >> board->magicNumberShiftsRook[sq];
+        danger |= (*board->magicMovesRook)[sq][magic];
+    }
+    while (enemyBishops) {
+        int sq = board->popLsb(enemyBishops);
+        uint64_t magic = ((all & board->bishopMask[sq]) * board->magicNumberBishop[sq]) >> board->magicNumberShiftsBishop[sq];
+        danger |= (*board->magicMovesBishop)[sq][magic];
+    }
+
+    // Enemy pawns
+    danger |= pawnAttacks(*board, board->getOtherSide());
+    kingDangerMask = danger;
+}
+
 void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
-    BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
-    BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::K + board.getSideToMove());
-    BitBoard enemyBoard = board.getEnemyBoard();
-    BitBoard king = board.getBitboard(movedPiece);
-    BitBoard otherKingBoard = board.getBitboard(K + board.getOtherSide());
-    int otherKingSq = board.popLsb(otherKingBoard);
+    BitBoard allPieces = board.getBitboard(All);
     BitBoardEnum sideToMove = board.getSideToMove();
+    BitBoard king = board.getBitboard(static_cast<BitBoardEnum>(K + board.getSideToMove()));
+    
 
     int fromSq = board.popLsb(king);
-    BitBoard moves = board.getKingMask(fromSq);
+    BitBoard moves = board.getKingMask(fromSq) & ~kingDangerMask;
 
-
-    
-    //Here we can remove at least knight moves
-    BitBoard enemyKnights = board.getBitboard(static_cast<BitBoardEnum>(BitBoardEnum::N + board.getOtherSide()));
-    int knightSquare = 0;
-    BitBoard enemyKnightAttacks = 0;
-    while (enemyKnights != 0) {
-        knightSquare = board.popLsb(enemyKnights);
-        enemyKnightAttacks |= board.getKnightMask(knightSquare);
-    }
-
-    moves &= ~enemyKnightAttacks;
-    moves &= ~board.getKingMask(otherKingSq);
-    
-    BitBoard all = board.getBitboard(All) & ~board.getBitboard(K + board.getSideToMove());
-
-    BitBoard attacks = 0;
-    BitBoard enemyRooks = board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(R + board.getOtherSide());
-    BitBoard enemyBishops = board.getBitboard(Q + board.getOtherSide()) | board.getBitboard(B + board.getOtherSide());
-
-    while (enemyRooks) {
-        int square = board.popLsb(enemyRooks);
-        uint64_t magic = ((all & board.rookMask[square]) * board.magicNumberRook[square]) >> board.magicNumberShiftsRook[square];
-        attacks |= (*board.magicMovesRook)[square][magic];
-    }
-
-    while (enemyBishops) {
-        int square = board.popLsb(enemyBishops);
-        uint64_t magic = ((all & board.bishopMask[square]) * board.magicNumberBishop[square]) >> board.magicNumberShiftsBishop[square];
-        attacks |= (*board.magicMovesBishop)[square][magic];
-    }
-    
-    attacks |= pawnAttacks(board, board.getOtherSide());
-
-    moves &= ~attacks;
-
-    BitBoard captures = moves & enemyBoard;
+    BitBoard captures = moves & board.getEnemyBoard();
     BitBoard silentMoves = moves & emptySquares;
 
     int toSq = 0;

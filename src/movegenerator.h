@@ -46,12 +46,13 @@ class MoveGenerator {
         BitBoard static makeLegalMoves(Board& board, BitBoard moves, BitBoard pinned, BitBoard checkMask, BitBoard snipers, int fromSq, int kingSquare);
         BitBoard static pawnAttacks(Board& board, BitBoardEnum color);
         BitBoard static pawnAttacks(BitBoard pawns, BitBoardEnum color);
+        void computeKingDanger();
 
         bool isMoveLegal(Move move);
         bool isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard pieceBoard, BitBoard enemyBoard, BitBoard emptySquares);
 
-	inline void addNoisy(Move m){ noisyMoves[noisyCount++] = { 0, m}; }
-	inline void addQuiet(Move m){ quietMoves[quietCount++] = { 0, m}; }
+	    inline void addNoisy(Move m){ noisyMoves[noisyCount++] = { 0, m}; }
+	    inline void addQuiet(Move m){ quietMoves[quietCount++] = { 0, m}; }
 
         void generatePawnNoisy();
         void generatePawnQuiet();
@@ -81,6 +82,7 @@ class MoveGenerator {
         Move ttMove{};
         int kingSquare = 0;
         BitBoard checkMask = 0;
+        BitBoard kingDangerMask = 0;
         bool onlyNoisy = false;
         bool ttMoveFound = false;
 };
