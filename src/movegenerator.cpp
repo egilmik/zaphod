@@ -1169,7 +1169,7 @@ int MoveGenerator::generateCastlingMoves(int kingSq, Move out[2]) {
         if (board->isSquareAttacked(spec.safeSquares | king, board->getOtherSide())) continue;
         out[moveCount++] = Move::make<CASTLING>(kingSq, kingSq + spec.kingOffset);
     }
-    return n;
+    return moveCount;
 
 }
 
