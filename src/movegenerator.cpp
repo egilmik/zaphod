@@ -143,7 +143,7 @@ bool MoveGenerator::isMoveLegalSliders(Move move, bool isCapture, BitBoard moves
     BitBoard toBB = board->sqBB[move.to()];    
     
     fromSq = move.from();
-    moves = makeLegalMoves(*board, moves, board->getPins(), board->getCheckers(), board->getSnipers(), fromSq, kingSquare);
+    moves = makeLegalMoves(*board, moves, board->getPins(), checkMask, board->getSnipers(), fromSq, kingSquare);
     int toSq = 0;
 
     if (isCapture) {
@@ -450,10 +450,10 @@ void MoveGenerator::generatePawnNoisy() {
             pinnedNEAttack = ((pinnedPawnBB & ~Board::FileAMask) >> 7) & enemyBoard;
             pinnedNWAttack = ((pinnedPawnBB & ~Board::FileHMask) >> 9) & enemyBoard;
         }
-        singlePush |= makeLegalMoves(*board, pinnedPawnSinglePush, board->getPins(), board->getCheckers(), board->getSnipers(), pinnedSquare, kingSquare);
-        doublePush |= makeLegalMoves(*board, pinnedDoublePush, board->getPins(), board->getCheckers(), board->getSnipers(), pinnedSquare, kingSquare);
-        neAttacks |= makeLegalMoves(*board, pinnedNEAttack, board->getPins(), board->getCheckers(), board->getSnipers(), pinnedSquare, kingSquare);
-        nwAttacks |= makeLegalMoves(*board, pinnedNWAttack, board->getPins(), board->getCheckers(), board->getSnipers(), pinnedSquare, kingSquare);
+        singlePush |= makeLegalMoves(*board, pinnedPawnSinglePush, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
+        doublePush |= makeLegalMoves(*board, pinnedDoublePush, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
+        neAttacks |= makeLegalMoves(*board, pinnedNEAttack, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
+        nwAttacks |= makeLegalMoves(*board, pinnedNWAttack, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
     }
 
     //If in check, only consider moves that capture checker or obstruct the check
@@ -621,8 +621,8 @@ void MoveGenerator::generatePawnQuiet() {
             pinnedDoublePush = ((pinnedPawnSinglePush & doublePushRank) >> 8) & ~allPieces;
             
         }
-        singlePush |= makeLegalMoves(*board, pinnedPawnSinglePush, board->getPins(), board->getCheckers(), board->getSnipers(), pinnedSquare, kingSquare);
-        doublePush |= makeLegalMoves(*board, pinnedDoublePush, board->getPins(), board->getCheckers(), board->getSnipers(), pinnedSquare, kingSquare);
+        singlePush |= makeLegalMoves(*board, pinnedPawnSinglePush, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
+        doublePush |= makeLegalMoves(*board, pinnedDoublePush, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
         
     }
 
@@ -737,10 +737,10 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
             pinnedNEAttack = ((pinnedPawnBB & ~board.FileAMask) >> 7) & enemyBoard;
             pinnedNWAttack = ((pinnedPawnBB & ~board.FileHMask) >> 9) & enemyBoard;
         }
-        singlePush |= makeLegalMoves(board, pinnedPawnSinglePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
-        doublePush |= makeLegalMoves(board, pinnedDoublePush, pinned, checkers, snipers, pinnedSquare, kingSquare);
-        neAttacks |= makeLegalMoves(board, pinnedNEAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
-        nwAttacks |= makeLegalMoves(board, pinnedNWAttack, pinned, checkers, snipers, pinnedSquare, kingSquare);
+        singlePush |= makeLegalMoves(board, pinnedPawnSinglePush, pinned, checkMask, snipers, pinnedSquare, kingSquare);
+        doublePush |= makeLegalMoves(board, pinnedDoublePush, pinned, checkMask, snipers, pinnedSquare, kingSquare);
+        neAttacks |= makeLegalMoves(board, pinnedNEAttack, pinned, checkMask, snipers, pinnedSquare, kingSquare);
+        nwAttacks |= makeLegalMoves(board, pinnedNWAttack, pinned, checkMask, snipers, pinnedSquare, kingSquare);
     }
 
     //If in check, only consider moves that capture checker or obstruct the check
@@ -948,7 +948,7 @@ void MoveGenerator::generateBishopNoisy() {
         fromSq = Board::popLsb(bishops);
         BitBoard moves = board->getBishopMagics(fromSq);
 
-        moves = makeLegalMoves(*board, moves, board->getPins(), board->getCheckers(), board->getSnipers(), fromSq, kingSquare);
+        moves = makeLegalMoves(*board, moves, board->getPins(), checkMask, board->getSnipers(), fromSq, kingSquare);
 
         BitBoard captures = moves & enemyBoard;        
 
@@ -974,7 +974,7 @@ void MoveGenerator::generateBishopQuiet() {
         fromSq = Board::popLsb(bishops);
         BitBoard moves = board->getBishopMagics(fromSq);
 
-        moves = makeLegalMoves(*board, moves, board->getPins(), board->getCheckers(), board->getSnipers(), fromSq, kingSquare);
+        moves = makeLegalMoves(*board, moves, board->getPins(), checkMask, board->getSnipers(), fromSq, kingSquare);
 
         BitBoard silentMoves = moves & emptySquares;
         int toSq = 0;
@@ -997,7 +997,7 @@ void MoveGenerator::generateRookNoisy() {
     while (rooks) {
         fromSq = Board::popLsb(rooks);
         BitBoard moves = board->getRookMagics(fromSq);
-        moves = makeLegalMoves(*board, moves, board->getPins(), board->getCheckers(), board->getSnipers(), fromSq, kingSquare);
+        moves = makeLegalMoves(*board, moves, board->getPins(), checkMask, board->getSnipers(), fromSq, kingSquare);
         BitBoard captures = moves & enemyBoard;
 
         int toSq = 0;
@@ -1019,7 +1019,7 @@ void MoveGenerator::generateRookQuiet() {
     while (rooks) {
         fromSq = Board::popLsb(rooks);
         BitBoard moves = board->getRookMagics(fromSq);
-        moves = makeLegalMoves(*board, moves, board->getPins(), board->getCheckers(), board->getSnipers(), fromSq, kingSquare);
+        moves = makeLegalMoves(*board, moves, board->getPins(), checkMask, board->getSnipers(), fromSq, kingSquare);
         BitBoard silentMoves = moves & emptySquares;
 
         int toSq = 0;
@@ -1041,7 +1041,7 @@ void MoveGenerator::generateQueenNoisy() {
     while (queens) {
         fromSq = Board::popLsb(queens);
         BitBoard moves = (board->getBishopMagics(fromSq) | board->getRookMagics(fromSq));
-        moves = makeLegalMoves(*board, moves, board->getPins(), board->getCheckers(), board->getSnipers(), fromSq, kingSquare);
+        moves = makeLegalMoves(*board, moves, board->getPins(), checkMask, board->getSnipers(), fromSq, kingSquare);
         BitBoard captures = moves & enemyBoard;
         
 
@@ -1065,7 +1065,7 @@ void MoveGenerator::generateQueenQuiet() {
     while (queens) {
         fromSq = Board::popLsb(queens);
         BitBoard moves = (board->getBishopMagics(fromSq) | board->getRookMagics(fromSq));
-        moves = makeLegalMoves(*board, moves, board->getPins(), board->getCheckers(), board->getSnipers(), fromSq, kingSquare);
+        moves = makeLegalMoves(*board, moves, board->getPins(), checkMask, board->getSnipers(), fromSq, kingSquare);
         BitBoard silentMoves = moves & emptySquares;
 
         int toSq = 0;
@@ -1268,19 +1268,9 @@ BitBoard MoveGenerator::pawnAttacks(Board &board, BitBoardEnum color) {
     
 }
 
-BitBoard MoveGenerator::makeLegalMoves(Board &board, BitBoard moves, BitBoard pinned, BitBoard checkers, BitBoard snipers, int fromSq, int kingSquare) {
-    // Inbetween king and checker
-    BitBoard inBetweenKChecker = 0;
-    BitBoard checks = checkers;
-
-    while (checks) {
-        inBetweenKChecker |= board.sqBetween[kingSquare][board.popLsb(checks)];
-    }
-
-    if ((checkers | inBetweenKChecker) > 0) {
-        moves &= (inBetweenKChecker | checkers);
-    }
-
+BitBoard MoveGenerator::makeLegalMoves(Board &board, BitBoard moves, BitBoard pinned, BitBoard checkMask, BitBoard snipers, int fromSq, int kingSquare) {
+    
+    moves &= checkMask;
 
     // We are pinned
     if ((pinned & board.sqBB[fromSq]) > 0) {
