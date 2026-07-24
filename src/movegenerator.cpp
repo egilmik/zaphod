@@ -626,16 +626,9 @@ void MoveGenerator::generatePawnQuiet() {
         
     }
 
-    //If in check, only consider moves that capture checker or obstruct the check
-    BitBoard inBetween = 0;
-    BitBoard checks = board->getCheckers();
-    while (checks) {
-        inBetween |= board->sqBetween[kingSquare][Board::popLsb(checks)];
-    }
-    if ((board->getCheckers() | inBetween) > 0) {
-        singlePush &= (inBetween | board->getCheckers());
-        doublePush &= (inBetween | board->getCheckers());
-    }
+    
+    singlePush &= checkMask;
+    doublePush &= checkMask;
 
 
     promotions = (singlePush & promotionRank);
@@ -743,18 +736,12 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard
         nwAttacks |= makeLegalMoves(board, pinnedNWAttack, pinned, checkMask, snipers, pinnedSquare, kingSquare);
     }
 
-    //If in check, only consider moves that capture checker or obstruct the check
-    BitBoard inBetween = 0;
-    BitBoard checks = checkers;
-    while (checks) {
-        inBetween |= board.sqBetween[kingSquare][board.popLsb(checks)];
-    }
-    if ((checkers | inBetween) > 0) {
-        singlePush &= (inBetween | checkers);
-        doublePush &= (inBetween | checkers);
-        neAttacks &= (inBetween | checkers);
-        nwAttacks &= (inBetween | checkers);
-    }
+    
+    singlePush &= checkMask;
+    doublePush &= checkMask;
+    neAttacks &= checkMask;
+    nwAttacks &= checkMask;
+    
 
 
     promotions = (singlePush & promotionRank);
