@@ -408,7 +408,6 @@ void MoveGenerator::generatePawnNoisy() {
     BitBoardEnum rookPromo = static_cast<BitBoardEnum>(BitBoardEnum::R + sideToMove);
 
     BitBoard singlePush = 0;
-    BitBoard doublePush = 0;
     BitBoard promotions = 0;
     BitBoard nwAttacks = 0;
     BitBoard neAttacks = 0;
@@ -419,13 +418,11 @@ void MoveGenerator::generatePawnNoisy() {
 
     if (sideToMove == White) {
         singlePush = (pawns << 8) & ~allPieces;
-        doublePush = ((singlePush & doublePushRank) << 8) & ~allPieces;
         neAttacks = ((pawns & ~Board::FileHMask) << 7) & enemyBoard;
         nwAttacks = ((pawns & ~Board::FileAMask) << 9) & enemyBoard;
     }
     else {
         singlePush = (pawns >> 8) & ~allPieces;
-        doublePush = ((singlePush & doublePushRank) >> 8) & ~allPieces;
         neAttacks = ((pawns & ~Board::FileAMask) >> 7) & enemyBoard;
         nwAttacks = ((pawns & ~Board::FileHMask) >> 9) & enemyBoard;
     }
@@ -433,7 +430,6 @@ void MoveGenerator::generatePawnNoisy() {
 
     //Checking pinned pieces individually
     BitBoard pinnedPawnSinglePush = 0;
-    BitBoard pinnedDoublePush = 0;
     BitBoard pinnedNEAttack = 0;
     BitBoard pinnedNWAttack = 0;
     int pinnedSquare = 0;
@@ -453,7 +449,6 @@ void MoveGenerator::generatePawnNoisy() {
             pinnedNWAttack = ((pinnedPawnBB & ~Board::FileHMask) >> 9) & enemyBoard;
         }
         singlePush |= makeLegalMoves(*board, pinnedPawnSinglePush, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
-        doublePush |= makeLegalMoves(*board, pinnedDoublePush, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
         neAttacks |= makeLegalMoves(*board, pinnedNEAttack, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
         nwAttacks |= makeLegalMoves(*board, pinnedNWAttack, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
     }
@@ -461,7 +456,6 @@ void MoveGenerator::generatePawnNoisy() {
 
     
     singlePush &= checkMask;
-    doublePush &= checkMask;
     neAttacks &= checkMask;
     nwAttacks &= checkMask;
     
@@ -841,12 +835,9 @@ void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, int king
 }
 
 void MoveGenerator::generateKnightNoisy() {
-    BitBoard emptySquares = ~board->getBitboard(BitBoardEnum::All);
-    BitBoard allPieces = board->getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::N + board->getSideToMove());
     BitBoard enemyBoard = board->getEnemyBoard();
     BitBoard knights = board->getBitboard(movedPiece) & ~board->getPins();
-
 
     int fromSq = 0;
     while (knights)
@@ -857,7 +848,6 @@ void MoveGenerator::generateKnightNoisy() {
         moves &= checkMask;
 
         BitBoard captures = moves & enemyBoard;
-        BitBoard silentMoves = moves & emptySquares;
 
         int toSq = 0;
 
@@ -897,7 +887,6 @@ void MoveGenerator::generateKnightQuiet() {
 }
 
 void MoveGenerator::generateBishopNoisy() {
-    BitBoard emptySquares = ~board->getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::B + board->getSideToMove());
     BitBoard enemyBoard = board->getEnemyBoard();
     BitBoard bishops = board->getBitboard(movedPiece);
@@ -947,7 +936,6 @@ void MoveGenerator::generateBishopQuiet() {
 }
 
 void MoveGenerator::generateRookNoisy() {
-    BitBoard emptySquares = ~board->getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::R + board->getSideToMove());
     BitBoard enemyBoard = board->getEnemyBoard();
     BitBoard rooks = board->getBitboard(movedPiece);
@@ -991,7 +979,6 @@ void MoveGenerator::generateRookQuiet() {
 }
 
 void MoveGenerator::generateQueenNoisy() {
-    BitBoard emptySquares = ~board->getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::Q + board->getSideToMove());
     BitBoard enemyBoard = board->getEnemyBoard();
     BitBoard queens = board->getBitboard(movedPiece);
