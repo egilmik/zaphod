@@ -95,7 +95,7 @@ bool MoveGenerator::isMoveLegal(Move move) {
     MoveList list;
     switch (normPiece) {
     case P:
-        generatePawnMoves(*board, list, board->getCheckers(), kingSquare, board->getPins(), board->getSnipers());
+        generatePawnMoves(*board, list, kingSquare, board->getPins(), board->getSnipers());
         for (int i = 0; i < list.counter; i++) {
             if (list.moves[i].value == move.value) return true;
         }
@@ -649,7 +649,7 @@ void MoveGenerator::generatePawnQuiet() {
     
 }
 
-void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
+void MoveGenerator::generatePawnMoves(Board& board, MoveList& moveList, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard allPieces = board.getBitboard(BitBoardEnum::All);
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(BitBoardEnum::P + board.getSideToMove());

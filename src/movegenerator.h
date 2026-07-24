@@ -40,7 +40,7 @@ class MoveGenerator {
 	    int quietCount = 0;
 
     private:
-        void generatePawnMoves(Board &board,MoveList &moveList,BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
+        void generatePawnMoves(Board &board,MoveList &moveList, int kingSquare, BitBoard pinned, BitBoard snipers);
         void generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
 
         BitBoard static makeLegalMoves(Board& board, BitBoard moves, BitBoard pinned, BitBoard checkMask, BitBoard snipers, int fromSq, int kingSquare);
