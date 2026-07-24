@@ -7,7 +7,6 @@
 #include "move.h"
 #include "transpositiontable.h"
 #include <array>
-#include <format>
 #include "nnueq.h"
 
 struct alignas(64) MoveUndoInfo {

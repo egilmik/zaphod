@@ -1,12 +1,9 @@
 #ifndef TRANSPOSITIONTABLE_H
 #define TRANSPOSITIONTABLE_H
 
-
 #include <random>
-#include <unordered_map>
 #include "bitboard.h"
 #include "move.h"
-#include <iostream>
 
 enum TEType {exact, upper,lower};
 
