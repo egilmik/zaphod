@@ -47,6 +47,7 @@ class MoveGenerator {
         BitBoard static pawnAttacks(Board& board, BitBoardEnum color);
         BitBoard static pawnAttacks(BitBoard pawns, BitBoardEnum color);
         void computeKingDanger();
+        int generateCastlingMoves(int kingSq, Move out[2]);
 
         bool isMoveLegal(Move move);
         bool isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard pieceBoard, BitBoard enemyBoard, BitBoard emptySquares);

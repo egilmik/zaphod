@@ -1055,49 +1055,9 @@ void MoveGenerator::generateKingQuiet() {
         addQuiet(Move::make<NORMAL>(fromSq, toSq));
     }
 
-    if (sideToMove == BitBoardEnum::White) {
-        if (board->getCastleRightsWK()) {
-            BitBoard castlineSquares = 0;
-            board->setBit(castlineSquares, 5);
-            board->setBit(castlineSquares, 6);
-            if ((allPieces & castlineSquares) == 0 && !board->isSquareAttacked(castlineSquares | board->sqBB[fromSq], BitBoardEnum::Black)) {
-                addQuiet(Move::make<CASTLING>(fromSq, fromSq + 2));
-            }  //f1,g1;
-        }
-        if (board->getCastleRightsWQ()) {
-            BitBoard checkSquaresWQ = 0;
-            board->setBit(checkSquaresWQ, 2);
-            board->setBit(checkSquaresWQ, 3);
-
-            BitBoard emptySquaresWQ = checkSquaresWQ;
-            board->setBit(emptySquaresWQ, 1);
-
-            if ((allPieces & emptySquaresWQ) == 0 && !board->isSquareAttacked(checkSquaresWQ | board->sqBB[fromSq], BitBoardEnum::Black)) {
-                addQuiet( Move::make<CASTLING>(fromSq, fromSq - 2));
-            }  //b1,c1,d1;
-        }
-    }
-    else if (sideToMove == BitBoardEnum::Black) {
-        if (board->getCastleRightsBK()) {
-            BitBoard castlineSquares = 0;
-            board->setBit(castlineSquares, 61);
-            board->setBit(castlineSquares, 62);
-            if ((allPieces & castlineSquares) == 0 && !board->isSquareAttacked(castlineSquares | board->sqBB[fromSq], BitBoardEnum::White)) {
-                addQuiet(Move::make<CASTLING>(fromSq, fromSq + 2));
-            }
-        }
-        if (board->getCastleRightsBQ()) {
-            BitBoard checkSquaresBQ = 0;
-
-            board->setBit(checkSquaresBQ, 58);
-            board->setBit(checkSquaresBQ, 59);
-            BitBoard emptySquaresBQ = checkSquaresBQ;
-            board->setBit(emptySquaresBQ, 57);
-            if ((allPieces & emptySquaresBQ) == 0 && !board->isSquareAttacked(checkSquaresBQ | board->sqBB[fromSq], BitBoardEnum::White)) {
-                addQuiet(Move::make<CASTLING>(fromSq, fromSq - 2));
-            }
-        }
-    }
+    Move castles[2];
+    int nCastles = generateCastlingMoves(fromSq, castles);
+    for (int i = 0; i < nCastles; i++) addQuiet(castles[i]);
 }
 
 BitBoard MoveGenerator::pawnAttacks(BitBoard pawns,BitBoardEnum color) {
@@ -1175,6 +1135,44 @@ void MoveGenerator::computeKingDanger() {
     kingDangerMask = danger;
 }
 
+struct CastleSpec {
+    BitBoard emptySquares;
+    BitBoard safeSquares;
+    int kingOffset;
+};
+
+constexpr BitBoard bit(int sq) { return BitBoard(1) << sq; }
+
+constexpr CastleSpec CASTLES[4] = {
+    {bit(5) | bit(6), bit(5) | bit(6), 2 },
+    {bit(1) | bit(2) | bit(3), bit(2) | bit(3), -2},
+    {bit(61) | bit(62), bit(61) | bit(62), 2},
+    {bit(57) | bit(58) | bit(59), bit(58) | bit(59), -2}
+};
+
+int MoveGenerator::generateCastlingMoves(int kingSq, Move out[2]) {
+    bool right[4] = { board->getCastleRightsWK(), board->getCastleRightsWQ(), board->getCastleRightsBK(), board->getCastleRightsBQ() };
+
+    BitBoard allPieces = board->getBitboard(All);
+    BitBoard enemyBoard = board->getEnemyBoard();
+    BitBoard king = board->getBitboard(static_cast<BitBoardEnum>(K + board->getSideToMove()));
+
+    //Check if it is black or white to select correct castle spec
+    int firstIdx = (board->getSideToMove() == White) ? 0 : 2;
+
+    int moveCount = 0;
+
+    for (int i = firstIdx; i < firstIdx + 2; i++) {
+        const CastleSpec& spec = CASTLES[i];
+        if (!right[i]) continue;
+        if (allPieces & spec.emptySquares) continue;
+        if (board->isSquareAttacked(spec.safeSquares | king, board->getOtherSide())) continue;
+        out[moveCount++] = Move::make<CASTLING>(kingSq, kingSq + spec.kingOffset);
+    }
+    return n;
+
+}
+
 void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers)
 {
     BitBoard emptySquares = ~board.getBitboard(BitBoardEnum::All);
@@ -1200,49 +1198,9 @@ void MoveGenerator::generateKingMoves(Board &board, MoveList &moveList, BitBoard
         moveList.moves[moveList.counter++] = Move::make<NORMAL>(fromSq, toSq);
     }
 
-    if (sideToMove == BitBoardEnum::White) {
-        if (board.getCastleRightsWK()) {
-            BitBoard castlineSquares = 0;
-            board.setBit(castlineSquares, 5);
-            board.setBit(castlineSquares, 6);
-            if ((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::Black)) {
-                moveList.moves[moveList.counter++] = Move::make<CASTLING>(fromSq, fromSq+2);
-            }  //f1,g1;
-        }
-        if (board.getCastleRightsWQ()) {
-            BitBoard checkSquaresWQ = 0;
-            board.setBit(checkSquaresWQ, 2);
-            board.setBit(checkSquaresWQ, 3);
-
-            BitBoard emptySquaresWQ = checkSquaresWQ;
-            board.setBit(emptySquaresWQ, 1);
-
-            if ((allPieces & emptySquaresWQ) == 0 && !board.isSquareAttacked(checkSquaresWQ | board.sqBB[fromSq], BitBoardEnum::Black)) {
-                moveList.moves[moveList.counter++] = Move::make<CASTLING>(fromSq, fromSq - 2);
-            }  //b1,c1,d1;
-        }
-    }
-    else if (sideToMove == BitBoardEnum::Black) {
-        if (board.getCastleRightsBK()) {
-            BitBoard castlineSquares = 0;
-            board.setBit(castlineSquares, 61);
-            board.setBit(castlineSquares, 62);
-            if ((allPieces & castlineSquares) == 0 && !board.isSquareAttacked(castlineSquares | board.sqBB[fromSq], BitBoardEnum::White)) {
-                moveList.moves[moveList.counter++] = Move::make<CASTLING>(fromSq, fromSq + 2);
-            }
-        }
-        if (board.getCastleRightsBQ()) {
-            BitBoard checkSquaresBQ = 0;
-
-            board.setBit(checkSquaresBQ, 58);
-            board.setBit(checkSquaresBQ, 59);
-            BitBoard emptySquaresBQ = checkSquaresBQ;
-            board.setBit(emptySquaresBQ, 57);
-            if ((allPieces & emptySquaresBQ) == 0 && !board.isSquareAttacked(checkSquaresBQ | board.sqBB[fromSq], BitBoardEnum::White)) {
-                moveList.moves[moveList.counter++] = Move::make<CASTLING>(fromSq, fromSq - 2);
-            }
-        }
-    }
+    Move castles[2];
+    int nCastles = generateCastlingMoves(fromSq, castles);
+    for (int i = 0; i < nCastles; i++) moveList.moves[moveList.counter++] = castles[i];
     
 }
 
