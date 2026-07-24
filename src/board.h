@@ -166,9 +166,9 @@ class Board {
             uint64_t magic = ((getBitboard(All) & bishopMask[fromSq]) * magicNumberBishop[fromSq]) >> magicNumberShiftsBishop[fromSq];
             return (*magicMovesBishop)[fromSq][magic];
         }
-
-        BitBoard getKnightMask(int square);
-        BitBoard getKingMask(int square);
+         
+        BitBoard getKnightMask(int square) { return knightmask[square]; };
+        BitBoard getKingMask(int square) { return kingMask[square]; };
         static BitBoard getRankMask(int square);
         static BitBoard getLineMask(int square);
 
@@ -189,8 +189,8 @@ class Board {
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
         static int popLsb(BitBoard& board);
-        int countSetBits(BitBoardEnum piece);
-        static int countSetBits(unsigned long long board);
+        int countSetBits(BitBoardEnum piece) { return __builtin_popcountll(bitBoardArray[piece]); };
+        static int countSetBits(unsigned long long board) { return __builtin_popcountll(board); };
         bool makeMove(Move move);       
         void revertLastMove();
         void makeNullMove();
@@ -213,8 +213,8 @@ class Board {
         BitBoard southEastOne(BitBoard pieces);
         BitBoard southWestOne(BitBoard pieces);
 
-        BitBoard getBitboard(BitBoardEnum piece);
-        BitBoard getBitboard(int piece);
+        BitBoard getBitboard(BitBoardEnum piece) { return bitBoardArray[piece]; };
+        BitBoard getBitboard(int piece) { return bitBoardArray[piece]; };
         BitBoard getEnemyBoard();
         BitBoard getOwnBoard();
         void changeSideToMove();

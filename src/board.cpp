@@ -1,14 +1,10 @@
 #include "board.h"
 #include <iostream>
 #include <string>
-#include <cstring>
-#include "material.h"
 #include <array>
 #include <random>
-#include "tools.h"
 #include <cstdlib>
 #include <cassert>
-#include "tools/fentools.h"
 
 static std::array<BitBoard,64> initSqToBitMapping(){
     std::array<BitBoard, 64> mapping;
@@ -309,17 +305,6 @@ Board::Board(){
 
 void Board::loadNetwork(std::string path) {
     nnue.load(path);
-}
-
-
-BitBoard Board::getKnightMask(int square)
-{
-    return knightmask[square];
-}
-
-BitBoard Board::getKingMask(int square)
-{
-    return kingMask[square];
 }
 
 BitBoard Board::getRankMask(int square)
@@ -749,17 +734,6 @@ BitBoard Board::southWestOne(BitBoard pieces)
     return (pieces << 9) & ~Board::FileHMask;
 }
 
-BitBoard Board::getBitboard(BitBoardEnum piece)
-{
-    return bitBoardArray[piece];
-}
-
-
-BitBoard Board::getBitboard(int piece)
-{
-    return bitBoardArray[piece];
-}
-
 BitBoard Board::getEnemyBoard()
 {
     if(sideToMove == White){
@@ -864,16 +838,6 @@ bool Board::checkBit(BitBoardEnum piece, int bitNr)
 {
     BitBoard board = bitBoardArray[piece];
     return (board >> bitNr) & 1U;    
-}
-
-int Board::countSetBits(BitBoardEnum piece)
-{
-    return __builtin_popcountll(bitBoardArray[piece]);
-}
-
-int Board::countSetBits(unsigned long long board)
-{
-    return __builtin_popcountll(board);
 }
 
 int Board::popLsb(BitBoard& board)
