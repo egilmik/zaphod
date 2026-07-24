@@ -212,11 +212,11 @@ class Board {
 
         BitBoard getBitboard(BitBoardEnum piece) { return bitBoardArray[piece]; };
         BitBoard getBitboard(int piece) { return bitBoardArray[piece]; };
-        BitBoard getEnemyBoard();
-        BitBoard getOwnBoard();
+        BitBoard getEnemyBoard() { return sideToMove == White ? bitBoardArray[Black] : bitBoardArray[White]; };
+        BitBoard getOwnBoard() { return bitBoardArray[sideToMove]; };
         void changeSideToMove();
-        BitBoardEnum getSideToMove();
-        BitBoardEnum getOtherSide();
+        BitBoardEnum getSideToMove() { return sideToMove; };
+        BitBoardEnum getOtherSide() { return sideToMove == White ? Black : White; };
 
         void setEnPassantSq(int sq){enPassantSq = sq;};
         int getEnPassantSq(){return enPassantSq;};

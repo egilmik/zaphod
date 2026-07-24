@@ -734,19 +734,6 @@ BitBoard Board::southWestOne(BitBoard pieces)
     return (pieces << 9) & ~Board::FileHMask;
 }
 
-BitBoard Board::getEnemyBoard()
-{
-    if(sideToMove == White){
-        return bitBoardArray[Black];
-    }
-    return bitBoardArray[White];
-}
-
-BitBoard Board::getOwnBoard()
-{
-    return bitBoardArray[sideToMove];
-}
-
 void Board::changeSideToMove()
 {
     hashKey ^= sideToMove;
@@ -757,19 +744,6 @@ void Board::changeSideToMove()
         fullMoveClock++;
     }
     hashKey ^= sideToMove;
-}
-
-BitBoardEnum Board::getSideToMove()
-{
-    return sideToMove;
-}
-
-BitBoardEnum Board::getOtherSide()
-{
-    if(sideToMove == BitBoardEnum::White){
-        return BitBoardEnum::Black;
-    }
-    return BitBoardEnum::White;
 }
 
 void Board::parseFenPosition(char value, int &count)
