@@ -456,18 +456,13 @@ void MoveGenerator::generatePawnNoisy() {
         nwAttacks |= makeLegalMoves(*board, pinnedNWAttack, board->getPins(), checkMask, board->getSnipers(), pinnedSquare, kingSquare);
     }
 
-    //If in check, only consider moves that capture checker or obstruct the check
-    BitBoard inBetween = 0;
-    BitBoard checks = board->getCheckers();
-    while (checks) {
-        inBetween |= board->sqBetween[kingSquare][Board::popLsb(checks)];
-    }
-    if ((board->getCheckers() | inBetween) > 0) {
-        singlePush &= (inBetween | board->getCheckers());
-        doublePush &= (inBetween | board->getCheckers());
-        neAttacks &= (inBetween | board->getCheckers());
-        nwAttacks &= (inBetween | board->getCheckers());
-    }
+
+    
+    singlePush &= checkMask;
+    doublePush &= checkMask;
+    neAttacks &= checkMask;
+    nwAttacks &= checkMask;
+    
 
 
     promotions = (singlePush & promotionRank);
@@ -851,23 +846,13 @@ void MoveGenerator::generateKnightNoisy() {
     BitBoard knights = board->getBitboard(movedPiece) & ~board->getPins();
 
 
-    BitBoard inBetween = 0;
-    BitBoard checks = board->getCheckers();
-
-    while (checks) {
-        inBetween |= board->sqBetween[kingSquare][Board::popLsb(checks)];
-    }
-
-
     int fromSq = 0;
     while (knights)
     {
         fromSq = Board::popLsb(knights);
         BitBoard moves = board->getKnightMask(fromSq);
 
-        if ((board->getCheckers() | inBetween) > 0) {
-            moves &= (inBetween | board->getCheckers());
-        }
+        moves &= checkMask;
 
         BitBoard captures = moves & enemyBoard;
         BitBoard silentMoves = moves & emptySquares;
@@ -889,28 +874,13 @@ void MoveGenerator::generateKnightQuiet() {
     BitBoard enemyBoard = board->getEnemyBoard();
     BitBoard knights = board->getBitboard(movedPiece) & ~board->getPins();
 
-
-    BitBoard inBetween = 0;
-    BitBoard checks = board->getCheckers();
-
-    while (checks) {
-        inBetween |= board->sqBetween[kingSquare][Board::popLsb(checks)];
-    }
-
-    while (checks) {
-        inBetween |= board->sqBetween[kingSquare][Board::popLsb(checks)];
-    }
-
-
     int fromSq = 0;
     while (knights)
     {
         fromSq = Board::popLsb(knights);
         BitBoard moves = board->getKnightMask(fromSq);
 
-        if ((board->getCheckers() | inBetween) > 0) {
-            moves &= (inBetween | board->getCheckers());
-        }
+        moves &= checkMask;
 
         BitBoard captures = moves & enemyBoard;
         BitBoard silentMoves = moves & emptySquares;
