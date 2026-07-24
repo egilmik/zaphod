@@ -181,11 +181,9 @@ class Board {
         void printBoard();
         void printBoard(BitBoard board);
         void printBoard(BitBoard board, int origin);
-        void popBit(BitBoard &board, int bitNr);
         static void setBit(BitBoard &board, int bitNr);
         static void setBit(BitBoard &board, bool highLow, int bitNr);
         void setBit(BitBoardEnum piece, int bitNr);
-        void popBit(BitBoardEnum piece, int bitNr);
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
         static int popLsb(BitBoard& board);
@@ -196,7 +194,7 @@ class Board {
         void makeNullMove();
         void revertNullMove();
         bool isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker);
-        BitBoardEnum getPieceOnSquare(int sq);
+        BitBoardEnum getPieceOnSquare(int sq) { return mailBoxBoard[sq]; };
 
 
         
