@@ -212,6 +212,13 @@ Move MoveGenerator::next() {
             [[fallthrough]];
         case KILLER:
             currentStage = GEN_QUIET;
+            
+            if (killerMove[0]) {
+                if(isMoveLegal(killerMove[0])) {
+                    return killerMove[0];
+                }
+            }
+
             //Check if killer moves are valid
             //If no killer, next stage
 
@@ -351,6 +358,12 @@ void MoveGenerator::scoreQuietMoves() {
             continue;
         }
         
+        if (killerMove[0].value == quietMoves[i].move.value) {
+
+            quietMoves[i] = quietMoves[--quietCount];
+            i--;
+            continue;
+        }
         
         if (killerMove[0].value == quietMoves[i].move.value ||
             killerMove[1].value == quietMoves[i].move.value) {

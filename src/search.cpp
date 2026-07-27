@@ -448,31 +448,23 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
                     bestMoveIteration.score = alpha;
                     bestMoveIteration.depth = depth;
                 }
-            }
+            
 
-            if (alpha >= beta) {
+                if (bestScore >= beta) {
 
-                if (!isCapture) {
-                    if (move.value != ss[ply].killerMove[0].value) {
+                    if (!isCapture) {
                         ss[ply].killerMove[0] = move;
-                    }
-                    else {
-                        ss[ply].killerMove[1] = move;
+
+                        int side = 0;
+                        if (board.getSideToMove() == Black) {
+                            side = 1;
+                        }
+                        hist.quiet[side][move.from()][move.to()] += depth * depth;
+
                     }
 
-                    int side = 0;
-                    if (board.getSideToMove() == Black) {
-                        side = 1;
-                    }
-                    hist.quiet[side][move.from()][move.to()] += depth * depth;
-
+                    break;
                 }
-
-                /*if (it == transpositionMap.end() || it->second.depth < depth) {
-                    transpositionMap[key] = { move, TEType::lower, depth, beta };
-                }*/
-
-                break;
             }
         }
         
