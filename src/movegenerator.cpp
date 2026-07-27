@@ -213,11 +213,14 @@ Move MoveGenerator::next() {
         case KILLER:
             currentStage = GEN_QUIET;
             
-            if (killerMove[0]) {
-                if(isMoveLegal(killerMove[0])) {
-                    return killerMove[0];
+            if (!onlyNoisy || board->getCheckers() != 0) {
+                if (killerMove[0]) {
+                    if (isMoveLegal(killerMove[0])) {
+                        return killerMove[0];
+                    }
                 }
             }
+            
 
             //Check if killer moves are valid
             //If no killer, next stage
@@ -365,11 +368,7 @@ void MoveGenerator::scoreQuietMoves() {
             continue;
         }
         
-        if (killerMove[0].value == quietMoves[i].move.value ||
-            killerMove[1].value == quietMoves[i].move.value) {
-            quietMoves[i].score = 60000;
-        }
-        else if (histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()] != 0) {
+        if (histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()] != 0) {
             quietMoves[i].score = 30000 + histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()];
         }
         else {
