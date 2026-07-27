@@ -26,6 +26,7 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
     quietIdx = 0;
     noisyCount = 0;
     quietCount = 0;
+    killerIdx = 0;
     ttMoveFound = false;
     board = &b;
     onlyNoisy = onlyCaptures;
@@ -210,21 +211,19 @@ Move MoveGenerator::next() {
             // if no moves left, next stage
             currentStage = KILLER;
             [[fallthrough]];
-        case KILLER:
-            currentStage = GEN_QUIET;
-            
+        case KILLER:           
             if (!onlyNoisy || board->getCheckers() != 0) {
-                if (killerMove[0]) {
-                    if (isMoveLegal(killerMove[0])) {
-                        return killerMove[0];
+                while (killerIdx < 2) {
+                    Move killer = killerMove[killerIdx++];
+                    if (killer && killer.value != ttMove.value && isMoveLegal(killer)) {
+                        return killer;
                     }
                 }
-            }
-            
+            }           
 
             //Check if killer moves are valid
             //If no killer, next stage
-
+            currentStage = GEN_QUIET;
             [[fallthrough]];
         case GEN_QUIET:
             currentStage = QUIET;
@@ -361,7 +360,8 @@ void MoveGenerator::scoreQuietMoves() {
             continue;
         }
         
-        if (killerMove[0].value == quietMoves[i].move.value) {
+        if (killerMove[0].value == quietMoves[i].move.value ||
+            killerMove[1].value == quietMoves[i].move.value) {
 
             quietMoves[i] = quietMoves[--quietCount];
             i--;

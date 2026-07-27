@@ -453,7 +453,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
                 if (bestScore >= beta) {
 
                     if (!isCapture) {
-                        ss[ply].killerMove[0] = move;
+                        if (move.value != ss[ply].killerMove[0].value) {
+                            ss[ply].killerMove[1] = ss[ply].killerMove[0];
+                            ss[ply].killerMove[0] = move;
+                        }
 
                         int side = 0;
                         if (board.getSideToMove() == Black) {

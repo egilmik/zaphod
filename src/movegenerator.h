@@ -78,6 +78,7 @@ class MoveGenerator {
             
         int noisyIdx = 0;        
         int quietIdx = 0;
+        int killerIdx = 0;
         //int moveListIdx = 0;
         Stage currentStage = TT_MOVE;
         Move ttMove{};
