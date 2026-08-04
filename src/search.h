@@ -75,6 +75,22 @@ class Search {
 
     private:
 
+        // Mate scores are counted from the root ("mate in N plies from the root"),
+        // but a transposition entry can be probed at a different ply than it was
+        // stored at.  Store them counted from the node instead, and convert back
+        // on probe, so the mate distance and the cutoff decision stay correct.
+        [[nodiscard]] int scoreToTT(int score, int ply) const {
+            if (score > MATESCORE - MAXPLY) return score + ply;
+            if (score < -(MATESCORE - MAXPLY)) return score - ply;
+            return score;
+        }
+
+        [[nodiscard]] int scoreFromTT(int score, int ply) const {
+            if (score > MATESCORE - MAXPLY) return score - ply;
+            if (score < -(MATESCORE - MAXPLY)) return score + ply;
+            return score;
+        }
+
 	std::unique_ptr<MoveGenerator[]> moveGenStack { new MoveGenerator[MAXPLY +1]};
 
         Score bestMoveIteration;        

@@ -206,18 +206,19 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     auto tte = tt.probe(key);    
 
     if (!pvNode && tte.depth >= depth) {
-        
+        int ttScore = scoreFromTT(tte.score, ply);
+
         if (tte.type == EXACT) {
             exactHit++;
-            return tte.score;
+            return ttScore;
         }
-        else if (tte.type == LOWER && tte.score >= beta) {
+        else if (tte.type == LOWER && ttScore >= beta) {
             lowerBoundHit++;
-            return tte.score;
+            return ttScore;
         }
-        else if (tte.type == UPPER && tte.score <= alpha) {
+        else if (tte.type == UPPER && ttScore <= alpha) {
             upperBoundHit++;
-            return tte.score;
+            return ttScore;
         }
     }
 
@@ -423,7 +424,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;
     
     
-    tt.put(key, bestScore, ss[ply].staticEval, depth, alphaMove, bound, pvNode);
+    tt.put(key, scoreToTT(bestScore, ply), ss[ply].staticEval, depth, alphaMove, bound, pvNode);
     
 
     return bestScore;
@@ -476,9 +477,10 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     //////////////////////////
     // Transposition Table
     //////////////////////////
-    if (!pvNode &&  (tte.type == EXACT || (tte.type == LOWER && tte.score >= beta) || (tte.type == UPPER && tte.score <= alpha)))  {
-        qsearchTTHit++;            
-        return tte.score;
+    int ttScore = scoreFromTT(tte.score, ply);
+    if (!pvNode &&  (tte.type == EXACT || (tte.type == LOWER && ttScore >= beta) || (tte.type == UPPER && ttScore <= alpha)))  {
+        qsearchTTHit++;
+        return ttScore;
     }
 
 
