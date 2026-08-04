@@ -9,12 +9,6 @@
 namespace See {
     inline int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove) {
 
-        BitBoardEnum us = sideToMove;
-        BitBoardEnum otherSide = White;
-        if (sideToMove == White) {
-            otherSide = Black;
-        }
-
         int ply, score[32];
 
         score[0] = Material::pieceMaterialScoreArray[board.getPieceOnSquare(toSq)];
@@ -50,18 +44,10 @@ namespace See {
         attackersTo &= ~board.sqBB[fromSq];
         ply = 1;
 
-        if (sideToMove == White) {
-            sideToMove = Black;
-            otherSide = White;
-        }
-        else {
-            sideToMove = White;
-            otherSide = Black;
-        }
+        sideToMove = (sideToMove == White) ? Black : White;
 
         BitBoard attackerBB = 0;
         BitBoardEnum attacker = board.getPieceOnSquare(fromSq);
-        BitBoard sideToMoveAttackers = 0;
         while (attackersTo & board.getBitboard(sideToMove)) {
 
 
@@ -105,7 +91,7 @@ namespace See {
             attackersTo ^= board.sqBB[fromSq];
             occupied ^= board.sqBB[fromSq];
 
-            uint64_t magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
+            magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
             attackersTo |= (*board.magicMovesRook)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r)) & occupied);
 
             magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
@@ -117,14 +103,7 @@ namespace See {
             attackersTo |= ((toSqBB & ~board.FileAMask) << 7) & (board.getBitboard(p) & occupied);
             attackersTo |= ((toSqBB & ~board.FileHMask) << 9) & (board.getBitboard(p) & occupied);
 
-            if (sideToMove == White) {
-                sideToMove = Black;
-                otherSide = White;
-            }
-            else {
-                sideToMove = White;
-                otherSide = Black;
-            }
+            sideToMove = (sideToMove == White) ? Black : White;
 
             ply++;
         }

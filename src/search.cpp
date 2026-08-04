@@ -72,7 +72,6 @@ Score Search::search(Board &board, SearchLimits lim)
 
 
 
-    bool inIteration = true;
     Score bestScore{};
     constexpr int lowerBound = -std::numeric_limits<int>::max();
     constexpr int upperBound = std::numeric_limits<int>::max();
@@ -122,7 +121,6 @@ Score Search::search(Board &board, SearchLimits lim)
             break;
         }
 
-        auto stop = std::chrono::high_resolution_clock::now();
         auto npsDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
         int nps = (double)evaluatedNodes / ((double)npsDuration.count() / (double)1000000);
 
@@ -362,10 +360,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             } 
         }
         else if (!pvNode || !firstMove) {
-            int r = 1;
-
-            
-
             score = -negamax(board, newDepth, -(alpha + 1), -alpha, ply + 1, false);
         }
 
@@ -591,7 +585,7 @@ bool Search::isSearchStoppedSoft()
         stopSearch = true;
         return true;
     }
-    if (limits.nodeLimit > 0 && evaluatedNodes > limits.nodeLimit) {
+    if (limits.nodeLimit > 0 && evaluatedNodes > static_cast<unsigned long long>(limits.nodeLimit)) {
         stopSearch = true;
         return true;
     }
@@ -620,7 +614,7 @@ bool Search::isSearchStopped()
         stopSearch = true;
         return true;
     }
-    if (limits.nodeLimit > 0 && evaluatedNodes > limits.nodeLimit) {
+    if (limits.nodeLimit > 0 && evaluatedNodes > static_cast<unsigned long long>(limits.nodeLimit)) {
         stopSearch = true;
         return true;
     }

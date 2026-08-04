@@ -9,14 +9,14 @@
 #include <array>
 #include <bit>
 #include <cstddef>
-#include <cstring>
+#include <algorithm>
 #include "move.h"
 
 #if defined _MSC_VER
     #include <__msvc_int128.hpp>
     using u128 = std::_Unsigned128;
 #else
-    using u128 = unsigned __int128;
+    __extension__ typedef unsigned __int128 u128;
 #endif
 
 enum TType : uint8_t { 
@@ -58,7 +58,7 @@ public:
     TTable& operator=(const TTable&) = delete;
 
     void clear() noexcept {
-        std::memset(table.get(), 0, nrOfBuckets * sizeof(Bucket));
+        std::fill_n(table.get(), nrOfBuckets, Bucket{});
         tableAge = 0;
     }
 

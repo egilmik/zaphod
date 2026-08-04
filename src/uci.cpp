@@ -146,7 +146,7 @@ void UCI::sendID()
 
     //Tuner parameters
     auto& vec = zaphod::params::registry();
-    for (int i = 0; i < vec.size() ; i++) {
+    for (std::size_t i = 0; i < vec.size() ; i++) {
         Parameter& param = vec[i];
         std::cout << "option name " << param.name << " type spin default " << param.value << " min " << param.min << " max " << param.max << std::endl;
     }
@@ -187,7 +187,7 @@ void UCI::setOption(std::istringstream& is) {
     }
 
     auto& vec = zaphod::params::registry();
-    for (int i = 0; i < vec.size(); i++) {
+    for (std::size_t i = 0; i < vec.size(); i++) {
         Parameter& param = vec[i];
         std::string paramName = param.name;
         std::transform(paramName.begin(), paramName.end(), paramName.begin(), ::tolower);

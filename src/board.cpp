@@ -10,9 +10,6 @@ void Board::initSqBetween(){
 
     for (int sq1 = 0; sq1 < 64; sq1++) {
         for (int sq2 = 0; sq2 < 64; sq2++) {
-            BitBoard squares = sqBB[sq1] | sqBB[sq2];
-
-
             //Following code is from https://www.chessprogramming.org/Square_Attacked_By#cite_note-5
             const BitBoard m1 = BitBoard(-1);
             const BitBoard a2a7 = BitBoard(0x0001010101010100);
@@ -86,9 +83,9 @@ void Board::initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* 
                         72058438544916736,4512396831887616,87995558404098,77691493766660352,43980738003072,141905786570768,5070964808253464,
                         158331834466817,36046389746115600,18014948267425810,1161964163179221504,36187135351458048,905223662575027232,564049532749824,1152922604185714824,
                         4611690429363523712,1136895090327875,162199957477007408,2326566877011968,283674136285312,17596481282050,4611967802776485890,
-                        9228157116357810178,72620546142109953,2269396831600704,16176948004534616096,18014948401094658,578730145377027072,1130323724206096,
+                        9228157116357810178ull,72620546142109953,2269396831600704,16176948004534616096ull,18014948401094658,578730145377027072,1130323724206096,
                         35253225816384,1100049563664,282024736719113,70369318797440,36169681609981952,576478387977061376,1125934270777856,8933599101186,
-                        3458768911900622980,562952369471489,1892640084159697024,9223377268704411649,18019896352849992,35529043353620,9223654062125482144,281543700516880,
+                        3458768911900622980,562952369471489,1892640084159697024,9223377268704411649ull,18019896352849992,35529043353620,9223654062125482144ull,281543700516880,
                         1153488857203737088,70918533808256,549761319456,71470405386816,72568052678690,162129623093625601,106108274348042,577595586010711297,
                         4908928026778026497,71571402166274,2305852114812862980,5915373099352450 };
 
@@ -163,11 +160,11 @@ void Board::initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* 
             for (int i = 0; i < size && !fail ; i++)
             {
 
-                BitBoard mask = (occupancy[i] & moveMask[square]);
+                BitBoard occMask = (occupancy[i] & moveMask[square]);
 
-                index = (mask * magicNumber) >> magicShift;
+                index = (occMask * magicNumber) >> magicShift;
 
-                if (epoch[index] < attempts) {
+                if (epoch[index] < static_cast<BitBoard>(attempts)) {
                     epoch[index] = attempts;
                     (*magicMoves)[square][index] = attackSet[i];
                 }
@@ -338,7 +335,6 @@ void Board::removePiece(int sq, BitBoardEnum color)
 }
 
 bool Board::hasPositionRepeated() {
-    int moves = std::min(halfMoveClock, historyPly);
     int moveCounter = 0;
 
     for (int i = historyPly-1; i >= 0; i--) {
@@ -566,8 +562,6 @@ BitBoard Board::generateHashKey(){
 
 BitBoard Board::calculateSnipers(int kingSquare, BitBoardEnum attackerColor)
 {
-    BitBoard snipers = 0;
-
     // Rook and Queen
     uint64_t magic = ((rookMask[kingSquare] & bitBoardArray[attackerColor]) * magicNumberRook[kingSquare]) >> magicNumberShiftsRook[kingSquare];
     BitBoard boardQR = (*magicMovesRook)[kingSquare][magic] & (bitBoardArray[Q+attackerColor] | bitBoardArray[R+attackerColor]);
@@ -1001,8 +995,6 @@ void Board::revertLastMove()
     castleBK = (info->castleMask & 4) != 0;
     castleBQ = (info->castleMask & 8) != 0;
 
-    MoveType moveType = info->move.getMoveType();
-
     BitBoardEnum movedPiece = static_cast<BitBoardEnum>(info->movedPiece);
     BitBoardEnum capturedPiece = static_cast<BitBoardEnum>(info->capturedPiece);
     
@@ -1100,7 +1092,6 @@ void Board::revertNullMove() {
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
 {
-    BitBoard empty = ~bitBoardArray[All];
     BitBoard queenRooks = bitBoardArray[Q+attacker] | bitBoardArray[R+attacker];
     BitBoard queenBishops = bitBoardArray[Q+attacker] | bitBoardArray[B+attacker];
     BitBoard knights = bitBoardArray[N+attacker];

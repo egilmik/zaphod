@@ -35,8 +35,8 @@ class MoveGenerator {
 	    int quietCount = 0;
 
     private:
-        void generatePawnMoves(Board &board,MoveList &moveList, int kingSquare, BitBoard pinned, BitBoard snipers);
-        void generateKingMoves(Board &board, MoveList &moveList, BitBoard checkers, int kingSquare, BitBoard pinned, BitBoard snipers);
+        void generatePawnMoves(Board &board,MoveList &moveList, int kingSq, BitBoard pinned, BitBoard snipers);
+        void generateKingMoves(Board &board, MoveList &moveList);
 
         BitBoard static makeLegalMoves(Board& board, BitBoard moves, BitBoard pinned, BitBoard checkMask, BitBoard snipers, int fromSq, int kingSquare);
         BitBoard static pawnAttacks(Board& board, BitBoardEnum color);
@@ -45,7 +45,7 @@ class MoveGenerator {
         int generateCastlingMoves(int kingSq, Move out[2]);
 
         bool isMoveLegal(Move move);
-        bool isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard pieceBoard, BitBoard enemyBoard, BitBoard emptySquares);
+        bool isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard enemyBoard, BitBoard emptySquares);
 
 	    inline void addNoisy(Move m){ noisyMoves[noisyCount++] = { 0, m}; }
 	    inline void addQuiet(Move m){ quietMoves[quietCount++] = { 0, m}; }
