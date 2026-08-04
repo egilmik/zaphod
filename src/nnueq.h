@@ -32,12 +32,10 @@ namespace NNUE{
     };
 }
 
-using namespace NNUE;
-
 class NNUEQ {
 public:
     
-    NNUEQ() : net(std::make_unique<Network>()) {}
+    NNUEQ() : net(std::make_unique<NNUE::Network>()) {}
   
     std::vector<Accumulator> accumulator;
 
@@ -62,7 +60,7 @@ public:
 private:
     // Set to true when network is loaded.
     bool isInitialized = false;
-    std::unique_ptr<Network> net;
+    std::unique_ptr<NNUE::Network> net;
     
     int16_t SCALE = 400;
     int16_t QA = 255;

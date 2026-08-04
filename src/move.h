@@ -29,18 +29,18 @@ class Move {
             return Move(T + ((promotionPiece-1) << 12) + (from << 6) + to);
         }
 
-        constexpr uint32_t from() const {
+        [[nodiscard]] constexpr uint32_t from() const {
             return (value >> 6) & 0x3F;
         }
 
-        constexpr uint32_t to() const {
+        [[nodiscard]] constexpr uint32_t to() const {
             return value & 0x3F;
         }
 
-        constexpr MoveType getMoveType() const { return MoveType(value & (3 << 14)); }
+        [[nodiscard]] constexpr MoveType getMoveType() const { return MoveType(value & (3 << 14)); }
 
         // Add in color plus the 1 subtracted when saving the promotionType
-        constexpr BitBoardEnum getPromotionType(BitBoardEnum color) const { 
+        [[nodiscard]] constexpr BitBoardEnum getPromotionType(BitBoardEnum color) const { 
             return BitBoardEnum(((value >> 12) & 3) + color +1); 
         }
 

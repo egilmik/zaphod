@@ -2,9 +2,9 @@
 #define PERFT_H
 
 #include "../board.h"
-#include <vector>
 #include "../movegenerator.h"
 #include <iostream>
+#include <string>
 
 struct PerftResults {
     unsigned long long nodes = 0;

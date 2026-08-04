@@ -1,7 +1,6 @@
 #ifndef SEE_H
 #define SEE_H
 
-#include <string>
 #include <algorithm>
 #include "board.h"
 #include "material.h"

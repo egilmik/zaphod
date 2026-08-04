@@ -156,18 +156,18 @@ class Board {
         void initMagicMasks();
         void initMagics(bool isRook, std::array<std::array<BitBoard, 4096>, 64>* magicMoves, std::array<BitBoard, 64>& moveMask, std::array<BitBoard, 64>& magicNumber, std::array<BitBoard, 64>& magicShift);
 
-        BitBoard getRookMagics(int fromSq) {
+        [[nodiscard]] BitBoard getRookMagics(int fromSq) const {
             uint64_t magic = ((getBitboard(All) & rookMask[fromSq]) * magicNumberRook[fromSq]) >> magicNumberShiftsRook[fromSq];
             return (*magicMovesRook)[fromSq][magic];
         }
 
-        BitBoard getBishopMagics(int fromSq) {
+        [[nodiscard]] BitBoard getBishopMagics(int fromSq) const {
             uint64_t magic = ((getBitboard(All) & bishopMask[fromSq]) * magicNumberBishop[fromSq]) >> magicNumberShiftsBishop[fromSq];
             return (*magicMovesBishop)[fromSq][magic];
         }
          
-        BitBoard getKnightMask(int square) { return knightmask[square]; };
-        BitBoard getKingMask(int square) { return kingMask[square]; };
+        [[nodiscard]] static BitBoard getKnightMask(int square) { return knightmask[square]; };
+        [[nodiscard]] static BitBoard getKingMask(int square) { return kingMask[square]; };
         static BitBoard getRankMask(int square);
         static BitBoard getLineMask(int square);
 
@@ -185,14 +185,14 @@ class Board {
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
         static int popLsb(BitBoard& board);
-        int countSetBits(BitBoardEnum piece) { return __builtin_popcountll(bitBoardArray[piece]); };
+        [[nodiscard]] int countSetBits(BitBoardEnum piece) const { return __builtin_popcountll(bitBoardArray[piece]); };
         static int countSetBits(unsigned long long board) { return __builtin_popcountll(board); };
         bool makeMove(Move move);       
         void revertLastMove();
         void makeNullMove();
         void revertNullMove();
         bool isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker);
-        BitBoardEnum getPieceOnSquare(int sq) { return mailBoxBoard[sq]; };
+        [[nodiscard]] BitBoardEnum getPieceOnSquare(int sq) const { return mailBoxBoard[sq]; };
 
 
         
@@ -209,40 +209,40 @@ class Board {
         BitBoard southEastOne(BitBoard pieces);
         BitBoard southWestOne(BitBoard pieces);
 
-        BitBoard getBitboard(BitBoardEnum piece) { return bitBoardArray[piece]; };
-        BitBoard getBitboard(int piece) { return bitBoardArray[piece]; };
-        BitBoard getEnemyBoard() { return sideToMove == White ? bitBoardArray[Black] : bitBoardArray[White]; };
-        BitBoard getOwnBoard() { return bitBoardArray[sideToMove]; };
+        [[nodiscard]] BitBoard getBitboard(BitBoardEnum piece) const { return bitBoardArray[piece]; };
+        [[nodiscard]] BitBoard getBitboard(int piece) const { return bitBoardArray[piece]; };
+        [[nodiscard]] BitBoard getEnemyBoard() const { return sideToMove == White ? bitBoardArray[Black] : bitBoardArray[White]; };
+        [[nodiscard]] BitBoard getOwnBoard() const { return bitBoardArray[sideToMove]; };
         void changeSideToMove();
-        BitBoardEnum getSideToMove() { return sideToMove; };
-        BitBoardEnum getOtherSide() { return sideToMove == White ? Black : White; };
+        [[nodiscard]] BitBoardEnum getSideToMove() const { return sideToMove; };
+        [[nodiscard]] BitBoardEnum getOtherSide() const { return sideToMove == White ? Black : White; };
 
         void setEnPassantSq(int sq){enPassantSq = sq;};
-        int getEnPassantSq(){return enPassantSq;};
-        bool getCastleRightsWK(){return castleWK;};
-        bool getCastleRightsWQ(){return castleWQ;};
-        bool getCastleRightsBK(){return castleBK;};
-        bool getCastleRightsBQ(){return castleBQ;};
+        [[nodiscard]] int getEnPassantSq() const {return enPassantSq;};
+        [[nodiscard]] bool getCastleRightsWK() const {return castleWK;};
+        [[nodiscard]] bool getCastleRightsWQ() const {return castleWQ;};
+        [[nodiscard]] bool getCastleRightsBK() const {return castleBK;};
+        [[nodiscard]] bool getCastleRightsBQ() const {return castleBQ;};
 
-        BitBoard getCheckers() { return checkers; };
-        BitBoard getPins() { return pins; };
-        BitBoard getSnipers() { return snipers; };
+        [[nodiscard]] BitBoard getCheckers() const { return checkers; };
+        [[nodiscard]] BitBoard getPins() const { return pins; };
+        [[nodiscard]] BitBoard getSnipers() const { return snipers; };
 
         
 
         BitBoard generateHashKey();
-        BitBoard getHashKey(){ return hashKey;};
+        [[nodiscard]] BitBoard getHashKey() const { return hashKey;};
 
         TranspositionTable ttable;
 
         bool hasPositionRepeated();
         bool hasInsufficientMaterial();
 
-        int getHalfMoveClock() {
+        [[nodiscard]] int getHalfMoveClock() const {
             return halfMoveClock;
         }
 
-        int getFullMoveClock() {
+        [[nodiscard]] int getFullMoveClock() const {
             return fullMoveClock;
         }
 

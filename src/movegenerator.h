@@ -3,7 +3,6 @@
 
 #include "board.h"
 #include "move.h"
-#include <vector>
 #include "history.h"
 
 enum Stage {

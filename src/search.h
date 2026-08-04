@@ -2,13 +2,11 @@
 #define SEARCH_H
 
 #include "board.h"
-#include <vector>
 #include "movegenerator.h"
-#include <iostream>
-#include <chrono>
 #include "ttable.h"
-#include "nnueq.h"
 #include "history.h"
+#include <cstdint>
+#include <memory>
 
 struct Score {
     int depth = 0;

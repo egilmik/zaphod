@@ -1,9 +1,5 @@
-#include <iostream>
-#include "board.h"
-#include "movegenerator.h"
-#include "search.h"
+#include <string>
 #include "uci.h"
-#include <chrono>
 
 int main(int argc, char* argv[]) {
 

@@ -1,12 +1,12 @@
 #include "search.h"
 #include "perft/perft.h"
-#include "material.h"
 #include <algorithm>
-#include <chrono>
 #include <cassert>
-#include "tools/fentools.h"
+#include <chrono>
+#include <cmath>
+#include <iostream>
+#include <limits>
 #include "params.h"
-#include "tools.h"
 #include "see.h"
 
 using namespace zaphod::params;

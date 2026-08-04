@@ -1,4 +1,6 @@
 #include "uci.h"
+#include <algorithm>
+#include <chrono>
 #include <sstream>
 #include "perft/perfttest.h"
 #include "perft/perft.h"
