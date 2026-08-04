@@ -5,15 +5,6 @@
 #include "bitboard.h"
 #include "move.h"
 
-enum TEType {exact, upper,lower};
-
-struct TranspositionEntry {
-    Move bestMove;
-    TEType type;
-    int depth;
-    int score;
-};
-
 class TranspositionTable {
     public:
 

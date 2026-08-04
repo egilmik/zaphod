@@ -79,22 +79,13 @@ void UCI::startSearch(std::istringstream &is)
     int wIncrement = -1;
     int bIncrement = -1;
 
-    bool fixedSearchTime = false;
     int searchTime = -1;
     
     SearchLimits limits{};
 
     //https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
     while (is >> nextToken) {
-        if (nextToken == "searchmoves") {
-            /*
-            while (is >> nextToken) {
-
-            }
-            */
-
-        }
-        else if (nextToken == "wtime") {
+        if (nextToken == "wtime") {
             is >> nextToken;
             wTime = stoi(nextToken);
         }
@@ -144,7 +135,6 @@ void UCI::startSearch(std::istringstream &is)
     Score move;
     move = search.search(motherBoard,limits);
     std::string bestMove = Perft::getNotation(move.bestMove);
-    //std::cout << "info depth " << newSearch.currentFinishedDepth << std::endl;
     std::cout << "bestmove " << bestMove << std::endl;
 }
 
@@ -155,15 +145,11 @@ void UCI::sendID()
     std::cout << "option name Hash type spin default 256 min 1 max 2048" << std::endl;
 
     //Tuner parameters
-    //for (zaphod::params::Parameter& param : zaphod::params::tunableParameters.) {
     auto& vec = zaphod::params::registry();
     for (int i = 0; i < vec.size() ; i++) {
         Parameter& param = vec[i];
         std::cout << "option name " << param.name << " type spin default " << param.value << " min " << param.min << " max " << param.max << std::endl;
     }
-
-        
-    //}
 
     std::cout << "uciok" << std::endl;
 }
@@ -215,36 +201,6 @@ void UCI::setOption(std::istringstream& is) {
             break;
         }
     }
-
-    /*
-    if (optionToken == "tuner.lmrdivider") {
-        std::string valueToken;
-        is >> valueToken; //Expected to be the string "value";
-        std::string value;
-        is >> value;
-        int lmrDivider = stoi(value);
-        search.setLMRDivider((float)lmrDivider);
-    }
-
-    if (optionToken == "tuner.lmrbasenoisy") {
-        std::string valueToken;
-        is >> valueToken; //Expected to be the string "value";
-        std::string value;
-        is >> value;
-        int lmr = stoi(value);
-        search.setLMRBaseNoisy((float)lmr);
-    }
-
-    if (optionToken == "tuner.lmrbasequiet") {
-        std::string valueToken;
-        is >> valueToken; //Expected to be the string "value";
-        std::string value;
-        is >> value;
-        int lmr = stoi(value);
-        search.setLMRBaseQuiet((float)lmr);
-    }
-    */
-
 
 }
 

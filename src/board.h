@@ -181,7 +181,6 @@ class Board {
         void printBoard(BitBoard board);
         void printBoard(BitBoard board, int origin);
         static void setBit(BitBoard &board, int bitNr);
-        static void setBit(BitBoard &board, bool highLow, int bitNr);
         void setBit(BitBoardEnum piece, int bitNr);
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
@@ -232,7 +231,6 @@ class Board {
         
 
         BitBoard generateHashKey();
-        BitBoard generatePawnHashKey();
         BitBoard getHashKey(){ return hashKey;};
 
         TranspositionTable ttable;
@@ -246,14 +244,6 @@ class Board {
 
         int getFullMoveClock() {
             return fullMoveClock;
-        }
-
-        void setGamePhase(int gamePhase) {
-            this->gamePhase = gamePhase;
-        }
-
-        int getGamePhase() {
-            return gamePhase;
         }
 
         int getNonPawnMaterial(BitBoardEnum side);
@@ -293,8 +283,6 @@ class Board {
         bool castleBQ = false;
         BitBoard hashKey = 0;
 
-        int gamePhase = 24;
-        
 
         inline static const int fenToBitMapping[64] = { 56,57,58,59,60,61,62,63,
                                                         48,49,50,51,52,53,54,55,

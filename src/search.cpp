@@ -157,8 +157,6 @@ Score Search::search(Board &board, SearchLimits lim)
     } else {
         MoveList list;
         MoveGenerator::generateMoves(board, list);
-        // Lets try sorting to perhaps hit something in TT
-        //sortMoveList(board, list,0,0);
 
         std::cout << "info string search ended with choosing random move, nodes: " << evaluatedNodes << " Max ply:" << maxPlyThisIteration << " Current target depth: " << currentTargetDepth << " Qsearch depth: " << maxQuinesenceDepthThisSearch << std::endl;
         bestScore = { 0,0, list.moves[0] }; 
@@ -271,18 +269,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     // Reverse futility pruning
     ////////////
     int futilityMargin =(1+ depth) * rfpLinear();
-    //futilityMargin += rfpQuadratic()*depth*depth;
     futilityMargin -= rfpImproving()*improving;
     if (!pvNode && !inCheck && depth <= 6 && (ss[ply].staticEval - futilityMargin >= beta) && ss[ply].staticEval < MATESCORE-MAXPLY) {
         reverseFutilityPruningHit++;
         return (ss[ply].staticEval+beta)/2;
     }
 
-    /*
-    if (!pvNode && !inCheck && depth <= 3 && (ss[ply].staticEval - futilityMargin[depth]) >= beta && ss[ply].staticEval >= beta) {
-        return (2 * beta + ss[ply].staticEval) / 3;
-    }
-    */
     
     ////////////
     // Null move pruning
@@ -290,7 +282,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     if (!pvNode && !inCheck  && ss[ply].staticEval >= beta && depth >= 3 && !isRoot && !ss[ply - 1].isNullMove) {
         if(board.getNonPawnMaterial(board.getSideToMove()) > 0 ){
             int R = 3 + (depth >= 6) + improving;
-            //R = std::clamp(R, 2, 4);
             board.makeNullMove();
             ss[ply].isNullMove = true;
             int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
@@ -309,59 +300,11 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     Move move;
     while ((move = moveGen.next())) {
         
-        bool isPromo = move.getMoveType() == PROMOTION;
         bool isCapture = board.getPieceOnSquare(move.to()) != All;
         int plyCheckExtension = ss[ply].checkExt;
         int extension = 0;
         bool firstMove = moveCounter == 0;
         bool givesCheck = false;
-        /*
-        if (!isRoot && !pvNode && !inCheck && board.getNonPawnMaterial(board.getSideToMove()) > 0 && bestMoveIteration.score > -10000) {
-            if (isCapture) {
-                int capturedValue = Material::pieceMaterialScoreArray[board.getPieceOnSquare(move.to())];
-                if (eval + capturedValue + 300 < alpha && depth < 8) {
-                    continue;
-                }
-            }
-            else {
-
-            }
-        }
-        */
-
-        ////////////
-        // Move loop pruning
-        ////////////
-        if (!isRoot && !isPromo && !isCapture && improving) {
-            
-            
-            ////////////
-            // Futility pruning
-            ////////////
-            /*
-            constexpr int FpDepth = 5;
-            constexpr int FpMult = 148;
-            if (!pvNode && !inCheck && depth <= FpDepth && ss[ply].staticEval +18 + FpMult * depth <= alpha) {
-                futilityPruningHit++;
-                continue;
-            }
-            */
-            
-            ////////////
-            // Late move pruning
-            ////////////
-
-
-            ////////////
-            // History pruning
-            ////////////
-
-            ////////////
-            // Continuation pruning
-            ////////////
-
-
-        }
 
         board.makeMove(move);
         evaluatedNodes++;
@@ -577,14 +520,6 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     int moveCounter = 0;
     Move move;
     while((move = moveGen.next())){
-        /*
-        if (board.getPieceOnSquare(move.to()) != All) {
-            int seeScore = see(board, move.from(), move.to(), board.getSideToMove());
-            if (seeScore < -800) {
-                continue;
-            }
-        }
-        */
 
         bool isCapture = board.getPieceOnSquare(move.to()) != All;
 
@@ -629,177 +564,11 @@ int Search::drawScore() {
     return 2 - (evaluatedNodes % 4);
 }
 
-int Search::see(Board &board,int fromSq, int toSq, BitBoardEnum sideToMove) {
-
-    BitBoardEnum us = sideToMove;
-    BitBoardEnum otherSide = White;
-    if (sideToMove == White) {
-        otherSide = Black;
-    }
-
-    int ply, score[32];
-    
-    score[0] = Material::pieceMaterialScoreArray[board.getPieceOnSquare(toSq)];
-
-    BitBoard occupied = board.getBitboard(All);
-    BitBoard toSqBB = board.sqBB[toSq];
-
-
-    //Remove pieces
-    occupied &= ~board.sqBB[fromSq];
-
-
-    BitBoard attackersTo = 0;
-
-    
-    uint64_t magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
-    attackersTo |= (*board.magicMovesRook)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r));
-        
-    magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
-    attackersTo |= (*board.magicMovesBishop)[toSq][magic] & (board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b));
-
-    attackersTo |= board.getKnightMask(toSq) & (board.getBitboard(N) | board.getBitboard(n));
-
-    attackersTo |= ((toSqBB & ~board.FileHMask) >> 7) & board.getBitboard(P);
-    attackersTo |= ((toSqBB & ~board.FileAMask) >> 9) & board.getBitboard(P);
-
-    attackersTo |= ((toSqBB & ~board.FileAMask) << 7) & board.getBitboard(p);
-    attackersTo |= ((toSqBB & ~board.FileHMask) << 9) & board.getBitboard(p);
-
-    attackersTo |= board.getKingMask(toSq) & (board.getBitboard(K) | board.getBitboard(k));
-
-    //Remove the already capture pieces
-    attackersTo &= ~board.sqBB[fromSq];
-    ply = 1;
-
-    if (sideToMove == White) {
-        sideToMove = Black;
-        otherSide = White;
-    }
-    else {
-        sideToMove = White;
-        otherSide = Black;
-    }
-
-    BitBoard attackerBB = 0;
-    BitBoardEnum attacker = board.getPieceOnSquare(fromSq);
-    BitBoard sideToMoveAttackers = 0;
-    while (attackersTo & board.getBitboard(sideToMove)) {
-
-        
-
-        score[ply] = -score[ply - 1] + Material::pieceMaterialScoreArray[attacker];
-
-        if (score[ply] < 0) {
-            int x = 0;
-        }
-
-        if ((attackerBB = attackersTo & board.getBitboard(P + sideToMove))) {
-            fromSq = board.popLsb(attackerBB);
-            attacker = board.getPieceOnSquare(fromSq);
-            
-        }
-        else if ((attackerBB = attackersTo & board.getBitboard(N + sideToMove))) {
-            fromSq = board.popLsb(attackerBB);
-            attacker = board.getPieceOnSquare(fromSq);
-            
-        }
-        else if ((attackerBB = attackersTo & board.getBitboard(B + sideToMove))) {
-            fromSq = board.popLsb(attackerBB);
-            attacker = board.getPieceOnSquare(fromSq);
-        }
-        else if ((attackerBB = attackersTo & board.getBitboard(R + sideToMove))) {
-            fromSq = board.popLsb(attackerBB);
-            attacker = board.getPieceOnSquare(fromSq);
-
-        }
-        else if ((attackerBB = attackersTo & board.getBitboard(Q + sideToMove))) {
-            fromSq = board.popLsb(attackerBB);
-            attacker = board.getPieceOnSquare(fromSq);
-
-        }
-        else if ((attackerBB = attackersTo & board.getBitboard(K + sideToMove))) {
-            //score[ply++] = 100000000;
-            fromSq = board.popLsb(attackerBB);
-            attacker = board.getPieceOnSquare(fromSq);
-
-        }
-        else {
-            break;
-        }
-
-        attackersTo ^= board.sqBB[fromSq];
-        occupied ^= board.sqBB[fromSq];
-
-        uint64_t magic = ((occupied & board.rookMask[toSq]) * board.magicNumberRook[toSq]) >> board.magicNumberShiftsRook[toSq];
-        attackersTo |= (*board.magicMovesRook)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(R) | board.getBitboard(q) | board.getBitboard(r)) & occupied);
-
-        magic = ((occupied & board.bishopMask[toSq]) * board.magicNumberBishop[toSq]) >> board.magicNumberShiftsBishop[toSq];
-        attackersTo |= (*board.magicMovesBishop)[toSq][magic] & ((board.getBitboard(Q) | board.getBitboard(B) | board.getBitboard(q) | board.getBitboard(b)) & occupied);
-
-        attackersTo |= ((toSqBB & ~board.FileHMask) >> 7) & (board.getBitboard(P) & occupied);
-        attackersTo |= ((toSqBB & ~board.FileAMask) >> 9) & (board.getBitboard(P) & occupied);
-
-        attackersTo |= ((toSqBB & ~board.FileAMask) << 7) & (board.getBitboard(p) & occupied);
-        attackersTo |= ((toSqBB & ~board.FileHMask) << 9) & (board.getBitboard(p) & occupied);
-
-        if (sideToMove == White) {
-            sideToMove = Black;
-            otherSide = White;
-        }
-        else {
-            sideToMove = White;
-            otherSide = Black;
-        }
-
-        ply++;
-    }
-
-    while (--ply) {
-        score[ply - 1] = -std::max(-score[ply - 1], score[ply]);
-    }
-    return score[0];
-
-}
-
-BitBoard Search::getPinned(Board& board, BitBoardEnum sideToMove) {
-    BitBoard king = board.getBitboard(K + sideToMove);
-    int kingSquare = board.popLsb(king);
-    king = board.getBitboard(K + sideToMove);
-    BitBoardEnum otherSide = White;
-    if (sideToMove == White) {
-        otherSide = Black;
-    }
-
-    BitBoard snipers = board.getSnipers();
-    BitBoard sniperCopy = snipers;
-
-    BitBoard pinned = 0;
-    BitBoard potentialPinned = 0;
-
-
-    while (sniperCopy) {
-        int sniperSquare = board.popLsb(sniperCopy);
-        potentialPinned = board.sqBetween[kingSquare][sniperSquare] & board.getBitboard(All);
-        if (board.countSetBits(potentialPinned) == 1) {
-            pinned |= potentialPinned & board.getBitboard(board.getSideToMove());
-        }
-    }
-    return pinned;
-}
-
-
 int Search::evaluate(Board &board)
 {
     return board.evaluate();
 }
 
-
-bool Search::equal(Move &a, Move &b)
-{
-    return (a.from() == b.from() &&
-            a.to() == b.to());
-}
 
 void Search::setNewGame() {
     tt.clear();

@@ -4,19 +4,6 @@
 #include "bitboard.h"
 #include <cstdint>
 
-/*
-struct Move {
-    int fromSq;
-    int toSq;
-    bool capture;
-    BitBoardEnum promotion;
-    bool doublePawnPush;
-    bool enpassant;
-    bool castling;
-    BitBoardEnum piece;
-};
-*/
-
 enum MoveType {
     NORMAL,
     PROMOTION = 1 << 14,

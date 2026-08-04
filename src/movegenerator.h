@@ -29,11 +29,6 @@ class MoveGenerator {
         void init(Board &board, Move ttMove, bool onlyCaptures, Move *killer, HistoryTables *hist);
         Move next();
 
-        int getLegalMoves() {
-            return noisyCount + quietCount;
-        }
-
-
         ScoredMove noisyMoves[256];
         ScoredMove quietMoves[256];
 	    int noisyCount = 0;
@@ -79,7 +74,6 @@ class MoveGenerator {
         int noisyIdx = 0;        
         int quietIdx = 0;
         int killerIdx = 0;
-        //int moveListIdx = 0;
         Stage currentStage = TT_MOVE;
         Move ttMove{};
         int kingSquare = 0;

@@ -52,11 +52,8 @@ class Search {
         int negamax(Board &board, int depth, int alpha, int beta, int ply, bool pvNode);
         int quinesence(Board &board, int alpha, int beta, int depth, int ply, bool pvNode);
         int evaluate(Board &board);
-        bool equal(Move &a, Move &b);
         bool isSearchStopped();
         bool isSearchStoppedSoft();
-        int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove);
-        BitBoard getPinned(Board& board, BitBoardEnum otherSide);
 
         int drawScore();
 
@@ -91,7 +88,6 @@ class Search {
         SearchLimits limits;
         SearchStack ss[MAXPLY + 1];
         bool printInfo = true;
-        bool clearTTOnSearch = true;
-          
+
 };
 #endif

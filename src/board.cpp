@@ -6,32 +6,6 @@
 #include <cstdlib>
 #include <cassert>
 
-static std::array<BitBoard,64> initSqToBitMapping(){
-    std::array<BitBoard, 64> mapping;
-
-
-    for(int i = 0; i < 64; i++){
-        BitBoard bb = 0;
-        Board::setBit(bb,i);
-        mapping[i] = bb;
-    }
-
-    return mapping;
-}
-
-static std::array<BitBoard,64> initInvertedSqToBitMapping(){
-    std::array<BitBoard,64> mapping;
-
-
-    for(int i = 0; i < 64; i++){
-        BitBoard bb = 0;
-        Board::setBit(bb,i);
-        mapping[i] = ~bb;
-    }
-
-    return mapping;
-}
-
 void Board::initSqBetween(){
 
     for (int sq1 = 0; sq1 < 64; sq1++) {
@@ -221,7 +195,7 @@ static std::array<BitBoard,64> initKingMask(){
         BitBoard piece = 0;
         BitBoard moves = 0;
         
-        Board::setBit(piece,true,i);
+        Board::setBit(piece,i);
 
         if(!(piece & Board::FileAMask)){
             moves |= piece >> 7 ;
@@ -252,7 +226,7 @@ static std::array<BitBoard,64> initKnightMask()
         BitBoard moves = 0;
 
         
-        Board::setBit(piece,true,i);
+        Board::setBit(piece,i);
 
         if(!(piece & Board::FileAMask)){
             moves |= piece >> 15;
@@ -465,11 +439,6 @@ void Board::parseFen(std::string fen){
     int state = 0;
     for(std::string::size_type i = 0; i < fen.size(); ++i) {
 
-        if (count > 64) {
-            std::cout << "How did this happen " << fen << std::endl;
-        }
-
-
         if(fen[i] == ' '){
             state++;
         }
@@ -554,22 +523,6 @@ void Board::parseFen(std::string fen){
     hashKey = generateHashKey();
     historyPly = 0;
     calculateCheckersSnipersPins();
-}
-
-BitBoard Board::generatePawnHashKey() {
-    BitBoard whitePawns = getBitboard(P);
-    BitBoard blackPawns = getBitboard(p);
-    BitBoard key = 0;
-    int sq = 0;
-    while (whitePawns != 0) {
-        sq = popLsb(whitePawns);
-        key ^= ttable.pieceKeys[P][sq];
-    }
-    while (blackPawns != 0) {
-        sq = popLsb(blackPawns);
-        key ^= ttable.pieceKeys[p][sq];
-    }
-    return key;
 }
 
 BitBoard Board::generateHashKey(){
@@ -776,11 +729,6 @@ void Board::parseFenPosition(char value, int &count)
 }
 
 void Board::setBit(BitBoard &board, int bitNr)
-{
-    board |= 1ULL << bitNr;
-}
-
-void Board::setBit(BitBoard &board, bool highLow, int bitNr)
 {
     board |= 1ULL << bitNr;
 }
