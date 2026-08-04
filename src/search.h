@@ -43,9 +43,10 @@ class Search {
         int64_t reverseFutilityPruningHit = 0;
         int64_t futilityPruningHit = 0;
         int64_t nullMoveHit = 0;
-        int64_t razoringEntryHit, razoringReturnHit = 0;
-        int64_t qsearchFutilityPruningHit;
-        int64_t qsearchMoveCounterPruningHit;
+        int64_t razoringEntryHit = 0;
+        int64_t razoringReturnHit = 0;
+        int64_t qsearchFutilityPruningHit = 0;
+        int64_t qsearchMoveCounterPruningHit = 0;
         Score search(Board &board, SearchLimits limits);
         int negamax(Board &board, int depth, int alpha, int beta, int ply, bool pvNode);
         int quinesence(Board &board, int alpha, int beta, int depth, int ply, bool pvNode);

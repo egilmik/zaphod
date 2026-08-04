@@ -1,6 +1,10 @@
 #ifndef UCI_H
 #define UCI_H
 
+#ifndef ZAPHOD_VERSION
+#define ZAPHOD_VERSION "2.0-dev"
+#endif
+
 #include <vector>
 #include <iostream>
 #include "board.h"

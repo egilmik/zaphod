@@ -18,7 +18,7 @@ Score Search::search(Board &board, SearchLimits lim)
 {   
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 
-    for (int i = 0; i < MAXPLY; i++) {
+    for (int i = 0; i <= MAXPLY; i++) {
         ss[i].checkExt = 0;
         ss[i].isNullMove = false;
         ss[i].killerMove[0] = 0;

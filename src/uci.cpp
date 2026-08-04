@@ -14,12 +14,27 @@ void UCI::setNetworkPath(std::string path) {
     motherBoard.loadNetwork(path);
 }
 
+// stoi that survives malformed GUI input instead of throwing out of main()
+static int parseInt(const std::string& token, int fallback) {
+    try {
+        return std::stoi(token);
+    }
+    catch (const std::exception&) {
+        return fallback;
+    }
+}
+
 void UCI::loop(/*int argc, char* argv[]*/) {
+
+    // Defensive default: a "go" before any "position" searches a real position
+    // instead of an empty board.
+    motherBoard.parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     std::string token, cmd;
     do {
+        // EOF: the GUI closed our input - exit instead of busy-looping
         if(!std::getline(std::cin,cmd)){
-            std::cout << "Is this a problem in the UCI loop?";
+            break;
         }
 
         std::istringstream is(cmd);
@@ -89,28 +104,28 @@ void UCI::startSearch(std::istringstream &is)
     while (is >> nextToken) {
         if (nextToken == "wtime") {
             is >> nextToken;
-            wTime = stoi(nextToken);
+            wTime = parseInt(nextToken, -1);
         }
         else if (nextToken == "btime") {
             is >> nextToken;
-            bTime = stoi(nextToken);
+            bTime = parseInt(nextToken, -1);
         }
         else if (nextToken == "winc") {
             is >> nextToken;
-            wIncrement = stoi(nextToken);
+            wIncrement = parseInt(nextToken, -1);
         }
         else if (nextToken == "binc") {
             is >> nextToken;
-            bIncrement = stoi(nextToken);
+            bIncrement = parseInt(nextToken, -1);
         }
         else if (nextToken == "movetime") {
             is >> nextToken;
-            searchTime = stoi(nextToken);
+            searchTime = parseInt(nextToken, -1);
             limits.timeLimit = searchTime;
         }
         else if (nextToken == "depth") {
             is >> nextToken;
-            limits.depthLimit = stoi(nextToken);
+            limits.depthLimit = parseInt(nextToken, -1);
         }
     }
     
@@ -142,7 +157,7 @@ void UCI::startSearch(std::istringstream &is)
 
 void UCI::sendID()
 {
-    std::cout << "id name Zaphod 1.9" << std::endl;
+    std::cout << "id name Zaphod " << ZAPHOD_VERSION << std::endl;
     std::cout << "id author Egil Tennfjord Mikalsen" << std::endl;
     std::cout << "option name Hash type spin default 256 min 1 max 2048" << std::endl;
 
@@ -183,9 +198,11 @@ void UCI::setOption(std::istringstream& is) {
         is >> valueToken; //Expected to be the string "value";
         std::string value;
         is >> value;
-        int hashSize = stoi(value);
+        int hashSize = parseInt(value, -1);
 
-        search.setTTSize(hashSize);
+        if (hashSize > 0) {
+            search.setTTSize(hashSize);
+        }
     }
 
     auto& vec = zaphod::params::registry();
@@ -198,8 +215,7 @@ void UCI::setOption(std::istringstream& is) {
             is >> valueToken; //Expected to be the string "value";
             std::string intToken;
             is >> intToken;
-            int value = stoi(intToken);
-            param.value = value;
+            param.value = parseInt(intToken, param.value);
             break;
         }
     }
