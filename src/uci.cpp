@@ -14,6 +14,12 @@ void UCI::setNetworkPath(std::string path) {
     motherBoard.loadNetwork(path);
 }
 
+// Reserved on every move for GUI/connection latency, so the move is delivered
+// before the flag falls rather than exactly as it does.
+static constexpr int moveOverheadMs = 30;
+// Sudden death: fraction of the remaining clock to spend on a single move.
+static constexpr int suddenDeathDivisor = 20;
+
 // stoi that survives malformed GUI input instead of throwing out of main()
 static int parseInt(const std::string& token, int fallback) {
     try {
@@ -95,9 +101,10 @@ void UCI::startSearch(std::istringstream &is)
     int bTime = -1;
     int wIncrement = -1;
     int bIncrement = -1;
+    int movesToGo = -1;
 
     int searchTime = -1;
-    
+
     SearchLimits limits{};
 
     //https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
@@ -121,33 +128,48 @@ void UCI::startSearch(std::istringstream &is)
         else if (nextToken == "movetime") {
             is >> nextToken;
             searchTime = parseInt(nextToken, -1);
-            limits.timeLimit = searchTime;
+        }
+        else if (nextToken == "movestogo") {
+            is >> nextToken;
+            movesToGo = parseInt(nextToken, -1);
         }
         else if (nextToken == "depth") {
             is >> nextToken;
             limits.depthLimit = parseInt(nextToken, -1);
         }
     }
-    
+
 
     /////////////////////
-    // Sets searchtime, based on amount left and/or increment time per move
+    // Sets searchtime, based on amount left and/or increment time per move.
+    // Only the side to move's clock matters, and the budget can never exceed
+    // what is actually on that clock minus a margin for GUI/connection latency.
     /////////////////////
-    if(wTime > 0 && bTime > 0){
-        if (motherBoard.getSideToMove() == White) {
-            limits.timeLimit = wTime / 20;
-            if (wIncrement > 0) {
-                limits.timeLimit += wIncrement / 2;
-            }
+    const bool weAreWhite = motherBoard.getSideToMove() == White;
+    const int ourTime = weAreWhite ? wTime : bTime;
+    const int ourIncrement = weAreWhite ? wIncrement : bIncrement;
+
+    if (ourTime >= 0) {
+        int budget = (movesToGo > 0) ? (ourTime / movesToGo) : (ourTime / suddenDeathDivisor);
+        if (ourIncrement > 0) {
+            budget += ourIncrement / 2;
         }
-        else {
-            limits.timeLimit = bTime / 20;
-            if (bIncrement > 0) {
-                limits.timeLimit += bIncrement / 2;
-            }
-        }
+
+        // An increment larger than the remaining clock must not buy time we do
+        // not have, and we always hand the move over before the flag falls.
+        budget = std::min(budget, ourTime - moveOverheadMs);
+
+        // Even in desperate time trouble we still have to return a move, so
+        // search for at least 1 ms rather than falling through to "no limit".
+        limits.timeLimit = std::max(budget, 1);
     }
-    
+
+    // An explicit movetime is the GUI taking responsibility for the clock, so
+    // honour it as given - but never as 0, which search() reads as "unlimited".
+    if (searchTime >= 0) {
+        limits.timeLimit = std::max(searchTime, 1);
+    }
+
 
     Score move;
     move = search.search(motherBoard,limits);
