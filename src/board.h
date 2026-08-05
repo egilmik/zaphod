@@ -233,6 +233,13 @@ class Board {
         BitBoard generateHashKey();
         [[nodiscard]] BitBoard getHashKey() const { return hashKey;};
 
+        // Zobrist key for whose turn it is.  Must be the only place the side to
+        // move is folded into the hash, so the incremental update in
+        // changeSideToMove and the from-scratch generateHashKey cannot drift.
+        [[nodiscard]] BitBoard sideToMoveHashKey() const {
+            return ttable.sideToMoveKey[sideToMove == White ? 0 : 1];
+        }
+
         TranspositionTable ttable;
 
         bool hasPositionRepeated();

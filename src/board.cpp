@@ -537,7 +537,7 @@ BitBoard Board::generateHashKey(){
         }
     }
 
-    key ^= sideToMove;
+    key ^= sideToMoveHashKey();
 
     if(getCastleRightsWK()){
         key ^= ttable.castlingRightsKeys[0];
@@ -683,14 +683,14 @@ BitBoard Board::southWestOne(BitBoard pieces)
 
 void Board::changeSideToMove()
 {
-    hashKey ^= sideToMove;
+    hashKey ^= sideToMoveHashKey();
     if(sideToMove == BitBoardEnum::White){
-       sideToMove = BitBoardEnum::Black;     
+       sideToMove = BitBoardEnum::Black;
     } else {
         sideToMove = BitBoardEnum::White;
         fullMoveClock++;
     }
-    hashKey ^= sideToMove;
+    hashKey ^= sideToMoveHashKey();
 }
 
 void Board::parseFenPosition(char value, int &count)
