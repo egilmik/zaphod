@@ -65,6 +65,7 @@ void worker_fn(WorkerArgs a) {
     std::vector<PositionData> posData{};
     float wdl = 1;
     while (a.produced->load(std::memory_order_relaxed) < a.quota) {
+        search.resetStop();
         search.setNewGame();
         if (a.book) {
             std::string fen = a.book->nextFen();

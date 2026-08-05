@@ -5,6 +5,7 @@
 #include "movegenerator.h"
 #include "ttable.h"
 #include "history.h"
+#include <atomic>
 #include <cstdint>
 #include <memory>
 
@@ -69,6 +70,20 @@ class Search {
             printInfo = on;
         };
 
+        // Asks a running search to finish as soon as it can.  Safe to call from
+        // another thread; the search only ever reads the flag.
+        void stop() {
+            stopSearch.store(true, std::memory_order_relaxed);
+        }
+
+        // Must be called before every search, on the thread that launches it.
+        // search() deliberately does not clear the flag itself: when the search
+        // runs on its own thread a "stop" arriving right after launch would be
+        // wiped out by the search clearing it, and the search would never end.
+        void resetStop() {
+            stopSearch.store(false, std::memory_order_relaxed);
+        }
+
         void setTTSize(int size) {
             tt.setSize(size);
         }
@@ -99,7 +114,7 @@ class Search {
         int currentTargetDepth = 0;
         int64_t startTime = 0;
         int64_t maxSearchTime = 0;
-        bool stopSearch = false;
+        std::atomic<bool> stopSearch{false};
         SearchLimits limits;
         SearchStack ss[MAXPLY + 1];
         bool printInfo = true;

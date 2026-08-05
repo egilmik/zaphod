@@ -47,7 +47,6 @@ Score Search::search(Board &board, SearchLimits lim)
     
     
     
-    stopSearch = false;
     evaluatedNodes = 0;
     pawnTTHits = 0;
     lmrHit = 0;
@@ -117,7 +116,7 @@ Score Search::search(Board &board, SearchLimits lim)
             score = negamax(board, i, low, upperBound, 0, true);
         }
 
-        if (stopSearch) {
+        if (stopSearch.load(std::memory_order_relaxed)) {
             break;
         }
 
@@ -582,7 +581,7 @@ void Search::setNewGame() {
 
 bool Search::isSearchStoppedSoft()
 {
-    if (stopSearch) {
+    if (stopSearch.load(std::memory_order_relaxed)) {
         return true;
     }
 
@@ -590,11 +589,11 @@ bool Search::isSearchStoppedSoft()
         std::chrono::steady_clock::now().time_since_epoch()).count();
     auto diff = end - startTime;
     if (diff > maxSearchTime) {
-        stopSearch = true;
+        stopSearch.store(true, std::memory_order_relaxed);
         return true;
     }
     if (limits.nodeLimit > 0 && evaluatedNodes > static_cast<unsigned long long>(limits.nodeLimit)) {
-        stopSearch = true;
+        stopSearch.store(true, std::memory_order_relaxed);
         return true;
     }
 
@@ -611,7 +610,7 @@ bool Search::isSearchStopped()
         return false;
     }
 
-    if (stopSearch) {
+    if (stopSearch.load(std::memory_order_relaxed)) {
         return true;
     }
 
@@ -625,11 +624,11 @@ bool Search::isSearchStopped()
         std::chrono::steady_clock::now().time_since_epoch()).count();
     auto diff = end - startTime;
     if (diff > maxSearchTime) {
-        stopSearch = true;
+        stopSearch.store(true, std::memory_order_relaxed);
         return true;
     }
     if (limits.nodeLimit > 0 && evaluatedNodes > static_cast<unsigned long long>(limits.nodeLimit)) {
-        stopSearch = true;
+        stopSearch.store(true, std::memory_order_relaxed);
         return true;
     }
 

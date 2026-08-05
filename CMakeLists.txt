@@ -22,6 +22,8 @@ endif()
 
 set(EVALFILE "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin" CACHE STRING "Path to the evaluation network file")
 
+find_package(Threads REQUIRED)
+
 set(ZAPHOD_SOURCES
     src/board.cpp
     src/movegenerator.cpp
@@ -46,6 +48,7 @@ foreach(tgt Zaphod GenerateData)
     target_compile_definitions(${tgt} PRIVATE
         EVALFILE="${EVALFILE}"
         ZAPHOD_VERSION="${PROJECT_VERSION}")
+    target_link_libraries(${tgt} PRIVATE Threads::Threads)
 endforeach()
 
 include(CheckIPOSupported)

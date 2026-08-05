@@ -48,19 +48,22 @@ void UCI::loop(/*int argc, char* argv[]*/) {
         token.clear(); // Avoid a stale if getline() returns nothing or a blank line
         is >> std::skipws >> token;
         
-        if (token == "quit") break;
+        if (token == "quit") { stopAndJoin(); break; }
 
-        else if (token == "uci") sendID();
-        else if (token == "ucinewgame") setUCINewGame();
-        else if (token == "position") setPosition(is);
-        else if (token == "go") startSearch(is);
-        else if (token == "setoption") setOption(is);
-        else if (token == "eval") staticEvaluation();
-        else if (token == "bench") bench();
+        // Answered immediately, even mid-search: this is how a GUI checks that
+        // we are still alive while thinking.
         else if (token == "isready") std::cout << "readyok" << std::endl;
-        else if (token == "d") motherBoard.printBoard();
-        else if (token == "perft") perft();
-        else if (token == "fen") printFen();
+        else if (token == "stop") stopAndJoin();
+        else if (token == "uci") sendID();
+        else if (token == "ucinewgame") { stopAndJoin(); setUCINewGame(); }
+        else if (token == "position") { stopAndJoin(); setPosition(is); }
+        else if (token == "go") { stopAndJoin(); startSearch(is); }
+        else if (token == "setoption") { stopAndJoin(); setOption(is); }
+        else if (token == "eval") { stopAndJoin(); staticEvaluation(); }
+        else if (token == "bench") { stopAndJoin(); bench(); }
+        else if (token == "d") { stopAndJoin(); motherBoard.printBoard(); }
+        else if (token == "perft") { stopAndJoin(); perft(); }
+        else if (token == "fen") { stopAndJoin(); printFen(); }
     } while (token != "quit" /*&& argc == 1*/); // The command-line arguments are one-shot
 }
 
@@ -89,6 +92,13 @@ void UCI::setPosition(std::istringstream &is)
     
 }
 
+void UCI::stopAndJoin() {
+    if (searchThread.joinable()) {
+        search.stop();
+        searchThread.join();
+    }
+}
+
 void UCI::setUCINewGame() {
     search.setNewGame();
 }
@@ -102,6 +112,7 @@ void UCI::startSearch(std::istringstream &is)
     int wIncrement = -1;
     int bIncrement = -1;
     int movesToGo = -1;
+    bool infinite = false;
 
     int searchTime = -1;
 
@@ -137,6 +148,18 @@ void UCI::startSearch(std::istringstream &is)
             is >> nextToken;
             limits.depthLimit = parseInt(nextToken, -1);
         }
+        else if (nextToken == "nodes") {
+            is >> nextToken;
+            limits.nodeLimit = parseInt(nextToken, -1);
+        }
+        else if (nextToken == "infinite") {
+            infinite = true;
+        }
+        else if (nextToken == "ponder") {
+            // Pondering proper is not implemented; treat it as an analysis
+            // search so the GUI can always end it with "stop".
+            infinite = true;
+        }
     }
 
 
@@ -149,7 +172,7 @@ void UCI::startSearch(std::istringstream &is)
     const int ourTime = weAreWhite ? wTime : bTime;
     const int ourIncrement = weAreWhite ? wIncrement : bIncrement;
 
-    if (ourTime >= 0) {
+    if (ourTime >= 0 && !infinite) {
         int budget = (movesToGo > 0) ? (ourTime / movesToGo) : (ourTime / suddenDeathDivisor);
         if (ourIncrement > 0) {
             budget += ourIncrement / 2;
@@ -166,17 +189,23 @@ void UCI::startSearch(std::istringstream &is)
 
     // An explicit movetime is the GUI taking responsibility for the clock, so
     // honour it as given - but never as 0, which search() reads as "unlimited".
-    if (searchTime >= 0) {
+    if (searchTime >= 0 && !infinite) {
         limits.timeLimit = std::max(searchTime, 1);
     }
 
+    // Cleared here, before the thread exists, so a "stop" sent immediately
+    // after "go" cannot be lost.
+    search.resetStop();
 
-    Score move;
-    move = search.search(motherBoard,limits);
-    // No legal move at all (checkmate or stalemate): UCI spells that "0000",
-    // not the a1a1 an empty move would otherwise render as.
-    std::string bestMove = move.bestMove ? Perft::getNotation(move.bestMove) : "0000";
-    std::cout << "bestmove " << bestMove << std::endl;
+    // The search runs on its own thread so the UCI loop stays responsive and
+    // can answer "isready" or end an analysis search with "stop".
+    searchThread = std::thread([this, limits]() {
+        Score move = search.search(motherBoard, limits);
+        // No legal move at all (checkmate or stalemate): UCI spells that "0000",
+        // not the a1a1 an empty move would otherwise render as.
+        std::string bestMove = move.bestMove ? Perft::getNotation(move.bestMove) : "0000";
+        std::cout << "bestmove " << bestMove << std::endl;
+    });
 }
 
 void UCI::sendID()
@@ -312,6 +341,7 @@ void UCI::bench() {
     limits.depthLimit = 12;
 
     for (std::string fen : fenList) {
+        search.resetStop();
         search.setNewGame();
         motherBoard.parseFen(fen);
         std::cout << fen << std::endl;
