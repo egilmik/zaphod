@@ -147,8 +147,9 @@ Score Search::search(Board &board, SearchLimits lim)
     tt.age();
 
     ////////////////////////////
-    // We might have canceled early and do not have a valid move.
-    // We pick one.....  Lets see how that goes
+    // The first iteration always runs to completion, so we normally have a
+    // move here.  The fallback only covers a position with no legal moves at
+    // all (checkmate or stalemate), where an empty move is the honest answer.
     ////////////////////////////
     if (bestMoveIteration.bestMove) {
         bestScore = bestMoveIteration;
@@ -156,10 +157,15 @@ Score Search::search(Board &board, SearchLimits lim)
         MoveList list;
         MoveGenerator::generateMoves(board, list);
 
-        std::cout << "info string search ended with choosing random move, nodes: " << evaluatedNodes << " Max ply:" << maxPlyThisIteration << " Current target depth: " << currentTargetDepth << " Qsearch depth: " << maxQuinesenceDepthThisSearch << std::endl;
-        bestScore = { 0,0, list.moves[0] }; 
+        if (list.counter > 0) {
+            std::cout << "info string search produced no move, falling back to the first legal one, nodes: " << evaluatedNodes << " Max ply:" << maxPlyThisIteration << " Current target depth: " << currentTargetDepth << " Qsearch depth: " << maxQuinesenceDepthThisSearch << std::endl;
+            bestScore = { 0, 0, list.moves[0] };
+        }
+        else {
+            bestScore = { 0, 0, Move{} };
+        }
     }
-    
+
     return bestScore;
 }
 
@@ -599,6 +605,12 @@ bool Search::isSearchStoppedSoft()
 
 bool Search::isSearchStopped()
 {
+    // The first iteration always runs to completion, even if the clock has run
+    // out or the GUI asked us to stop: without it we have no move to play.
+    if (currentTargetDepth <= 1) {
+        return false;
+    }
+
     if (stopSearch) {
         return true;
     }

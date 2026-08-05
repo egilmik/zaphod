@@ -173,7 +173,9 @@ void UCI::startSearch(std::istringstream &is)
 
     Score move;
     move = search.search(motherBoard,limits);
-    std::string bestMove = Perft::getNotation(move.bestMove);
+    // No legal move at all (checkmate or stalemate): UCI spells that "0000",
+    // not the a1a1 an empty move would otherwise render as.
+    std::string bestMove = move.bestMove ? Perft::getNotation(move.bestMove) : "0000";
     std::cout << "bestmove " << bestMove << std::endl;
 }
 
