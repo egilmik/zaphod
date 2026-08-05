@@ -10,6 +10,7 @@
 #include <bit>
 #include <cstddef>
 #include <algorithm>
+#include <cstring>
 #include "move.h"
 
 #if defined _MSC_VER
@@ -58,7 +59,12 @@ public:
     TTable& operator=(const TTable&) = delete;
 
     void clear() noexcept {
-        std::fill_n(table.get(), nrOfBuckets, Bucket{});
+        // memset, not std::fill_n: the table is hundreds of MB and is cleared on
+        // every ucinewgame, and fill_n over a 64-byte struct does not lower to an
+        // equally good bulk store.  Bucket is trivially copyable and all-zero is
+        // the empty state (type() == NO_TYPE); the void* cast is what tells GCC
+        // this memset is intended.
+        std::memset(static_cast<void*>(table.get()), 0, nrOfBuckets * sizeof(Bucket));
         tableAge = 0;
     }
 
