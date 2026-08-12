@@ -1,20 +1,10 @@
-#ifndef TRANSPOSITIONTABLE_H
-#define TRANSPOSITIONTABLE_H
+#ifndef ZOBRIST_H
+#define ZOBRIST_H
 
 #include <random>
 #include "bitboard.h"
-#include "move.h"
 
-enum TEType {exact, upper,lower};
-
-struct TranspositionEntry {
-    Move bestMove;
-    TEType type;
-    int depth;
-    int score;
-};
-
-class TranspositionTable {
+class Zobrist {
     public:
 
         BitBoard pieceKeys[15][64];

@@ -5,7 +5,7 @@
 #include <map>
 #include "bitboard.h"
 #include "move.h"
-#include "transpositiontable.h"
+#include "zobrist.h"
 #include <array>
 #include "nnueq.h"
 
@@ -235,7 +235,7 @@ class Board {
         BitBoard generatePawnHashKey();
         BitBoard getHashKey(){ return hashKey;};
 
-        TranspositionTable ttable;
+        Zobrist ttable;
 
         bool hasPositionRepeated();
         bool hasInsufficientMaterial();
