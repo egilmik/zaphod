@@ -292,7 +292,7 @@ Board::Board(){
         mailBoxBoard[i] = All;
     }
 
-    ttable.initKeys();
+    zobrist.initKeys();
     initMagicMasks();
     magicMovesRook = new std::array<std::array<BitBoard, 4096>, 64>();
     magicMovesBishop = new std::array<std::array<BitBoard, 4096>, 64>();
@@ -563,11 +563,11 @@ BitBoard Board::generatePawnHashKey() {
     int sq = 0;
     while (whitePawns != 0) {
         sq = popLsb(whitePawns);
-        key ^= ttable.pieceKeys[P][sq];
+        key ^= zobrist.pieceKeys[P][sq];
     }
     while (blackPawns != 0) {
         sq = popLsb(blackPawns);
-        key ^= ttable.pieceKeys[p][sq];
+        key ^= zobrist.pieceKeys[p][sq];
     }
     return key;
 }
@@ -583,7 +583,7 @@ BitBoard Board::generateHashKey(){
             int sq = 0;
             while(pieceBoard != 0){
                 sq = popLsb(pieceBoard);
-                key ^= ttable.pieceKeys[pieceEnum][sq];
+                key ^= zobrist.pieceKeys[pieceEnum][sq];
             }
         }
     }
@@ -591,20 +591,20 @@ BitBoard Board::generateHashKey(){
     key ^= sideToMove;
 
     if(getCastleRightsWK()){
-        key ^= ttable.castlingRightsKeys[0];
+        key ^= zobrist.castlingRightsKeys[0];
     }
     if(getCastleRightsWQ()){
-        key ^= ttable.castlingRightsKeys[1];
+        key ^= zobrist.castlingRightsKeys[1];
     }
     if(getCastleRightsBK()){
-        key ^= ttable.castlingRightsKeys[2];
+        key ^= zobrist.castlingRightsKeys[2];
     }
     if(getCastleRightsBQ()){
-        key ^= ttable.castlingRightsKeys[3];
+        key ^= zobrist.castlingRightsKeys[3];
     }
 
     if(getEnPassantSq() != noSq){
-        key ^= ttable.enPassantKeys[getEnPassantSq()];
+        key ^= zobrist.enPassantKeys[getEnPassantSq()];
     }
     return key;
 }
@@ -735,15 +735,17 @@ BitBoard Board::southWestOne(BitBoard pieces)
 }
 
 void Board::changeSideToMove()
-{
-    hashKey ^= sideToMove;
+{    
     if(sideToMove == BitBoardEnum::White){
-       sideToMove = BitBoardEnum::Black;     
+        hashKey ^= zobrist.sideToMoveKey[0];
+        sideToMove = BitBoardEnum::Black;
+        hashKey ^= zobrist.sideToMoveKey[1];
     } else {
+        hashKey ^= zobrist.sideToMoveKey[1];
         sideToMove = BitBoardEnum::White;
         fullMoveClock++;
+        hashKey ^= zobrist.sideToMoveKey[0];
     }
-    hashKey ^= sideToMove;
 }
 
 void Board::parseFenPosition(char value, int &count)
@@ -856,12 +858,12 @@ bool Board::makeMove(Move move) {
         if (enpassant) {
             capturedPiece = mailBoxBoard[toSq - enpassantModifier];
             removePiece(toSq - enpassantModifier, otherSide);
-            hashKey ^= ttable.pieceKeys[otherSide + P][toSq - enpassantModifier];
+            hashKey ^= zobrist.pieceKeys[otherSide + P][toSq - enpassantModifier];
         }
         else {
             capturedPiece = mailBoxBoard[toSq];
             removePiece(toSq, otherSide);
-            hashKey ^= ttable.pieceKeys[capturedPiece][toSq];
+            hashKey ^= zobrist.pieceKeys[capturedPiece][toSq];
         }
         // Capture resets halfmoveclock
         halfMoveClock = 0;
@@ -871,8 +873,8 @@ bool Board::makeMove(Move move) {
     addPiece(toSq, piece, sideToMove);
     removePiece(fromSq, sideToMove);
 
-    hashKey ^= ttable.pieceKeys[piece][fromSq];
-    hashKey ^= ttable.pieceKeys[piece][toSq];
+    hashKey ^= zobrist.pieceKeys[piece][fromSq];
+    hashKey ^= zobrist.pieceKeys[piece][toSq];
 
     // Reset halfmoveclock if there is a pawn move
     if (piece == P + sideToMove) {
@@ -882,15 +884,15 @@ bool Board::makeMove(Move move) {
     if (doublePush) {
         // Remove the previous enpassantSquare
         if (enPassantSq != noSq) {
-            hashKey ^= ttable.enPassantKeys[enPassantSq];
+            hashKey ^= zobrist.enPassantKeys[enPassantSq];
         }
         enPassantSq = toSq - enpassantModifier;
-        hashKey ^= ttable.enPassantKeys[enPassantSq];
+        hashKey ^= zobrist.enPassantKeys[enPassantSq];
 
     }
     else {
         if (enPassantSq != noSq) {
-            hashKey ^= ttable.enPassantKeys[enPassantSq];
+            hashKey ^= zobrist.enPassantKeys[enPassantSq];
         }
         enPassantSq = noSq;
     }
@@ -903,14 +905,14 @@ bool Board::makeMove(Move move) {
                 removePiece(0,White);
                 addPiece(3, R, White);
 
-                hashKey ^= ttable.pieceKeys[R][0];
-                hashKey ^= ttable.pieceKeys[R][3];
+                hashKey ^= zobrist.pieceKeys[R][0];
+                hashKey ^= zobrist.pieceKeys[R][3];
             } else {
                 removePiece(7, White);
                 addPiece(5, R, White);
                 
-                hashKey ^= ttable.pieceKeys[R][7];
-                hashKey ^= ttable.pieceKeys[R][5];
+                hashKey ^= zobrist.pieceKeys[R][7];
+                hashKey ^= zobrist.pieceKeys[R][5];
             }
         }
 
@@ -921,15 +923,15 @@ bool Board::makeMove(Move move) {
                 removePiece(56, Black);
                 addPiece(59, r, Black);
 
-                hashKey ^= ttable.pieceKeys[r][56];
-                hashKey ^= ttable.pieceKeys[r][59];
+                hashKey ^= zobrist.pieceKeys[r][56];
+                hashKey ^= zobrist.pieceKeys[r][59];
 
             } else {
                 removePiece(63, Black);
                 addPiece(61, r, Black);
                 
-                hashKey ^= ttable.pieceKeys[r][63];
-                hashKey ^= ttable.pieceKeys[r][61];
+                hashKey ^= zobrist.pieceKeys[r][63];
+                hashKey ^= zobrist.pieceKeys[r][61];
 
             }
         }
@@ -937,8 +939,8 @@ bool Board::makeMove(Move move) {
 
     if(moveType == MoveType::PROMOTION){  
         BitBoardEnum promotionPiece = move.getPromotionType(sideToMove);
-        hashKey ^= ttable.pieceKeys[piece][toSq];
-        hashKey ^= ttable.pieceKeys[promotionPiece][toSq];
+        hashKey ^= zobrist.pieceKeys[piece][toSq];
+        hashKey ^= zobrist.pieceKeys[promotionPiece][toSq];
         removePiece(toSq,sideToMove);
         addPiece(toSq, promotionPiece, sideToMove);
 
@@ -948,11 +950,11 @@ bool Board::makeMove(Move move) {
     //Update castling rights
     if(piece == K){
         if(castleWK){
-            hashKey ^= ttable.castlingRightsKeys[0];
+            hashKey ^= zobrist.castlingRightsKeys[0];
             castleWK = false;
         }
         if(castleWQ){
-            hashKey ^= ttable.castlingRightsKeys[1];
+            hashKey ^= zobrist.castlingRightsKeys[1];
             castleWQ = false;
         }
         
@@ -961,11 +963,11 @@ bool Board::makeMove(Move move) {
 
     if(piece == k){
         if(castleBK){
-            hashKey ^= ttable.castlingRightsKeys[2];
+            hashKey ^= zobrist.castlingRightsKeys[2];
             castleBK = false;
         }
         if(castleBQ){
-            hashKey ^= ttable.castlingRightsKeys[3];
+            hashKey ^= zobrist.castlingRightsKeys[3];
             castleBQ = false;
         }
     }
@@ -974,25 +976,25 @@ bool Board::makeMove(Move move) {
     if(piece == R){
         if(fromSq == 0){
             if(castleWQ){
-                hashKey ^= ttable.castlingRightsKeys[1];
+                hashKey ^= zobrist.castlingRightsKeys[1];
                 castleWQ = false;
             }   
             castleWQ = false;
         } else if(fromSq == 7) {
             if(castleWK){
-                hashKey ^= ttable.castlingRightsKeys[0];
+                hashKey ^= zobrist.castlingRightsKeys[0];
                 castleWK = false;
             }
         }
     } else if( piece == r){
         if(fromSq == 56){            
             if(castleBQ){
-                hashKey ^= ttable.castlingRightsKeys[3];
+                hashKey ^= zobrist.castlingRightsKeys[3];
                 castleBQ = false;
             }            
         } else if( fromSq== 63){
             if(castleBK){
-                hashKey ^= ttable.castlingRightsKeys[2];
+                hashKey ^= zobrist.castlingRightsKeys[2];
                 castleBK = false;
             }
         }
@@ -1002,28 +1004,28 @@ bool Board::makeMove(Move move) {
 
     if(toSq == 0 && capture){
         if(castleWQ){
-            hashKey ^= ttable.castlingRightsKeys[1];
+            hashKey ^= zobrist.castlingRightsKeys[1];
             castleWQ = false;
         }
     }
 
     if(toSq == 7 && capture){
         if(castleWK){
-            hashKey ^= ttable.castlingRightsKeys[0];
+            hashKey ^= zobrist.castlingRightsKeys[0];
             castleWK = false;
         }
     }
 
     if(toSq == 56 && capture){
         if(castleBQ){
-            hashKey ^= ttable.castlingRightsKeys[3];
+            hashKey ^= zobrist.castlingRightsKeys[3];
             castleBQ = false;
         }
     }
 
     if(toSq == 63 && capture){
         if(castleBK){
-            hashKey ^= ttable.castlingRightsKeys[2];
+            hashKey ^= zobrist.castlingRightsKeys[2];
             castleBK = false;
         }
     } 
@@ -1122,7 +1124,7 @@ void Board::makeNullMove() {
 
 
     if (enPassantSq != noSq) {
-        hashKey ^= ttable.enPassantKeys[enPassantSq];
+        hashKey ^= zobrist.enPassantKeys[enPassantSq];
     }
 
     enPassantSq = noSq;

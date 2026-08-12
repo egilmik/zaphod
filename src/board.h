@@ -235,7 +235,7 @@ class Board {
         BitBoard generatePawnHashKey();
         BitBoard getHashKey(){ return hashKey;};
 
-        Zobrist ttable;
+        Zobrist zobrist;
 
         bool hasPositionRepeated();
         bool hasInsufficientMaterial();
