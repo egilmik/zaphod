@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS "${cmake_cxx_flags_relwithdebinfo} -march=x86-64-v3 -mtune=g
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=x86-64-v3 -mtune=generic")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -march=x86-64-v3 -mtune=generic" )
 
-set(EVALFILE "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin" CACHE STRING "Path to the evaluation network file")
+set(EVALFILE "nnue/0.bin" CACHE STRING "Path to the evaluation network file")
 # Pass it as a preprocessor macro, quoted so it becomes a string literal in C++
 
 

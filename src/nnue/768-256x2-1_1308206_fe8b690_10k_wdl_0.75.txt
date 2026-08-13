@@ -1,0 +1,6 @@
+768-256x2-1
+Generated from 478M positions, single file
+Engine: 2.0 #fe8b690
+Node count 10k
+WDL 0.75
+After 10 super batches

@@ -1,7 +1,7 @@
 ﻿{
   "environments": [
     {
-      "NETWORK": "D:\\source\\zaphod_nnue\\bullet\\768-256x2-1\\768-256x2-1_29112025_556M_10k_wdl_0.75.bin",
+      //"NETWORK": "D:\\source\\zaphod_nnue\\bullet\\768-256x2-1\\768-256x2-1_29112025_556M_10k_wdl_0.75.bin",
       "BOOK": "D:\\chess\\UHO_4060_v1.epd"
     }
   ],
@@ -30,7 +30,7 @@
       "variables": [
         {
           "name": "EVALFILE",
-          "value": "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin",
+          "value": "nnue/quantised.bin",
           "type": "STRING"
         }
       ]
