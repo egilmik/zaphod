@@ -9,13 +9,13 @@
 #include <cstring>
 
 using namespace NNUE;
-
-#ifndef EVALFILE
-#define EVALFILE "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin"   // fallback if compiled without the define
+/*
+#ifndef NETWORK_FILE
+#define NETWORK_FILE "nnue/768-256x2-1_29112025_556M_10k_wdl_0.75.bin"   // fallback if compiled without the define
 #endif
-
+*/
 alignas(32) static const unsigned char nnueData[] = {
-    #embed EVALFILE
+    #embed NETWORK_FILE
 };
 
 static inline int32_t hsum_epi32_avx2(__m256i v) {

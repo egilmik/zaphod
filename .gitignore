@@ -11,3 +11,5 @@ scripts/*.txt
 scripts/*.npz
 scripts/*.nnue
 scripts/*.nnueq
+
+nnue/*.bin
