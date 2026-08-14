@@ -21,7 +21,7 @@ struct Accumulator {
 
 namespace NNUE{
     constexpr int IN = 768;
-    constexpr int H = 256;
+    constexpr int H = 512;
     constexpr int OUT = 1;
 
     struct Network {
