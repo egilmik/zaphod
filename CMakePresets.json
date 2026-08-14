@@ -1,0 +1,101 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "generator": "Ninja"
+    },
+    {
+      "name": "linux-gcc",
+      "displayName": "Linux GCC (RelWithDebInfo)",
+      "description": "Needs GCC 15 or newer for #embed",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_COMPILER": "g++"
+      },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
+    },
+    {
+      "name": "linux-gcc-debug",
+      "displayName": "Linux GCC (Debug)",
+      "inherits": "linux-gcc",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "linux-gcc-asan",
+      "displayName": "Linux GCC (sanitizers)",
+      "inherits": "linux-gcc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ZAPHOD_SANITIZE": "ON"
+      }
+    },
+    {
+      "name": "linux-clang",
+      "displayName": "Linux Clang (RelWithDebInfo)",
+      "description": "Needs Clang 19 or newer for #embed",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_COMPILER": "clang++"
+      },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
+    },
+    {
+      "name": "linux-clang-debug",
+      "displayName": "Linux Clang (Debug)",
+      "inherits": "linux-clang",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "windows-clang-cl",
+      "displayName": "Windows clang-cl (RelWithDebInfo)",
+      "description": "Ninja + clang-cl, run from a Visual Studio developer prompt or picked up directly by Visual Studio",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl"
+      },
+      "architecture": { "value": "x64", "strategy": "external" },
+      "toolset": { "value": "ClangCL", "strategy": "external" },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+    {
+      "name": "windows-clang-cl-debug",
+      "displayName": "Windows clang-cl (Debug)",
+      "inherits": "windows-clang-cl",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "windows-vs-clang",
+      "displayName": "Visual Studio 2022 + ClangCL toolset",
+      "description": "Multi config Visual Studio generator using the LLVM/clang-cl toolset",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolset": "ClangCL",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "linux-gcc", "configurePreset": "linux-gcc" },
+    { "name": "linux-gcc-debug", "configurePreset": "linux-gcc-debug" },
+    { "name": "linux-gcc-asan", "configurePreset": "linux-gcc-asan" },
+    { "name": "linux-clang", "configurePreset": "linux-clang" },
+    { "name": "linux-clang-debug", "configurePreset": "linux-clang-debug" },
+    { "name": "windows-clang-cl", "configurePreset": "windows-clang-cl" },
+    { "name": "windows-clang-cl-debug", "configurePreset": "windows-clang-cl-debug" },
+    {
+      "name": "windows-vs-clang",
+      "configurePreset": "windows-vs-clang",
+      "configuration": "RelWithDebInfo"
+    }
+  ]
+}
