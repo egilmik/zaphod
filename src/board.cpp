@@ -364,17 +364,16 @@ void Board::removePiece(int sq, BitBoardEnum color)
 }
 
 bool Board::hasPositionRepeated() {
-    int moves = std::min(halfMoveClock, historyPly);
-    int moveCounter = 0;
+    int end = std::min(halfMoveClock, historyPly);
+    int counter= 0;
 
-    for (int i = historyPly-1; i >= 0; i--) {
+    for (int i = 4; i <= end; i+=2) {
+        int idx = historyPly - i;
 
          
-        if (moveHistory[i].hashKeyCopy == hashKey) {
-            moveCounter++;
-            if (moveCounter > 1) {
-                return true;
-            }
+        if (moveHistory[idx].hashKeyCopy == hashKey) {
+            if (i < historyPly) return true;
+            if (++counter == 2) return true;
         }
     }
 

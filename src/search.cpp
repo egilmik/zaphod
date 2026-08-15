@@ -177,7 +177,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     BitBoard key = board.getHashKey();    
     bool isRoot = ply == 0;
     int alphaOrginal = alpha;
-    bool improving = false;
+    bool improving = true;
     int bestScore = -MATESCORE;
 
 
@@ -250,8 +250,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
 
-    if (ply >= 4 && !inCheck) {
-        improving = (ss[ply].staticEval > ss[ply - 2].staticEval && ss[ply - 2].staticEval > ss[ply - 4].staticEval);
+    if (ply >= 2) {
+        improving = ss[ply].staticEval > ss[ply - 2].staticEval;
+    }
+
+    if (inCheck) {
+        improving = false;
     }
 
     ////////////
@@ -311,31 +315,32 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     while ((move = moveGen.next())) {
         
         bool isPromo = move.getMoveType() == PROMOTION;
-        bool isCapture = board.getPieceOnSquare(move.to()) != All;
+        bool isCapture = board.getPieceOnSquare(move.to()) != All || move.getMoveType() == EN_PASSANT;
+        bool isNoisy = isPromo || isCapture;
         int plyCheckExtension = ss[ply].checkExt;
         int extension = 0;
         bool firstMove = moveCounter == 0;
         bool givesCheck = false;
-        /*
-        if (!isRoot && !pvNode && !inCheck && board.getNonPawnMaterial(board.getSideToMove()) > 0 && bestMoveIteration.score > -10000) {
-            if (isCapture) {
-                int capturedValue = Material::pieceMaterialScoreArray[board.getPieceOnSquare(move.to())];
-                if (eval + capturedValue + 300 < alpha && depth < 8) {
-                    continue;
-                }
-            }
-            else {
 
-            }
-        }
-        */
+        moveCounter++;
 
         ////////////
         // Move loop pruning
         ////////////
-        if (!isRoot && !isPromo && !isCapture && improving) {
+        if (!isRoot && !pvNode && !inCheck && bestScore > -MATE_IN_MAX) {
             
-            
+
+            if(!isNoisy){
+                ////////////
+                // Late move pruning
+                ////////////
+                if (moveCounter >= (3 + depth * depth)  / (2 - improving)) {
+                    moveGen.skipQuiets();
+                    continue;
+                }
+
+            }
+        
             ////////////
             // Futility pruning
             ////////////
@@ -348,9 +353,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             }
             */
             
-            ////////////
-            // Late move pruning
-            ////////////
+            
 
 
             ////////////
@@ -435,7 +438,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         
         board.revertLastMove();
-        moveCounter++;
 
         if (isSearchStopped()) {
             return 0;

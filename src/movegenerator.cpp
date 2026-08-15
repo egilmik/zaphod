@@ -33,6 +33,7 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
     killerMove = killer;
     histTable = hist;
     ttMove = tt;
+    skipQuiet = false;
 
     BitBoard king = board->getBitboard(K + board->getSideToMove());
     assert(king != 0);  // king must exist
@@ -211,7 +212,8 @@ Move MoveGenerator::next() {
             // if no moves left, next stage
             currentStage = KILLER;
             [[fallthrough]];
-        case KILLER:           
+        case KILLER:
+            /*
             if (!onlyNoisy || board->getCheckers() != 0) {
                 while (killerIdx < 2) {
                     Move killer = killerMove[killerIdx++];
@@ -219,7 +221,7 @@ Move MoveGenerator::next() {
                         return killer;
                     }
                 }
-            }           
+            } */          
 
             //Check if killer moves are valid
             //If no killer, next stage
@@ -229,18 +231,21 @@ Move MoveGenerator::next() {
             currentStage = QUIET;
             //Generate quite
             //Score
-            if(!onlyNoisy || board->getCheckers() != 0){
+            if(!skipQuiet){
 
-                if (board->countSetBits(board->getCheckers()) < 2) {
-                    generateKnightQuiet();
-                    generateBishopQuiet();
-                    generateRookQuiet();
-                    generateQueenQuiet();
-                    generatePawnQuiet();
+                if(!onlyNoisy || board->getCheckers() != 0){
+
+                    if (board->countSetBits(board->getCheckers()) < 2) {
+                        generateKnightQuiet();
+                        generateBishopQuiet();
+                        generateRookQuiet();
+                        generateQueenQuiet();
+                        generatePawnQuiet();
+                    }
+
+                    generateKingQuiet();
+                    scoreQuietMoves();
                 }
-
-                generateKingQuiet();
-                scoreQuietMoves();
             }
             
             
@@ -249,8 +254,10 @@ Move MoveGenerator::next() {
         case QUIET:
             //Return quiet
             // if no more moves left, next stage
-            if (quietIdx < quietCount) {
-                return quietMoves[quietIdx++].move;
+            if(!skipQuiet) {
+                if (quietIdx < quietCount) {
+                    return quietMoves[quietIdx++].move;
+                }
             }
 
             currentStage = BAD_NOISY;
@@ -359,7 +366,7 @@ void MoveGenerator::scoreQuietMoves() {
             i--;
             continue;
         }
-        
+        /*
         if (killerMove[0].value == quietMoves[i].move.value ||
             killerMove[1].value == quietMoves[i].move.value) {
 
@@ -367,6 +374,7 @@ void MoveGenerator::scoreQuietMoves() {
             i--;
             continue;
         }
+        */
         
         if (histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()] != 0) {
             quietMoves[i].score = 30000 + histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()];

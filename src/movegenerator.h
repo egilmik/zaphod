@@ -29,6 +29,10 @@ class MoveGenerator {
         void init(Board &board, Move ttMove, bool onlyCaptures, Move *killer, HistoryTables *hist);
         Move next();
 
+        void skipQuiets() {
+            skipQuiet = true;
+        }
+
         int getLegalMoves() {
             return noisyCount + quietCount;
         }
@@ -87,6 +91,7 @@ class MoveGenerator {
         BitBoard kingDangerMask = 0;
         bool onlyNoisy = false;
         bool ttMoveFound = false;
+        bool skipQuiet = false;
 };
 
 #endif
