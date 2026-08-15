@@ -69,6 +69,19 @@ class Search {
         const int MATESCORE = 30000;
         constexpr static int MAXPLY = 255;
 
+        const int MATE_IN_MAX = MATESCORE - MAXPLY;   // 29745
+
+        int scoreToTT(int score, int ply) {
+            if (score >= MATE_IN_MAX) return score + ply;
+            if (score <= -MATE_IN_MAX) return score - ply;
+            return score;
+        }
+        int scoreFromTT(int score, int ply) {
+            if (score >= MATE_IN_MAX) return score - ply;
+            if (score <= -MATE_IN_MAX) return score + ply;
+            return score;
+        }
+
         void setPrintInfo(bool on) {
             printInfo = on;
         };

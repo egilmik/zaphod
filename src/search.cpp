@@ -208,6 +208,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     if (depth <= 0) return quinesence(board, alpha, beta, 1, ply, pvNode);
     
     auto tte = tt.probe(key);    
+    if (tte.type != TType::NO_TYPE) tte.score = scoreFromTT(tte.score, ply);
 
     if (!pvNode && tte.depth >= depth) {
         
@@ -486,7 +487,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;
     
     
-    tt.put(key, bestScore, ss[ply].staticEval, depth, alphaMove, bound, pvNode);
+    tt.put(key, scoreToTT(bestScore,ply), ss[ply].staticEval, depth, alphaMove, bound, pvNode);
     
 
     return bestScore;
@@ -534,6 +535,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
 
     auto tte = tt.probe(board.getHashKey());
     bool ttHit = tte.type != TType::NO_TYPE;
+    if (tte.type != TType::NO_TYPE) tte.score = scoreFromTT(tte.score, ply);
 
 
     //////////////////////////
