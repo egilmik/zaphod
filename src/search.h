@@ -55,8 +55,6 @@ class Search {
         bool equal(Move &a, Move &b);
         bool isSearchStopped();
         bool isSearchStoppedSoft();
-        int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove);
-        BitBoard getPinned(Board& board, BitBoardEnum otherSide);
 
         int drawScore();
 
