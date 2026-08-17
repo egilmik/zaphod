@@ -399,9 +399,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         // LMR
         ////////////
 
-        if (depth >= 2 && moveCounter > 1 + isRoot) {
+        if (depth >= 2 && moveCounter > 2 + isRoot) {
             int lnDepth = std::log(depth) * 100;
-            int lnMoves = std::log(moveCounter) * 100;
+            int lnMoves = std::log(moveCounter+1) * 100;
             int base = (isCapture ? lmrBaseNoisy() : lmrBaseQuiet());
             int divider = (isCapture ? lmrDividerNoisy() : lmrDividerQuiet());
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
