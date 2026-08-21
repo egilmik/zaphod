@@ -21,6 +21,7 @@ struct alignas(64) MoveUndoInfo {
     BitBoard checkers = 0;
     BitBoard snipers = 0;
     BitBoard pins = 0;
+    BitBoard threats = 0;
 
     int8_t halfMoveClock = 0; // 1 byte
     int8_t fullMoveClock = 1;
@@ -268,6 +269,7 @@ class Board {
 
         void calculateCheckersSnipersPins();
         BitBoard calculateSnipers(int kingSquare, BitBoardEnum attackerColor);
+	void calculateThreats();
 
         constexpr static int MAXMOVEHISTORY = 1024;
         
@@ -276,6 +278,7 @@ class Board {
         BitBoard checkers = 0;
         BitBoard pins = 0;
         BitBoard snipers = 0;
+	BitBoard threats = 0;
 
         MoveUndoInfo moveHistory[MAXMOVEHISTORY];
         int historyPly = 0;

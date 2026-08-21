@@ -828,6 +828,7 @@ bool Board::makeMove(Move move) {
     histMove->checkers = checkers;
     histMove->pins = pins;
     histMove->snipers = snipers;
+    histMove->threats = threats;
 
     historyPly++;
 
@@ -1033,6 +1034,7 @@ bool Board::makeMove(Move move) {
     changeSideToMove();
 
     calculateCheckersSnipersPins();
+    calculateThreats();
 
     return true;
 }
@@ -1049,6 +1051,7 @@ void Board::revertLastMove()
     checkers = info->checkers;
     snipers = info->snipers;
     pins = info->pins;
+    threats = info->threats;
 
     castleWK = (info->castleMask & 1) != 0;
     castleWQ = (info->castleMask & 2) != 0;
@@ -1121,6 +1124,7 @@ void Board::makeNullMove() {
     histMove->checkers = checkers;
     histMove->pins = pins;
     histMove->snipers = snipers;
+    histMove->threats = threats;
 
 
     if (enPassantSq != noSq) {
@@ -1132,6 +1136,7 @@ void Board::makeNullMove() {
     historyPly++;
     changeSideToMove();
     calculateCheckersSnipersPins();
+    calculateThreats();
 }
 
 void Board::revertNullMove() {
@@ -1150,6 +1155,45 @@ void Board::revertNullMove() {
     checkers = info->checkers;
     snipers = info->snipers;
     pins = info->pins;
+    threats = info->threats;
+}
+
+void Board::calculateThreats(){
+    threats = 0; 
+    BitBoardEnum attacker = getOtherSide();
+    BitBoard queenRooks = bitBoardArray[Q+attacker] | bitBoardArray[R+attacker];
+    BitBoard queenBishops = bitBoardArray[Q+attacker] | bitBoardArray[B+attacker];
+    BitBoard knights = bitBoardArray[N+attacker];
+    BitBoard king = bitBoardArray[K+attacker];
+
+    
+    int knightSquare = 0;
+    while(knights != 0){
+        knightSquare = popLsb(knights);
+        threats |= knightmask[knightSquare];
+    }
+
+    threats |= kingMask[popLsb(king)];
+    
+    int queenRookSquare = 0;
+    while (queenRooks != 0) {
+        queenRookSquare = popLsb(queenRooks);
+        threats |= getRookMagics(queenRookSquare);
+    }
+
+    int queenBishopSquare = 0;
+    while (queenBishops != 0) {
+        queenBishopSquare = popLsb(queenBishops);
+        threats |= getBishopMagics(queenBishopSquare);
+    }
+
+    if(attacker == BitBoardEnum::Black){
+        threats |= northWestOne(bitBoardArray[p]) | northEastOne(bitBoardArray[p]);         
+
+    } else {
+        threats |= southEastOne(bitBoardArray[P]) | southWestOne(bitBoardArray[P]); 
+    }
+
 }
 
 bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
