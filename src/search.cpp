@@ -365,10 +365,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         ////////////
         // Check extension
         ////////////
-        BitBoard kingBB = board.getBitboard(board.getSideToMove() + BitBoardEnum::K);
-        if (board.isSquareAttacked(kingBB, board.getOtherSide())) {
-           givesCheck = true;
-        }
+        givesCheck = board.isCheck();
 
         if (givesCheck && plyCheckExtension < 3 && depth > 1) {
             extension++;
@@ -379,11 +376,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         
         newDepth += extension; 
-
-        
-
-        
-        
 
         ////////////
         // LMR
@@ -402,7 +394,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r -= givesCheck*lmrCheckReduction();
 
             r /= 100;
-
+            
             score = -negamax(board, newDepth-r, -(alpha + 1), -alpha, ply + 1,false);
             lmrHit++;
 
@@ -475,13 +467,11 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         bool isCapture = board.getPieceOnSquare(alphaMove.to()) != All;
 
         if (!isCapture) {
-            int bonus = depth * 300;
+            int bonus = std::clamp(depth * 300 - 300,0,16000);
             history.updateButterflyScore(board.getSideToMove(), alphaMove, board.getThreats(), bonus);
 
-            int penalty = depth * -300;
-
             for (Move move : failLowMoves) {
-                history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), penalty);
+                history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), -bonus);
             }
 
 

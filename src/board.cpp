@@ -554,6 +554,7 @@ void Board::parseFen(std::string fen){
     hashKey = generateHashKey();
     historyPly = 0;
     calculateCheckersSnipersPins();
+    calculateThreats();
 }
 
 BitBoard Board::generatePawnHashKey() {
@@ -1194,56 +1195,6 @@ void Board::calculateThreats(){
         threats |= southEastOne(bitBoardArray[P]) | southWestOne(bitBoardArray[P]); 
     }
 
-}
-
-bool Board::isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker)
-{
-    BitBoard empty = ~bitBoardArray[All];
-    BitBoard queenRooks = bitBoardArray[Q+attacker] | bitBoardArray[R+attacker];
-    BitBoard queenBishops = bitBoardArray[Q+attacker] | bitBoardArray[B+attacker];
-    BitBoard knights = bitBoardArray[N+attacker];
-    BitBoard king = bitBoardArray[K+attacker];
-
-    if(attacker == BitBoardEnum::Black){
-        if(((northWestOne(bitBoardArray[p]) | northEastOne(bitBoardArray[p])) & targetSquares) != 0) return true;         
-
-    } else {
-        if(((southEastOne(bitBoardArray[P]) | southWestOne(bitBoardArray[P])) & targetSquares) != 0) return true; 
-    }
-
-    
-    int knightSquare = 0;
-    while(knights != 0){
-        knightSquare = popLsb(knights);
-        if((knightmask[knightSquare] & targetSquares) != 0) return true;
-    }
-    
-
-    if((kingMask[popLsb(king)] & targetSquares) != 0) return true;
-
-    int queenRookSquare = 0;
-    while (queenRooks != 0) {
-        queenRookSquare = popLsb(queenRooks);
-
-
-        uint64_t magic = ((getBitboard(All) & rookMask[queenRookSquare]) * magicNumberRook[queenRookSquare]) >> magicNumberShiftsRook[queenRookSquare];
-        BitBoard magicBoard = (*magicMovesRook)[queenRookSquare][magic];
-        if ((magicBoard & targetSquares) != 0) {
-            return true;
-        }
-    }
-
-    int queenBishopSquare = 0;
-    while (queenBishops != 0) {
-        queenBishopSquare = popLsb(queenBishops);
-        BitBoard magicBoard = getBishopMagics(queenBishopSquare);
-
-        if ((magicBoard & targetSquares) != 0) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 int Board::getNonPawnMaterial(BitBoardEnum color) {

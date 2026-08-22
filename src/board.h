@@ -193,7 +193,6 @@ class Board {
         void revertLastMove();
         void makeNullMove();
         void revertNullMove();
-        bool isSquareAttacked(BitBoard targetSquares, const BitBoardEnum attacker);
         BitBoardEnum getPieceOnSquare(int sq) { return mailBoxBoard[sq]; };
 
 
@@ -230,6 +229,10 @@ class Board {
         BitBoard getPins() { return pins; };
         BitBoard getSnipers() { return snipers; };
         BitBoard getThreats() { return threats; };
+
+        inline bool isCheck() {
+            return checkers != 0;
+        }
 
         
 
