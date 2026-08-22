@@ -28,15 +28,20 @@ class Perft {
         static int64_t invalidNMove;
         static int64_t invalidRMove;
 
+        static unsigned long long perft(Board& board, int depth) {
+            Move killerMove[2] = { 0 };
+            History table;
+            return perft(board, depth, killerMove, table);
 
-        static unsigned long long perft(Board &board, int depth){
+        }
+
+
+        static unsigned long long perft(Board &board, int depth,Move killerMove[2], History& table){
             
             if(depth == 0){
                 return 0;
             }
-
-            Move killerMove[2] = { 0 };
-            History table;
+                        
             MoveGenerator generator;
             generator.init(board, 0, false, killerMove, &table);
             
@@ -51,7 +56,7 @@ class Perft {
             while (Move move = generator.next()) {
                 board.makeMove(move);
                 nrOfNodes++;
-                nrOfNodes += perft(board, depth - 1);
+                nrOfNodes += perft(board, depth - 1,killerMove,table);
                 board.revertLastMove();
             }
 
@@ -119,9 +124,6 @@ class Perft {
 
             MoveList moveList;
             MoveGenerator::generateMoves(board,moveList);
-            if(moveList.counter == 0){
-                BitBoard kingSquare = board.sqBB[board.getSideToMove()+BitBoardEnum::K];                
-            }
 
             int64_t actualPerformedMoves = moveList.counter;
             results.nodes += moveList.counter;
