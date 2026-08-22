@@ -2,6 +2,7 @@
 #define HISTORY_H
 
 #include <cstdint>
+#include <cstring>
 
 class History {
 public:
