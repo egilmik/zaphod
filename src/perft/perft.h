@@ -36,7 +36,7 @@ class Perft {
             }
 
             Move killerMove[2] = { 0 };
-            HistoryTables table;
+            History table;
             MoveGenerator generator;
             generator.init(board, 0, false, killerMove, &table);
             

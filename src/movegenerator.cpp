@@ -10,7 +10,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
 {
     MoveGenerator gen;
     Move killer[2] = {};
-    HistoryTables hist;
+    History hist;
     gen.init(board, Move{}, false, killer, &hist);
     
     Move move;
@@ -20,7 +20,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
     moveList.checkers = board.getCheckers();
 }
 
-void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], HistoryTables* hist) {
+void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], History *hist) {
     currentStage = TT_MOVE;
     noisyIdx = 0;
     quietIdx = 0;
@@ -31,7 +31,7 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
     board = &b;
     onlyNoisy = onlyCaptures;
     killerMove = killer;
-    histTable = hist;
+    history = hist;
     ttMove = tt;
 
     BitBoard king = board->getBitboard(K + board->getSideToMove());
@@ -343,10 +343,7 @@ void MoveGenerator::sortNoisyMoves() {
 
 void MoveGenerator::scoreQuietMoves() {
 
-    int side = 0;
-    if (board->getSideToMove() == Black) {
-        side = 1;
-    }
+    int side =  (board->getSideToMove() == Black);
 
     for (int i = 0; i < quietCount; i++) {
         
@@ -367,15 +364,9 @@ void MoveGenerator::scoreQuietMoves() {
             i--;
             continue;
         }
-        
-        if (histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()] != 0) {
-            quietMoves[i].score = 30000 + histTable->quiet[side][quietMoves[i].move.from()][quietMoves[i].move.to()];
-        }
-        else {
-            //quiet move
-            quietMoves[i].score = 0;
 
-        }        
+        quietMoves[i].score = history->butterflyScore(board->getSideToMove(), quietMoves[i].move, board->getThreats());
+        
     }
 
     std::stable_sort(quietMoves, quietMoves+quietCount,

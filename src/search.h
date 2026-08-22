@@ -94,7 +94,7 @@ class Search {
 
         Score bestMoveIteration;        
         TTable tt = TTable(256);
-        HistoryTables hist{};
+        History history;
         int currentTargetDepth = 0;
         int64_t startTime = 0;
         int64_t maxSearchTime = 0;

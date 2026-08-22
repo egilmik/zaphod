@@ -26,7 +26,7 @@ class MoveGenerator {
 
     public:
         void static generateMoves(Board &board,MoveList &moveList);
-        void init(Board &board, Move ttMove, bool onlyCaptures, Move *killer, HistoryTables *hist);
+        void init(Board &board, Move ttMove, bool onlyCaptures, Move *killer, History *hist);
         Move next();
 
         int getLegalMoves() {
@@ -73,7 +73,7 @@ class MoveGenerator {
 
         Board* board;
         Move *killerMove;
-        HistoryTables* histTable;
+        History* history;
         
             
         int noisyIdx = 0;        

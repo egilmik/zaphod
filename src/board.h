@@ -229,6 +229,7 @@ class Board {
         BitBoard getCheckers() { return checkers; };
         BitBoard getPins() { return pins; };
         BitBoard getSnipers() { return snipers; };
+        BitBoard getThreats() { return threats; };
 
         
 

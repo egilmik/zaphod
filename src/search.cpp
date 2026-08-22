@@ -8,6 +8,7 @@
 #include "params.h"
 #include "tools.h"
 #include "see.h"
+#include <vector>
 
 using namespace zaphod::params;
 
@@ -25,11 +26,6 @@ Score Search::search(Board &board, SearchLimits lim)
         ss[i].killerMove[1] = 0;
         ss[i].staticEval = 0;
     }
-
-    for (int s = 0; s < 2; ++s)
-        for (int f = 0; f < 64; ++f)
-            for (int t = 0; t < 64; ++t)
-                hist.quiet[s][f][t] /= 2;
     
     this->limits = lim;
 
@@ -89,11 +85,6 @@ Score Search::search(Board &board, SearchLimits lim)
         if (maxSearchTime / 2 < duration.count()) {
             break;
         }
-
-        for (int s = 0; s < 2; ++s)
-            for (int f = 0; f < 64; ++f)
-                for (int t = 0; t < 64; ++t)
-                    hist.quiet[s][f][t] /= 2;
 
         int previousScore = i > 1 ? bestScore.score : 0;
         if (i > 4) {
@@ -305,7 +296,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     MoveGenerator& moveGen = moveGenStack[ply];
-    moveGen.init(board, ttHit ? tte.move : Move{}, false, ss[ply].killerMove, &hist);
+    std::vector<Move> failLowMoves;
+
+    moveGen.init(board, ttHit ? tte.move : Move{}, false, ss[ply].killerMove, &history);
     int moveCounter = 0;
     Move move;
     while ((move = moveGen.next())) {
@@ -461,22 +454,16 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
                             ss[ply].killerMove[1] = ss[ply].killerMove[0];
                             ss[ply].killerMove[0] = move;
                         }
-
-                        int side = 0;
-                        if (board.getSideToMove() == Black) {
-                            side = 1;
-                        }
-                        hist.quiet[side][move.from()][move.to()] += depth * depth;
-
                     }
 
                     break;
                 }
             }
         }
-        
 
-        
+        if (move != alphaMove) {
+            failLowMoves.push_back(move);
+        }
 
     }
 
@@ -484,9 +471,24 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         return inCheck ? -MATESCORE + ply : 0;
     }
 
-    TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;
-    
-    
+    if (alphaMove) {
+        bool isCapture = board.getPieceOnSquare(alphaMove.to()) != All;
+
+        if (!isCapture) {
+            int bonus = depth * 300;
+            history.updateButterflyScore(board.getSideToMove(), alphaMove, board.getThreats(), bonus);
+
+            int penalty = depth * -300;
+
+            for (Move move : failLowMoves) {
+                history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), penalty);
+            }
+
+
+        }
+    }
+
+    TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;   
     tt.put(key, scoreToTT(bestScore,ply), ss[ply].staticEval, depth, alphaMove, bound, pvNode);
     
 
@@ -575,7 +577,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
     int futilityValue = ss[ply].staticEval + futilityBaseQsearch();
     
     MoveGenerator& moveGen = moveGenStack[ply];
-    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true, ss[ply].killerMove, &hist);
+    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true, ss[ply].killerMove, &history);
     int moveCounter = 0;
     Move move;
     while((move = moveGen.next())){
@@ -646,10 +648,7 @@ bool Search::equal(Move &a, Move &b)
 
 void Search::setNewGame() {
     tt.clear();
-    for (int s = 0; s < 2; ++s)
-        for (int f = 0; f < 64; ++f)
-            for (int t = 0; t < 64; ++t)
-                hist.quiet[s][f][t] = 0; 
+    history.clear();
 }
 
 bool Search::isSearchStoppedSoft()
