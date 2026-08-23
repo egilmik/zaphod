@@ -57,5 +57,13 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(rfpQuadratic, 10, 0, 200, 20)
 	ZAP_TUNABLE_INT(rfpImproving, 80, 0, 200, 20)
 
+	//History
+	ZAP_TUNABLE_INT(quietHistBonusDepthScale, 300, 0, 500, 20)
+	ZAP_TUNABLE_INT(quietHistBonusOffset, 300, 0, 500, 20)
+	ZAP_TUNABLE_INT(quietHistMaxBonus, 16000, 0, 32000, 256)
+	ZAP_TUNABLE_INT(quietHistPenaltyDepthScale, 300, 0, 500, 20)
+	ZAP_TUNABLE_INT(quietHistPenaltyOffset, 300, 0, 500, 20)
+	ZAP_TUNABLE_INT(quietHistMaxPenalty, 16000, 0, 32000, 256)
+	ZAP_TUNABLE_INT(maxButterflyHistory, 16000, 0, 32000, 256)
 };
 #endif

@@ -469,11 +469,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         bool isCapture = board.getPieceOnSquare(alphaMove.to()) != All;
 
         if (!isCapture) {
-            int bonus = std::clamp(depth * 300 - 300,0,16000);
+            int bonus = std::clamp(depth * quietHistBonusDepthScale() - quietHistBonusOffset(), 0, quietHistMaxBonus());
             history.updateButterflyScore(board.getSideToMove(), alphaMove, board.getThreats(), bonus);
 
+            int penalty = -std::clamp(depth * quietHistPenaltyDepthScale() - quietHistPenaltyOffset(), 0, quietHistMaxPenalty());
             for (Move move : failLowMoves) {
-                history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), -bonus);
+                history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), penalty);
             }
 
 
