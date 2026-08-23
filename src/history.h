@@ -9,6 +9,21 @@ public:
 
     void updateQuietHistory();
 
+    inline void age() {
+        for (int stm = 0; stm < 2; stm++) {
+            for (int from = 0; from < 64; from++) {
+                for (int to = 0; to < 64; to++) {
+                    for (int fromThreat = 0; fromThreat < 2; fromThreat++) {
+                        for (int toThreat = 0; toThreat < 2; toThreat++) {
+                            int value = butterfly[stm][from][to][fromThreat][toThreat];
+                            butterfly[stm][from][to][fromThreat][toThreat] = value * 750 / 1000;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     inline void updateButterflyScore(BitBoardEnum color, Move move, BitBoard threats, int32_t bonus) {
         int stm = (color == Black);
         int toAttacked = ((1ULL << move.to()) & threats) != 0;

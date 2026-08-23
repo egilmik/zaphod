@@ -26,6 +26,8 @@ Score Search::search(Board &board, SearchLimits lim)
         ss[i].killerMove[1] = 0;
         ss[i].staticEval = 0;
     }
+
+    history.age();
     
     this->limits = lim;
 
