@@ -489,7 +489,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int penalty = -std::clamp(depth * quietHistPenaltyDepthScale() - quietHistPenaltyOffset(), 0, quietHistMaxPenalty());
             for (Move move : failLowMoves) {
                 history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), penalty);
-		history.updateContScore(conts, board.pieceOnSquare(move.from()), move.to(), penalty);
+		history.updateContScore(conts, board.getPieceOnSquare(move.from()), move.to(), penalty);
             }
 
 

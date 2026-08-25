@@ -105,5 +105,6 @@ private:
 	};
 
 	std::unique_ptr<ContTable> continuation;
+};
 
 #endif
