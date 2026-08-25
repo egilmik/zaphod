@@ -402,11 +402,14 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int base = (isCapture ? lmrBaseNoisy() : lmrBaseQuiet());
             int divider = (isCapture ? lmrDividerNoisy() : lmrDividerQuiet());
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
+            int historyScore = history.butterflyScore(board.getSideToMove(), move, board.getThreats());
+            historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to());
 
 
             r += !pvNode*lmrPVReduction();
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
+            r -= historyScore / 50;
 
             r /= 100;
             
