@@ -402,18 +402,25 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int base = (isCapture ? lmrBaseNoisy() : lmrBaseQuiet());
             int divider = (isCapture ? lmrDividerNoisy() : lmrDividerQuiet());
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
-            int historyScore = history.butterflyScore(board.getSideToMove(), move, board.getThreats());
-            historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to());
+            int historyScore = 0;
+            if (!isCapture && !isPromo && !givesCheck) {
+                historyScore += history.butterflyScore(board.getSideToMove(), move, board.getThreats());
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to());
+            }
+            
 
 
             r += !pvNode*lmrPVReduction();
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
-            r -= historyScore / 50;
+            r -= historyScore / 250;
 
             r /= 100;
+
+            int reduction = newDepth - r;
+            reduction = std::max(reduction, 0); // Should the minimum be 1 or 0?
             
-            score = -negamax(board, newDepth-r, -(alpha + 1), -alpha, ply + 1,false);
+            score = -negamax(board, reduction, -(alpha + 1), -alpha, ply + 1,false);
             lmrHit++;
 
             if (score > alpha) {
