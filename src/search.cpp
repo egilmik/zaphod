@@ -25,6 +25,8 @@ Score Search::search(Board &board, SearchLimits lim)
         ss[i].killerMove[0] = 0;
         ss[i].killerMove[1] = 0;
         ss[i].staticEval = 0;
+	ss[i].movedPiece = All;
+	ss[i].move = 0;
     }
 
     history.age();
@@ -287,6 +289,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             //R = std::clamp(R, 2, 4);
             board.makeNullMove();
             ss[ply].isNullMove = true;
+	    ss[ply].movedPiece = All;
             int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
             board.revertNullMove();
 	    ss[ply].isNullMove = false;
@@ -300,7 +303,15 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     MoveGenerator& moveGen = moveGenStack[ply];
     std::vector<Move> failLowMoves;
 
-    moveGen.init(board, ttHit ? tte.move : Move{}, false, ss[ply].killerMove, &history);
+    History::ContSlice* conts[History::CONT_PLIES] = {};
+    for(int i = 0; i < History::CONT_PLIES; i++){
+	int prev = ply - History::contOffset[i];
+	if(prev >= 0 && ss[prev].movedPiece != All){
+		conts[i] = history.contSlice(i, BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
+	}
+    }
+
+    moveGen.init(board, ttHit ? tte.move : Move{}, false, ss[ply].killerMove, &history, conts);
     int moveCounter = 0;
     Move move;
     while ((move = moveGen.next())) {
@@ -358,8 +369,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
         }
-
+	BitBoardEnum movedPiece = board.getPieceOnSquare(move.from());
         board.makeMove(move);
+	ss[ply].movedPiece = movedPiece;
+	ss[ply].move = move;
         evaluatedNodes++;
 
         int newDepth = depth - 1;
@@ -471,10 +484,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         if (!isCapture) {
             int bonus = std::clamp(depth * quietHistBonusDepthScale() - quietHistBonusOffset(), 0, quietHistMaxBonus());
             history.updateButterflyScore(board.getSideToMove(), alphaMove, board.getThreats(), bonus);
+	    history.updateContScore(conts, board.getPieceOnSquare(alphaMove.from()), alphaMove.to(), bonus);
 
             int penalty = -std::clamp(depth * quietHistPenaltyDepthScale() - quietHistPenaltyOffset(), 0, quietHistMaxPenalty());
             for (Move move : failLowMoves) {
                 history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), penalty);
+		history.updateContScore(conts, board.getPieceOnSquare(move.from()), move.to(), penalty);
             }
 
 
