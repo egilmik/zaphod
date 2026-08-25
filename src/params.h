@@ -65,5 +65,11 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(quietHistPenaltyOffset, 292, 0, 500, 20)
 	ZAP_TUNABLE_INT(quietHistMaxPenalty, 15835, 0, 32000, 256)
 	ZAP_TUNABLE_INT(maxButterflyHistory, 16240, 0, 32000, 256)
+
+	ZAP_TUNABLE_INT(maxContHistory, 16000, 256, 32000, 256)
+	ZAP_TUNABLE_INT(contWeight1Ply, 100, 0, 200, 10)
+	ZAP_TUNABLE_INT(contWeight2Ply, 100, 0, 200, 10)
+	ZAP_TUNABLE_INT(contWeight4Ply, 100, 0, 200, 10)
+	ZAP_TUNABLE_INT(contWeight6Ply, 100, 0, 200, 10)
 };
 #endif

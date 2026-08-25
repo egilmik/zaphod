@@ -26,7 +26,7 @@ class MoveGenerator {
 
     public:
         void static generateMoves(Board &board,MoveList &moveList);
-        void init(Board &board, Move ttMove, bool onlyCaptures, Move *killer, History *hist);
+        void init(Board &board, Move ttMove, bool onlyCaptures, Move *killer, History *hist, History::ContSlice* const* cont = nullptr);
         Move next();
 
         int getLegalMoves() {
@@ -74,6 +74,7 @@ class MoveGenerator {
         Board* board;
         Move *killerMove;
         History* history;
+	History::ContSlice* const* contSlices = nullptr;
         
             
         int noisyIdx = 0;        

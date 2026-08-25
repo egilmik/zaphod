@@ -10,6 +10,13 @@ using namespace zaphod::params;
 class History {
 public:
 
+	static constexpr int CONT_PLIES = 4;
+	static constexpr int contOffset[CONT_PLIES] = {1,2,4,6};
+
+	using ContSlice = int16_t[14][64];
+
+	History() : continuation(std::make_unique<ContTable>()) {}
+
     void updateQuietHistory();
 
     inline void age() {
@@ -24,6 +31,36 @@ public:
                     }
                 }
             }
+        }
+
+		//Cont table age
+		//TODO
+    }
+
+    [[nodiscard]] inline ContSlice* contSlice(int idx, BitBoardEnum prevPiece, uint32_t prevTo) {
+        return &continuation->data[idx][prevPiece][prevTo];
+    }
+
+
+    [[nodiscard]] inline int32_t contScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to) {
+        int32_t score = 0;
+        for (int i = 0; i < CONT_PLIES; i++) {
+            if (slices[i]) {
+                score += (*slices[i])[piece][to] * contWeight(i) / 100;
+            }
+        }
+        return score;
+    }
+
+
+    inline void updateContScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to, int32_t bonus) {
+        for (int i = 0; i < CONT_PLIES; i++) {
+            if (!slices[i]) {
+                continue;
+            }
+            int32_t value = (*slices[i])[piece][to];
+            value += bonus - value * std::abs(bonus) / maxContHistory();
+            (*slices[i])[piece][to] = static_cast<int16_t>(value);
         }
     }
 
@@ -47,11 +84,26 @@ public:
 
     void clear() {
         std::memset(&butterfly, 0, sizeof(butterfly));
+		std::memset(continuation.get(), 0, sizeof(ContTable));
     }
 
 private:
+    [[nodiscard]] static inline int32_t contWeight(int idx) {
+        switch (idx) {
+            case 0: return contWeight1Ply();
+            case 1: return contWeight2Ply();
+            case 2: return contWeight4Ply();
+            default: return contWeight6Ply();
+        }
+    }
+
     // [stm][from][to][from attacked][to attacked]
     int32_t butterfly[2][64][64][2][2] = {};
-};
+
+	struct ContTable {
+			int16_t data[CONT_PLIES][14][64][14][64] = {};
+	};
+
+	std::unique_ptr<ContTable> continuation;
 
 #endif

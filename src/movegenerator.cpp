@@ -11,7 +11,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
     MoveGenerator gen;
     Move killer[2] = {};
     History hist;
-    gen.init(board, Move{}, false, killer, &hist);
+//    gen.init(board, Move{}, false, killer, &hist);
     
     Move move;
     while((move = gen.next())){
@@ -20,7 +20,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
     moveList.checkers = board.getCheckers();
 }
 
-void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], History *hist) {
+void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], History *hist, History::ContSlice* const* cont) {
     currentStage = TT_MOVE;
     noisyIdx = 0;
     quietIdx = 0;
@@ -32,6 +32,7 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
     onlyNoisy = onlyCaptures;
     killerMove = killer;
     history = hist;
+    contSlices = cont;
     ttMove = tt;
 
     BitBoard king = board->getBitboard(K + board->getSideToMove());
@@ -366,7 +367,10 @@ void MoveGenerator::scoreQuietMoves() {
         }
 
         quietMoves[i].score = history->butterflyScore(board->getSideToMove(), quietMoves[i].move, board->getThreats());
-        
+       if(contSlices){
+		BitBoardEnum piece = board->getPieceOnSquare(quietMoves[i].move.from());
+	       quietMoves[i].score += history->contScore(contSlices, piece, quietMoves[i].move.to());
+       }	       
     }
 
     std::stable_sort(quietMoves, quietMoves+quietCount,
