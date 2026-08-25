@@ -61,6 +61,14 @@ class Move {
             return static_cast<bool>(value);
         }
 
+        constexpr bool operator==(const Move& other) const {
+            return value == other.value;
+        }
+
+        constexpr bool operator!=(const Move& other) const {
+            return value != other.value;
+        }
+
         uint32_t value = 0;
     protected:
 };
