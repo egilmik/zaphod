@@ -480,7 +480,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             }
         }
 
-        if (move != alphaMove) {
+        if (move != alphaMove && !isCapture) {
             failLowMoves.push_back(move);
         }
 
