@@ -34,7 +34,10 @@ public:
         }
 
 		//Cont table age
-		//TODO
+		int16_t* cont = reinterpret_cast<int16_t*>(continuation->data);
+		for(size_t i = 0; i < CONT_ENTRIES; i++){
+				cont[i] = static_cast<int16_t>(cont[i]*750/1000);
+		}
     }
 
     [[nodiscard]] inline ContSlice* contSlice(int idx, BitBoardEnum prevPiece, uint32_t prevTo) {
@@ -96,6 +99,8 @@ private:
             default: return contWeight6Ply();
         }
     }
+
+    static constexpr size_t CONT_ENTRIES = size_t(CONT_PLIES) * 14 * 64 * 14 * 64;
 
     // [stm][from][to][from attacked][to attacked]
     int32_t butterfly[2][64][64][2][2] = {};
