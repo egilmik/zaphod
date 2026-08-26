@@ -415,17 +415,17 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r += !pvNode*lmrPVReduction();
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
-            r -= historyScore / 250;
+            r -= std::clamp(historyScore/250,-200,200);
 
             r /= 100;
 
             int reduction = newDepth - r;
-            reduction = std::max(reduction, 0); // Should the minimum be 1 or 0?
+            reduction = std::clamp(reduction, 0, newDepth); // Should the minimum be 1 or 0?
             
             score = -negamax(board, reduction, -(alpha + 1), -alpha, ply + 1,false);
             lmrHit++;
 
-            if (score > alpha) {
+            if (score > alpha && reduction < newDepth) {
                 lmrResearchHit++;
                 score = -negamax(board, newDepth, -(alpha + 1), -alpha, ply + 1,false);
                 
