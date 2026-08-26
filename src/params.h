@@ -44,17 +44,18 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(lmrPVReduction, 79, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrImprovingReduction, 87, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrCheckReduction, 104, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrHistoryReduction, 250,0,600,20)
 
 	//Razoring
 	ZAP_TUNABLE_INT(razoringMargin, 271, 100, 400, 20)
 
 	//Qsearch
 	ZAP_TUNABLE_INT(futilityBaseQsearch, 164, 0, 300, 20)
-	ZAP_TUNABLE_INT(seeMarginQsearch, -166, -200, 100, 20)
+//	ZAP_TUNABLE_INT(seeMarginQsearch, -166, -200, 100, 20)
 
 	//Reverse Futility Pruning
 	ZAP_TUNABLE_INT(rfpLinear, 97, 0, 200, 20)
-	ZAP_TUNABLE_INT(rfpQuadratic, 10, 0, 200, 20)
+//	ZAP_TUNABLE_INT(rfpQuadratic, 10, 0, 200, 20)
 	ZAP_TUNABLE_INT(rfpImproving, 104, 0, 200, 20)
 
 	//History
@@ -65,6 +66,8 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(quietHistPenaltyOffset, 292, 0, 500, 20)
 	ZAP_TUNABLE_INT(quietHistMaxPenalty, 15835, 0, 32000, 256)
 	ZAP_TUNABLE_INT(maxButterflyHistory, 16240, 0, 32000, 256)
+	ZAP_TUNABLE_INT(butterflyAging, 750, 0, 2000,50) 
+	ZAP_TUNABLE_INT(contAging, 750, 0, 2000,50) 
 
 	ZAP_TUNABLE_INT(maxContHistory, 16000, 256, 32000, 256)
 	ZAP_TUNABLE_INT(contWeight1Ply, 100, 0, 200, 10)

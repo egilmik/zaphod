@@ -26,7 +26,7 @@ public:
                     for (int fromThreat = 0; fromThreat < 2; fromThreat++) {
                         for (int toThreat = 0; toThreat < 2; toThreat++) {
                             int value = butterfly[stm][from][to][fromThreat][toThreat];
-                            butterfly[stm][from][to][fromThreat][toThreat] = value * 750 / 1000;
+                            butterfly[stm][from][to][fromThreat][toThreat] = value * butterflyAging() / 1000;
                         }
                     }
                 }
@@ -36,7 +36,7 @@ public:
 		//Cont table age
 		int16_t* cont = reinterpret_cast<int16_t*>(continuation->data);
 		for(size_t i = 0; i < CONT_ENTRIES; i++){
-				cont[i] = static_cast<int16_t>(cont[i]*750/1000);
+				cont[i] = static_cast<int16_t>(cont[i]*contAging()/1000);
 		}
     }
 
