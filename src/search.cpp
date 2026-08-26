@@ -322,6 +322,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         int extension = 0;
         bool firstMove = moveCounter == 0;
         bool givesCheck = false;
+		BitBoard threats = board.getThreats();
+		BitBoardEnum stm = board.getSideToMove();
         /*
         if (!isRoot && !pvNode && !inCheck && board.getNonPawnMaterial(board.getSideToMove()) > 0 && bestMoveIteration.score > -10000) {
             if (isCapture) {
@@ -404,7 +406,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
             int historyScore = 0;
             if (!isCapture && !isPromo && !givesCheck) {
-                historyScore += history.butterflyScore(board.getSideToMove(), move, board.getThreats());
+                historyScore += history.butterflyScore(stm, move, threats);
                 historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to());
             }
             
