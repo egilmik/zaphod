@@ -214,6 +214,7 @@ Move MoveGenerator::next() {
             currentStage = KILLER;
             [[fallthrough]];
         case KILLER:
+            /*
             if(!skipQuiets){
                 if (!onlyNoisy || board->getCheckers() != 0) {
                     while (killerIdx < 2) {
@@ -224,6 +225,8 @@ Move MoveGenerator::next() {
                     }
                 }           
             }
+
+            */
 
             //Check if killer moves are valid
             //If no killer, next stage

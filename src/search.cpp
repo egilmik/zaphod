@@ -473,14 +473,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             
 
                 if (bestScore >= beta) {
-
-                    if (!isCapture) {
-                        if (move.value != ss[ply].killerMove[0].value) {
-                            ss[ply].killerMove[1] = ss[ply].killerMove[0];
-                            ss[ply].killerMove[0] = move;
-                        }
-                    }
-
                     break;
                 }
             }
