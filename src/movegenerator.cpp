@@ -34,6 +34,7 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, Move killer[], Hi
     history = hist;
     contSlices = cont;
     ttMove = tt;
+    skipQuiets = false;
 
     BitBoard king = board->getBitboard(K + board->getSideToMove());
     assert(king != 0);  // king must exist
@@ -212,15 +213,17 @@ Move MoveGenerator::next() {
             // if no moves left, next stage
             currentStage = KILLER;
             [[fallthrough]];
-        case KILLER:           
-            if (!onlyNoisy || board->getCheckers() != 0) {
-                while (killerIdx < 2) {
-                    Move killer = killerMove[killerIdx++];
-                    if (killer && killer.value != ttMove.value && isMoveLegal(killer)) {
-                        return killer;
+        case KILLER:
+            if(!skipQuiets){
+                if (!onlyNoisy || board->getCheckers() != 0) {
+                    while (killerIdx < 2) {
+                        Move killer = killerMove[killerIdx++];
+                        if (killer && killer.value != ttMove.value && isMoveLegal(killer)) {
+                            return killer;
+                        }
                     }
-                }
-            }           
+                }           
+            }
 
             //Check if killer moves are valid
             //If no killer, next stage
@@ -230,18 +233,20 @@ Move MoveGenerator::next() {
             currentStage = QUIET;
             //Generate quite
             //Score
-            if(!onlyNoisy || board->getCheckers() != 0){
+            if (!skipQuiets) {
+                if (!onlyNoisy || board->getCheckers() != 0) {
 
-                if (board->countSetBits(board->getCheckers()) < 2) {
-                    generateKnightQuiet();
-                    generateBishopQuiet();
-                    generateRookQuiet();
-                    generateQueenQuiet();
-                    generatePawnQuiet();
+                    if (board->countSetBits(board->getCheckers()) < 2) {
+                        generateKnightQuiet();
+                        generateBishopQuiet();
+                        generateRookQuiet();
+                        generateQueenQuiet();
+                        generatePawnQuiet();
+                    }
+
+                    generateKingQuiet();
+                    scoreQuietMoves();
                 }
-
-                generateKingQuiet();
-                scoreQuietMoves();
             }
             
             
@@ -250,8 +255,10 @@ Move MoveGenerator::next() {
         case QUIET:
             //Return quiet
             // if no more moves left, next stage
-            if (quietIdx < quietCount) {
-                return quietMoves[quietIdx++].move;
+            if (!skipQuiets) {
+                if (quietIdx < quietCount) {
+                    return quietMoves[quietIdx++].move;
+                }
             }
 
             currentStage = BAD_NOISY;

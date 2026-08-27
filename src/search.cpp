@@ -341,14 +341,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         ////////////
         // Move loop pruning
         ////////////
-        if (!isRoot && !isPromo && !isCapture) {
-            
-            int historyScore = 0;
-            if (!isCapture && !isPromo && !givesCheck) {
-                historyScore += history.butterflyScore(stm, move, threats);
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to());
-            }
-            
+        if (!isRoot && board.getNonPawnMaterial(stm) > 0 && bestScore > -MATE_IN_MAX) {
+                        
             ////////////
             // Futility pruning
             ////////////
@@ -364,9 +358,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             ////////////
             // Late move pruning
             ////////////
-            int lmp = ((3 + depth * depth) / (2 - improving)) + historyScore*985/8388608;
+            int lmp = ((3 + depth * depth) / (2 - improving));
 
-            if (moveCounter >= lmp) {
+            if (moveCounter > lmp) {
+                moveGen.skipQuiet();
                 continue;
             }
 
@@ -381,10 +376,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
         }
-	BitBoardEnum movedPiece = board.getPieceOnSquare(move.from());
+	    BitBoardEnum movedPiece = board.getPieceOnSquare(move.from());
         board.makeMove(move);
-	ss[ply].movedPiece = movedPiece;
-	ss[ply].move = move;
+	    ss[ply].movedPiece = movedPiece;
+	    ss[ply].move = move;
         evaluatedNodes++;
 
         int newDepth = depth - 1;
@@ -415,10 +410,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int divider = (isCapture ? lmrDividerNoisy() : lmrDividerQuiet());
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
             int historyScore = 0;
+            /*
             if (!isCapture && !isPromo && !givesCheck) {
                 historyScore += history.butterflyScore(stm, move, threats);
                 historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to());
             }
+            */
             
 
 
@@ -506,12 +503,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         if (!isCapture) {
             int bonus = std::clamp(depth * quietHistBonusDepthScale() - quietHistBonusOffset(), 0, quietHistMaxBonus());
             history.updateButterflyScore(board.getSideToMove(), alphaMove, board.getThreats(), bonus);
-	    history.updateContScore(conts, board.getPieceOnSquare(alphaMove.from()), alphaMove.to(), bonus);
+	        history.updateContScore(conts, board.getPieceOnSquare(alphaMove.from()), alphaMove.to(), bonus);
 
             int penalty = -std::clamp(depth * quietHistPenaltyDepthScale() - quietHistPenaltyOffset(), 0, quietHistMaxPenalty());
             for (Move move : failLowMoves) {
                 history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), penalty);
-		history.updateContScore(conts, board.getPieceOnSquare(move.from()), move.to(), penalty);
+		        history.updateContScore(conts, board.getPieceOnSquare(move.from()), move.to(), penalty);
             }
 
 

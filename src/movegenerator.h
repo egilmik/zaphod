@@ -33,6 +33,10 @@ class MoveGenerator {
             return noisyCount + quietCount;
         }
 
+        void skipQuiet() {
+            skipQuiets = true;
+        }
+
 
         ScoredMove noisyMoves[256];
         ScoredMove quietMoves[256];
@@ -88,6 +92,7 @@ class MoveGenerator {
         BitBoard kingDangerMask = 0;
         bool onlyNoisy = false;
         bool ttMoveFound = false;
+        bool skipQuiets = false;
 };
 
 #endif
