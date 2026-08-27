@@ -70,9 +70,9 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(contAging, 750, 0, 2000,50) 
 
 	ZAP_TUNABLE_INT(maxContHistory, 16000, 256, 32000, 256)
-	ZAP_TUNABLE_INT(contWeight1Ply, 100, 0, 200, 10)
-	ZAP_TUNABLE_INT(contWeight2Ply, 100, 0, 200, 10)
-	ZAP_TUNABLE_INT(contWeight4Ply, 100, 0, 200, 10)
-	ZAP_TUNABLE_INT(contWeight6Ply, 100, 0, 200, 10)
+	ZAP_TUNABLE_INT(contWeight1Ply, 120, 0, 200, 10)
+	ZAP_TUNABLE_INT(contWeight2Ply, 120, 0, 200, 10)
+	ZAP_TUNABLE_INT(contWeight4Ply, 60, 0, 200, 10)
+	ZAP_TUNABLE_INT(contWeight6Ply, 30, 0, 200, 10)
 };
 #endif

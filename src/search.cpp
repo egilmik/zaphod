@@ -341,8 +341,13 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         ////////////
         // Move loop pruning
         ////////////
-        if (!isRoot && !isPromo && !isCapture && improving) {
+        if (!isRoot && !isPromo && !isCapture) {
             
+            int historyScore = 0;
+            if (!isCapture && !isPromo && !givesCheck) {
+                historyScore += history.butterflyScore(stm, move, threats);
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to());
+            }
             
             ////////////
             // Futility pruning
@@ -359,6 +364,11 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             ////////////
             // Late move pruning
             ////////////
+            int lmp = ((3 + depth * depth) / (2 - improving)) + historyScore*985/8388608;
+
+            if (moveCounter >= lmp) {
+                continue;
+            }
 
 
             ////////////
@@ -415,7 +425,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r += !pvNode*lmrPVReduction();
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
-            r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
+            //r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
 
             r /= 100;
 
