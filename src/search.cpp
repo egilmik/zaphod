@@ -307,7 +307,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     for(int i = 0; i < History::CONT_PLIES; i++){
 	int prev = ply - History::contOffset[i];
 	if(prev >= 0 && ss[prev].movedPiece != All){
-		conts[i] = history.contSlice(i, BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
+		conts[i] = history.contSlice(BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
 	}
     }
 
@@ -409,20 +409,19 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int base = (isCapture ? lmrBaseNoisy() : lmrBaseQuiet());
             int divider = (isCapture ? lmrDividerNoisy() : lmrDividerQuiet());
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
-            int historyScore = 0;
-            /*
+            int historyScore = 0;            
             if (!isCapture && !isPromo && !givesCheck) {
                 historyScore += history.butterflyScore(stm, move, threats);
                 historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to());
             }
-            */
+            
             
 
 
             r += !pvNode*lmrPVReduction();
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
-            //r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
+            r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
 
             r /= 100;
 

@@ -33,15 +33,17 @@ public:
             }
         }
 
+        /*
 		//Cont table age
 		int16_t* cont = reinterpret_cast<int16_t*>(continuation->data);
 		for(size_t i = 0; i < CONT_ENTRIES; i++){
 				cont[i] = static_cast<int16_t>(cont[i]*contAging()/1000);
 		}
+        */
     }
 
-    [[nodiscard]] inline ContSlice* contSlice(int idx, BitBoardEnum prevPiece, uint32_t prevTo) {
-        return &continuation->data[idx][prevPiece][prevTo];
+    [[nodiscard]] inline ContSlice* contSlice(BitBoardEnum prevPiece, uint32_t prevTo) {
+        return &continuation->data[prevPiece][prevTo];
     }
 
 
@@ -100,13 +102,13 @@ private:
         }
     }
 
-    static constexpr size_t CONT_ENTRIES = size_t(CONT_PLIES) * 14 * 64 * 14 * 64;
+    static constexpr size_t CONT_ENTRIES = 14 * 64 * 14 * 64;
 
     // [stm][from][to][from attacked][to attacked]
     int32_t butterfly[2][64][64][2][2] = {};
 
 	struct ContTable {
-			int16_t data[CONT_PLIES][14][64][14][64] = {};
+			int16_t data[14][64][14][64] = {};
 	};
 
 	std::unique_ptr<ContTable> continuation;
