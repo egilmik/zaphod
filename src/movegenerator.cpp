@@ -11,7 +11,7 @@ void MoveGenerator::generateMoves(Board &board,MoveList &moveList)
     MoveGenerator gen;
     Move killer[2] = {};
     History hist;
-//    gen.init(board, Move{}, false, killer, &hist);
+    gen.init(board, Move{}, false, killer, &hist, nullptr);
     
     Move move;
     while((move = gen.next())){
