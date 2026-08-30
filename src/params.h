@@ -74,5 +74,14 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(contWeight2Ply, 113, 0, 200, 10)
 	ZAP_TUNABLE_INT(contWeight4Ply, 77, 0, 200, 10)
 	ZAP_TUNABLE_INT(contWeight6Ply, 38, 0, 200, 10)
+
+	ZAP_TUNABLE_INT(maxCapturePieceHistoryBonus,16000,256,32000,256)
+	ZAP_TUNABLE_INT(noisyHistBonusDepthScale, 318, 0, 500, 20)
+	ZAP_TUNABLE_INT(noisyHistBonusOffset, 312, 0, 500, 20)
+	ZAP_TUNABLE_INT(noisyHistMaxBonus, 16150, 0, 32000, 256)
+	ZAP_TUNABLE_INT(noisyHistPenaltyDepthScale, 282, 0, 500, 20)
+	ZAP_TUNABLE_INT(noisyHistPenaltyOffset, 260, 0, 500, 20)
+	ZAP_TUNABLE_INT(noisyHistMaxPenalty, 15942, 0, 32000, 256)
+
 };
 #endif

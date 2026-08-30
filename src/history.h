@@ -69,6 +69,17 @@ public:
         }
     }
 
+    inline void updateCapturedPiece(BitBoardEnum piece, uint32_t to, BitBoardEnum capturedPiece, int32_t bonus) {
+        int32_t value = capturedPieceHistory[piece][to][capturedPiece];
+        value += bonus - value * std::abs(bonus) / maxCapturePieceHistoryBonus();
+        capturedPieceHistory[piece][to][capturedPiece] = value;
+    }
+
+    inline int32_t capturedPieceScore(BitBoardEnum movedPiece, uint32_t to, BitBoardEnum capturedPiece) {
+        return capturedPieceHistory[movedPiece][to][capturedPiece];
+    }
+
+
     inline void updateButterflyScore(BitBoardEnum color, Move move, BitBoard threats, int32_t bonus) {
         int stm = (color == Black);
         int toAttacked = ((1ULL << move.to()) & threats) != 0;
@@ -106,6 +117,8 @@ private:
 
     // [stm][from][to][from attacked][to attacked]
     int32_t butterfly[2][64][64][2][2] = {};
+
+    int32_t capturedPieceHistory[14][64][14] = {};
 
 	struct ContTable {
 			int16_t data[14][64][14][64] = {};
