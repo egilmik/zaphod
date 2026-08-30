@@ -101,6 +101,7 @@ public:
     void clear() {
         std::memset(&butterfly, 0, sizeof(butterfly));
 		std::memset(continuation.get(), 0, sizeof(ContTable));
+        std::memset(&capturedPieceHistory, 0, sizeof(capturedPieceHistory));
     }
 
 private:
