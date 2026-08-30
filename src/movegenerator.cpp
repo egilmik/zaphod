@@ -289,59 +289,21 @@ void MoveGenerator::sortNoisyMoves() {
     }
 
     for (int i = 0; i < noisyCount; i++) {
-        
-
-        
-        
         if (noisyMoves[i].move.value == ttMove.value) {
-            if (!ttMoveFound) {
-                std::cout << "info string TTMove not returned, but still present int noisy" << std::endl;
-            }
-	    noisyMoves[i] = noisyMoves[--noisyCount];
+	        noisyMoves[i] = noisyMoves[--noisyCount];
             i--;
             continue;
         }
-        
 
+        const Move move = noisyMoves[i].move;
+        int& score = noisyMoves[i].score;
+        using namespace See;
 
-        if (noisyMoves[i].move.getMoveType() == PROMOTION) {
-            //TODO: Promotion capture
+        score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()));
+        score += see(*board, move.from(), move.to(), board->getSideToMove());
 
-            noisyMoves[i].score = 80000;
-        }
-        else if (board->getPieceOnSquare(noisyMoves[i].move.to()) != All) {
-
-            BitBoardEnum capturedPiece = board->getPieceOnSquare(noisyMoves[i].move.to());
-            BitBoardEnum attacker = board->getPieceOnSquare(noisyMoves[i].move.from());
-
-            if (noisyMoves[i].move.getMoveType() == EN_PASSANT) {
-                capturedPiece = P;
-                noisyMoves[i].score = 70000;
-            }
-            else {
-                assert(attacker != All);
-                assert(capturedPiece != All);
-                int Mvv = Material::pieceMaterialScoreArray[capturedPiece];
-                int lva = Material::pieceMaterialScoreArray[attacker];
-
-                int mvvlva = (Mvv - lva) / 100;
-                noisyMoves[i].score = 70000 + mvvlva;
-
-                if (Mvv > lva) {
-                    noisyMoves[i].score = 70000 + mvvlva;
-                }
-                else {
-                    using namespace See;
-                    int seeScore = see(*board, noisyMoves[i].move.from(), noisyMoves[i].move.to(), board->getSideToMove());
-                    if (seeScore >= 0) {
-                        noisyMoves[i].score = 70000 + seeScore;
-                    }
-                    else {
-                        noisyMoves[i].score = -70000 - seeScore;
-                    }
-                    
-                }
-            }
+        if (move.getMoveType() == PROMOTION && move.getPromotionType(White) == Q) {
+            score += Material::pieceMaterialScoreArray[Q] - Material::pieceMaterialScoreArray[P];
         }
     }
 
