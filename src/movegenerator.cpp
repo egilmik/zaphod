@@ -359,28 +359,16 @@ void MoveGenerator::scoreQuietMoves() {
     for (int i = 0; i < quietCount; i++) {
         
         if (quietMoves[i].move.value == ttMove.value){
-            if (!ttMoveFound) {
-                //bool test = isMoveLegal(ttMove);
-                std::cout << "info string TTMove not returned, but still present int quiet" << std::endl;
-            }
             quietMoves[i] = quietMoves[--quietCount]; 
-            i--;
-            continue;
-        }
-        
-        if (killerMove[0].value == quietMoves[i].move.value ||
-            killerMove[1].value == quietMoves[i].move.value) {
-
-            quietMoves[i] = quietMoves[--quietCount];
             i--;
             continue;
         }
 
         quietMoves[i].score = history->butterflyScore(board->getSideToMove(), quietMoves[i].move, board->getThreats());
-       if(contSlices){
-		BitBoardEnum piece = board->getPieceOnSquare(quietMoves[i].move.from());
-	       quietMoves[i].score += history->contScore(contSlices, piece, quietMoves[i].move.to());
-       }	       
+        if(contSlices){
+            BitBoardEnum piece = board->getPieceOnSquare(quietMoves[i].move.from());
+	        quietMoves[i].score += history->contScore(contSlices, piece, quietMoves[i].move.to());
+        }	       
     }
 
     std::stable_sort(quietMoves, quietMoves+quietCount,

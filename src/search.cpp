@@ -359,11 +359,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             ////////////
             // Late move pruning
             ////////////
-            int lmp = ((3 + depth * depth) / (2 - improving));
+            int lmp = ((4 + depth * depth) / (2 - improving));
 
             if (moveCounter > lmp) {
                 moveGen.skipQuiet();
-                continue;
             }
 
 
