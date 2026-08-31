@@ -298,9 +298,11 @@ void MoveGenerator::sortNoisyMoves() {
         const Move move = noisyMoves[i].move;
         int& score = noisyMoves[i].score;
         using namespace See;
-
-        score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()));
-        score += see(*board, move.from(), move.to(), board->getSideToMove());
+        //TODO - This does not handle En passant properly.
+        if (board->getPieceOnSquare(move.to()) != All) {
+            score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()));
+            score += see(*board, move.from(), move.to(), board->getSideToMove());
+        }
 
         if (move.getMoveType() == PROMOTION && move.getPromotionType(White) == Q) {
             score += Material::pieceMaterialScoreArray[Q] - Material::pieceMaterialScoreArray[P];
