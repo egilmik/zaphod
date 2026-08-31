@@ -298,11 +298,17 @@ void MoveGenerator::sortNoisyMoves() {
         const Move move = noisyMoves[i].move;
         int& score = noisyMoves[i].score;
         using namespace See;
+<<<<<<< HEAD
         //TODO - This does not handle En passant properly. En passant get 0 score
         if (board->getPieceOnSquare(move.to()) != All) {
             score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()));
             score += see(*board, move.from(), move.to(), board->getSideToMove());
         }
+=======
+
+        score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()))/16;
+        score += see(*board, move.from(), move.to(), board->getSideToMove());
+>>>>>>> 95746f8ac60ee358e224ddfe2a2b00010f0e69a5
 
         if (move.getMoveType() == PROMOTION && move.getPromotionType(White) == Q) {
             score += Material::pieceMaterialScoreArray[Q] - Material::pieceMaterialScoreArray[P];
