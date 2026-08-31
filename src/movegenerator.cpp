@@ -298,7 +298,7 @@ void MoveGenerator::sortNoisyMoves() {
         const Move move = noisyMoves[i].move;
         int& score = noisyMoves[i].score;
         using namespace See;
-        //TODO - This does not handle En passant properly.
+        //TODO - This does not handle En passant properly. En passant get 0 score
         if (board->getPieceOnSquare(move.to()) != All) {
             score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()));
             score += see(*board, move.from(), move.to(), board->getSideToMove());
