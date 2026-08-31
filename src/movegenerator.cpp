@@ -299,7 +299,7 @@ void MoveGenerator::sortNoisyMoves() {
         int& score = noisyMoves[i].score;
         using namespace See;
 
-        score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()));
+        score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()))/16;
         score += see(*board, move.from(), move.to(), board->getSideToMove());
 
         if (move.getMoveType() == PROMOTION && move.getPromotionType(White) == Q) {
