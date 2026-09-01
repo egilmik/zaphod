@@ -144,10 +144,30 @@ def build(worktree, args):
     run_step(configure, worktree, args.verbose, "configure")
     run_step(compile_cmd, worktree, args.verbose, "build")
 
-    for candidate in (build_dir / args.target, build_dir / f"{args.target}.exe"):
-        if candidate.exists():
-            return candidate
-    raise BenchError(f"built, but no {args.target} binary under {build_dir}")
+    return find_binary(build_dir, args.target)
+
+
+def find_binary(build_dir, target):
+    """Locate the built executable.
+
+    CMakeLists.txt points CMAKE_RUNTIME_OUTPUT_DIRECTORY at <build>/bin, but
+    commits older than that leave the binary in the build root, and the
+    multi config generators add a per configuration directory below either.
+    """
+    names = (target, f"{target}.exe")
+    for directory in (build_dir / "bin", build_dir):
+        for name in names:
+            candidate = directory / name
+            if candidate.is_file():
+                return candidate
+
+    # Anywhere else under the build tree, newest first in case an earlier
+    # commit left a stale copy behind.
+    found = [path for name in names for path in build_dir.rglob(name) if path.is_file()]
+    if found:
+        return max(found, key=lambda path: path.stat().st_mtime)
+
+    raise BenchError(f"built, but no {target} binary found under {build_dir}")
 
 
 def run_bench(binary, worktree, args):
