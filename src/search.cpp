@@ -309,6 +309,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 	int prev = ply - History::contOffset[i];
 	if(prev >= 0 && ss[prev].movedPiece != All){
 		conts[i] = history.contSlice(BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
+	} else if(prev >= 0 && ss[prev].isNullMove){
+		conts[i] = history.contSlice(BitBoardEnum(All),0);
 	}
     }
 
