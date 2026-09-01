@@ -415,10 +415,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             if (!isNoisy) {
 	    	historyScore += history.butterflyScore(stm, move, threats);
 
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),0) * contWeight1Ply();
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),1) * contWeight2Ply();
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),2) * contWeight4Ply();
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),3) * contWeight6Ply();
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),0) * contWeight1Ply()/100;
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),1) * contWeight2Ply()/100;
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),2) * contWeight4Ply()/100;
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),3) * contWeight6Ply()/100;
             }
             else {
                 historyScore += history.capturedPieceScore(movedPiece, move.to(), capturedPiece);
