@@ -46,6 +46,12 @@ public:
         return &continuation->data[prevPiece][prevTo];
     }
 
+    [[nodiscard]] inline int32_t contScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to, int ply) {
+	if(slices[ply]){
+		return (*slices[ply])[piece][to];
+	}
+	return 0;
+    }
 
     [[nodiscard]] inline int32_t contScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to) {
         int32_t score = 0;
