@@ -415,20 +415,19 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
             int historyScore = 0;            
             if (!isNoisy) {
-	    	    historyScore += history.butterflyScore(stm, move, threats);
-                historyScore += history.pieceToScore(ss[ply].movedPiece, move, threats);
+	    	    historyScore += history.butterflyScore(stm, move, threats)* lmrButterflyWeight();
+                historyScore += history.pieceToScore(ss[ply].movedPiece, move, threats) * lmrPieceToWeight();
 
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),0) * contWeight1Ply()/100;
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),1) * contWeight2Ply()/100;
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),2) * contWeight4Ply()/100;
-                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),3) * contWeight6Ply()/100;
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),0) * lmrContWeight1Ply();
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),1) * lmrContWeight2Ply();
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),2) * lmrContWeight4Ply();
+                historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),3) * lmrContWeight6Ply();
+                historyScore /= 100;
             }
             else {
                 historyScore += history.capturedPieceScore(movedPiece, move.to(), capturedPiece);
             }
             
-            
-
 
             r += !pvNode*lmrPVReduction();
             r -= improving*lmrImprovingReduction();

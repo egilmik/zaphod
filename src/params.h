@@ -46,6 +46,15 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(lmrImprovingReduction, 83, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrCheckReduction, 93, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrHistoryReduction, 213,0,600,20)
+	
+	ZAP_TUNABLE_INT(lmrButterflyWeight, 150, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrPieceToWeight, 150, 0, 200, 10)
+
+	ZAP_TUNABLE_INT(lmrContWeight1Ply, 107, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrContWeight2Ply, 104, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrContWeight4Ply, 88, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrContWeight6Ply, 32, 0, 200, 10)
+	
 
 	//Razoring
 	ZAP_TUNABLE_INT(razoringMargin, 252, 100, 400, 20)
@@ -57,6 +66,14 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(rfpLinear, 44, 0, 200, 20)
 
 	ZAP_TUNABLE_INT(rfpImproving, 75, 0, 200, 20)
+
+	///////////
+	// Move generator
+	///////////
+	ZAP_TUNABLE_INT(movegenContWeight1Ply, 107, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight2Ply, 104, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight4Ply, 88, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight6Ply, 32, 0, 200, 10)
 
 	///////////
 	//History
@@ -82,15 +99,9 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(maxContHistory, 16288, 256, 32000, 256)
 	ZAP_TUNABLE_INT(maxPieceToHistory, 16288, 256, 32000, 256)
 
+	
 
-	ZAP_TUNABLE_INT(contWeight1Ply, 107, 0, 200, 10)
-	ZAP_TUNABLE_INT(contWeight2Ply, 104, 0, 200, 10)
-	ZAP_TUNABLE_INT(contWeight4Ply, 88, 0, 200, 10)
-	ZAP_TUNABLE_INT(contWeight6Ply, 32, 0, 200, 10)
-
-	ZAP_TUNABLE_INT(movegenContWeight1Ply, 107, 0, 200, 10)
-	ZAP_TUNABLE_INT(movegenContWeight2Ply, 104, 0, 200, 10)
-	ZAP_TUNABLE_INT(movegenContWeight4Ply, 88, 0, 200, 10)
-	ZAP_TUNABLE_INT(movegenContWeight6Ply, 32, 0, 200, 10)
+	
 };
 #endif
+
