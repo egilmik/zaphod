@@ -35,8 +35,9 @@ namespace zaphod::params {
         [[nodiscard]] inline int32_t Name() { \
             return param_##Name.value; \
         }
-
+	///////////
 	// LMR
+	///////////
 	ZAP_TUNABLE_INT(lmrDividerQuiet, 199, 100, 350, 10)
 	ZAP_TUNABLE_INT(lmrDividerNoisy, 206, 100, 350, 10)
 	ZAP_TUNABLE_INT(lmrBaseQuiet, 84, 0, 150, 10)
@@ -51,14 +52,15 @@ namespace zaphod::params {
 
 	//Qsearch
 	ZAP_TUNABLE_INT(futilityBaseQsearch, 111, 0, 300, 20)
-//	ZAP_TUNABLE_INT(seeMarginQsearch, -166, -200, 100, 20)
 
 	//Reverse Futility Pruning
 	ZAP_TUNABLE_INT(rfpLinear, 44, 0, 200, 20)
-//	ZAP_TUNABLE_INT(rfpQuadratic, 10, 0, 200, 20)
+
 	ZAP_TUNABLE_INT(rfpImproving, 75, 0, 200, 20)
 
+	///////////
 	//History
+	///////////
 	ZAP_TUNABLE_INT(quietHistBonusDepthScale, 353, 0, 500, 20)
 	ZAP_TUNABLE_INT(quietHistBonusOffset, 317, 0, 500, 20)
 	ZAP_TUNABLE_INT(quietHistMaxBonus, 16280, 0, 32000, 256)
@@ -78,9 +80,15 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(noisyHistMaxPenalty, 15942, 0, 32000, 256)
 
 	ZAP_TUNABLE_INT(maxContHistory, 16288, 256, 32000, 256)
+
 	ZAP_TUNABLE_INT(contWeight1Ply, 107, 0, 200, 10)
 	ZAP_TUNABLE_INT(contWeight2Ply, 104, 0, 200, 10)
 	ZAP_TUNABLE_INT(contWeight4Ply, 88, 0, 200, 10)
 	ZAP_TUNABLE_INT(contWeight6Ply, 32, 0, 200, 10)
+
+	ZAP_TUNABLE_INT(movegenContWeight1Ply, 107, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight2Ply, 104, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight4Ply, 88, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight6Ply, 32, 0, 200, 10)
 };
 #endif

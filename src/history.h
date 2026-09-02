@@ -33,13 +33,6 @@ public:
             }
         }
 
-        /*
-		//Cont table age
-		int16_t* cont = reinterpret_cast<int16_t*>(continuation->data);
-		for(size_t i = 0; i < CONT_ENTRIES; i++){
-				cont[i] = static_cast<int16_t>(cont[i]*contAging()/1000);
-		}
-        */
     }
 
     [[nodiscard]] inline ContSlice* contSlice(BitBoardEnum prevPiece, uint32_t prevTo) {
@@ -47,22 +40,11 @@ public:
     }
 
     [[nodiscard]] inline int32_t contScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to, int ply) {
-	if(slices[ply]){
-		return (*slices[ply])[piece][to];
-	}
-	return 0;
+	    if(slices[ply]){
+		    return (*slices[ply])[piece][to];
+	    }
+	    return 0;
     }
-
-    [[nodiscard]] inline int32_t contScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to) {
-        int32_t score = 0;
-        for (int i = 0; i < CONT_PLIES; i++) {
-            if (slices[i]) {
-                score += (*slices[i])[piece][to] * contWeight(i) / 100;
-            }
-        }
-        return score;
-    }
-
 
     inline void updateContScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to, int32_t bonus) {
         for (int i = 0; i < CONT_PLIES; i++) {
@@ -111,21 +93,11 @@ public:
     }
 
 private:
-    [[nodiscard]] static inline int32_t contWeight(int idx) {
-        switch (idx) {
-            case 0: return contWeight1Ply();
-            case 1: return contWeight2Ply();
-            case 2: return contWeight4Ply();
-            default: return contWeight6Ply();
-        }
-    }
-
-    static constexpr size_t CONT_ENTRIES = 14 * 64 * 14 * 64;
 
     // [stm][from][to][from attacked][to attacked]
     int32_t butterfly[2][64][64][2][2] = {};
-
     int32_t capturedPieceHistory[14][64][14] = {};
+    int32_t pieceTo[14][64][2][2] = {};
 
 	struct ContTable {
 			int16_t data[14][64][14][64] = {};
