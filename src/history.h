@@ -86,10 +86,26 @@ public:
         return butterfly[stm][move.from()][move.to()][fromAttacked][toAttacked];
     }
 
+    [[nodiscard]] inline int32_t pieceToScore(BitBoardEnum piece, Move move, BitBoard threats) {
+        int toAttacked = ((1ULL << move.to()) & threats) != 0;
+        int fromAttacked = ((1ULL << move.from()) & threats) != 0;
+
+        return pieceTo[piece][move.to()][fromAttacked][toAttacked];
+    }
+
+    inline void updatePieceToScore(BitBoardEnum piece, Move move, BitBoard threats, int32_t bonus) {
+        int toAttacked = ((1ULL << move.to()) & threats) != 0;
+        int fromAttacked = ((1ULL << move.from()) & threats) != 0;
+        int32_t value = pieceTo[piece][move.to()][fromAttacked][toAttacked];
+        value += bonus - value * std::abs(bonus) / maxPieceToHistory();
+        pieceTo[piece][move.to()][fromAttacked][toAttacked] = value;
+    }
+
     void clear() {
         std::memset(&butterfly, 0, sizeof(butterfly));
 		std::memset(continuation.get(), 0, sizeof(ContTable));
         std::memset(&capturedPieceHistory, 0, sizeof(capturedPieceHistory));
+        std::memset(&pieceTo, 0, sizeof(pieceTo));
     }
 
 private:

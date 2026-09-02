@@ -327,10 +327,10 @@ void MoveGenerator::scoreQuietMoves() {
             i--;
             continue;
         }
-
-        quietMoves[i].score = history->butterflyScore(board->getSideToMove(), quietMoves[i].move, board->getThreats());
-        if(contSlices){
-            BitBoardEnum piece = board->getPieceOnSquare(quietMoves[i].move.from());
+        BitBoardEnum piece = board->getPieceOnSquare(quietMoves[i].move.from());
+        quietMoves[i].score += history->butterflyScore(board->getSideToMove(), quietMoves[i].move, board->getThreats());
+        quietMoves[i].score += history->pieceToScore(piece, quietMoves[i].move, board->getThreats());
+        if(contSlices){            
             quietMoves[i].score += history->contScore(contSlices, piece, quietMoves[i].move.to(), 0) * movegenContWeight1Ply() / 100;
             quietMoves[i].score += history->contScore(contSlices, piece, quietMoves[i].move.to(), 1) * movegenContWeight2Ply() / 100;
             quietMoves[i].score += history->contScore(contSlices, piece, quietMoves[i].move.to(), 2) * movegenContWeight4Ply() / 100;

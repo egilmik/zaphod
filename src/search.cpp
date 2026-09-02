@@ -415,7 +415,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int r = (int)std::max(0, base + lnDepth*lnMoves  / divider);
             int historyScore = 0;            
             if (!isNoisy) {
-	    	historyScore += history.butterflyScore(stm, move, threats);
+	    	    historyScore += history.butterflyScore(stm, move, threats);
+                historyScore += history.pieceToScore(ss[ply].movedPiece, move, threats);
 
                 historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),0) * contWeight1Ply()/100;
                 historyScore += history.contScore(conts, ss[ply].movedPiece, ss[ply].move.to(),1) * contWeight2Ply()/100;
@@ -511,11 +512,13 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int bonus = std::clamp(depth * quietHistBonusDepthScale() - quietHistBonusOffset(), 0, quietHistMaxBonus());
             history.updateButterflyScore(board.getSideToMove(), alphaMove, board.getThreats(), bonus);
 	        history.updateContScore(conts, board.getPieceOnSquare(alphaMove.from()), alphaMove.to(), bonus);
+            history.updatePieceToScore(board.getPieceOnSquare(alphaMove.from()), alphaMove, board.getThreats(), bonus);
 
             int penalty = -std::clamp(depth * quietHistPenaltyDepthScale() - quietHistPenaltyOffset(), 0, quietHistMaxPenalty());
             for (Move move : failLowQuiet) {
                 history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), penalty);
 		        history.updateContScore(conts, board.getPieceOnSquare(move.from()), move.to(), penalty);
+                history.updatePieceToScore(board.getPieceOnSquare(move.from()), move, board.getThreats(), penalty);
             }
         }
         else {
