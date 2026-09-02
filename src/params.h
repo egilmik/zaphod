@@ -80,6 +80,8 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(noisyHistMaxPenalty, 15942, 0, 32000, 256)
 
 	ZAP_TUNABLE_INT(maxContHistory, 16288, 256, 32000, 256)
+	ZAP_TUNABLE_INT(maxPieceToHistory, 16288, 256, 32000, 256)
+
 
 	ZAP_TUNABLE_INT(contWeight1Ply, 107, 0, 200, 10)
 	ZAP_TUNABLE_INT(contWeight2Ply, 104, 0, 200, 10)
