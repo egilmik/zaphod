@@ -180,7 +180,12 @@ Move MoveGenerator::next() {
                 if (isMoveLegal(ttMove)) {
                     ttMoveFound = true;
                     bool isCapture = board->getPieceOnSquare(ttMove.to()) != All;
-                    return ttMove;
+                    if (onlyNoisy && isCapture) {
+                        return ttMove;
+                    }
+                    if (!onlyNoisy) {
+                        return ttMove;
+                    }
                 }
             }
             
