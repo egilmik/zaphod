@@ -52,7 +52,7 @@ class Search {
         int64_t qsearchMoveCounterPruningHit;
         Score search(Board &board, SearchLimits limits);
         int negamax(Board &board, int depth, int alpha, int beta, int ply, bool pvNode);
-        int quinesence(Board &board, int alpha, int beta, int depth, int ply, bool pvNode);
+        int qsearch(Board &board, int alpha, int beta, int depth, int ply, bool pvNode);
         int evaluate(Board &board);
         bool equal(Move &a, Move &b);
         bool isSearchStopped();
