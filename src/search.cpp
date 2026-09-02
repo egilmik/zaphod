@@ -200,7 +200,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
 
-    if (depth <= 0) return quinesence(board, alpha, beta, 1, ply, pvNode);
+    if (depth <= 0) return qsearch(board, alpha, beta, 1, ply, pvNode);
     
     auto tte = tt.probe(key);    
     if (tte.type != TType::NO_TYPE) tte.score = scoreFromTT(tte.score, ply);
@@ -228,7 +228,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     int score = 0;
 
     
-    Move alphaMove{};
+    Move bestMove{};
     
 
     
@@ -255,7 +255,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     if (!isRoot && !ttHit && depth <= 4 && ss[ply].staticEval < (alpha - razoringMargin() *depth) ) {
         razoringEntryHit++;
 
-        int value = quinesence(board, alpha-1, alpha, 0, ply, false);
+        int value = qsearch(board, alpha-1, alpha, 0, ply, false);
         if (value < alpha && std::abs(value) < 20000) {
             razoringReturnHit++;
             return value;
@@ -476,7 +476,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
             if (score > alpha) {
                 alpha = score;
-                alphaMove = move;
+                bestMove = move;
                 if (isRoot) {
                     bestMoveIteration.bestMove = move;
                     bestMoveIteration.score = alpha;
@@ -490,7 +490,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             }
         }
 
-        if (move != alphaMove) {
+        if (move != bestMove) {
             if (!isNoisy) {
                 failLowQuiet.push_back(move);
             }
@@ -505,14 +505,14 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         return inCheck ? -MATESCORE + ply : 0;
     }
 
-    if (alphaMove) {
-        bool isNoisy = board.getPieceOnSquare(alphaMove.to()) != All || alphaMove.getMoveType() == PROMOTION;
+    if (bestMove) {
+        bool isNoisy = board.getPieceOnSquare(bestMove.to()) != All || bestMove.getMoveType() == PROMOTION;
 
         if (!isNoisy) {
             int bonus = std::clamp(depth * quietHistBonusDepthScale() - quietHistBonusOffset(), 0, quietHistMaxBonus());
-            history.updateButterflyScore(board.getSideToMove(), alphaMove, board.getThreats(), bonus);
-	        history.updateContScore(conts, board.getPieceOnSquare(alphaMove.from()), alphaMove.to(), bonus);
-            history.updatePieceToScore(board.getPieceOnSquare(alphaMove.from()), alphaMove, board.getThreats(), bonus);
+            history.updateButterflyScore(board.getSideToMove(), bestMove, board.getThreats(), bonus);
+	        history.updateContScore(conts, board.getPieceOnSquare(bestMove.from()), bestMove.to(), bonus);
+            history.updatePieceToScore(board.getPieceOnSquare(bestMove.from()), bestMove, board.getThreats(), bonus);
 
             int penalty = -std::clamp(depth * quietHistPenaltyDepthScale() - quietHistPenaltyOffset(), 0, quietHistMaxPenalty());
             for (Move move : failLowQuiet) {
@@ -523,7 +523,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         }
         else {
             int bonus = std::clamp(depth * noisyHistBonusDepthScale() - noisyHistBonusOffset(), 0, noisyHistMaxBonus());
-            history.updateCapturedPiece(board.getPieceOnSquare(alphaMove.from()), alphaMove.to(), board.getPieceOnSquare(alphaMove.to()),bonus);
+            history.updateCapturedPiece(board.getPieceOnSquare(bestMove.from()), bestMove.to(), board.getPieceOnSquare(bestMove.to()),bonus);
 
             int penalty = -std::clamp(depth * noisyHistPenaltyDepthScale() - noisyHistPenaltyOffset(), 0, noisyHistMaxPenalty());
             for (Move move : failLowNoisy) {
@@ -534,7 +534,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;   
-    tt.put(key, scoreToTT(bestScore,ply), ss[ply].staticEval, depth, alphaMove, bound, pvNode);
+    tt.put(key, scoreToTT(bestScore,ply), ss[ply].staticEval, depth, bestMove, bound, pvNode);
     
 
     return bestScore;
@@ -542,7 +542,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
 
-int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, bool pvNode)
+int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool pvNode)
 {
     assert(ply <= MAXPLY);
     //////////////////////////
@@ -647,7 +647,7 @@ int Search::quinesence(Board &board, int alpha, int beta,int depth, int ply, boo
         
         evaluatedNodes++;
         board.makeMove(move);
-        score = -quinesence(board,-beta,-alpha,depth-1, ply+1,pvNode);
+        score = -qsearch(board,-beta,-alpha,depth-1, ply+1,pvNode);
 
         if(score > alpha){
             alpha = score;
