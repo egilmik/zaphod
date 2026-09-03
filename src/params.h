@@ -45,10 +45,10 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(lmrPVReduction, 95, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrImprovingReduction, 83, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrCheckReduction, 93, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrHistoryReduction, 213,0,600,20)
+	ZAP_TUNABLE_INT(lmrHistoryReduction, 213,20,600,20)
 	
-	ZAP_TUNABLE_INT(lmrButterflyWeight, 150, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrPieceToWeight, 150, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrButterflyWeight, 100, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrPieceToWeight, 100, 0, 200, 10)
 
 	ZAP_TUNABLE_INT(lmrContWeight1Ply, 107, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrContWeight2Ply, 104, 0, 200, 10)
@@ -84,9 +84,8 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(quietHistPenaltyDepthScale, 302, 0, 500, 20)
 	ZAP_TUNABLE_INT(quietHistPenaltyOffset, 259, 0, 500, 20)
 	ZAP_TUNABLE_INT(quietHistMaxPenalty, 15951, 0, 32000, 256)
-	ZAP_TUNABLE_INT(maxButterflyHistory, 16349, 0, 32000, 256)
+	ZAP_TUNABLE_INT(maxButterflyHistory, 16349, 256, 32000, 256)
 	ZAP_TUNABLE_INT(butterflyAging, 797, 0, 2000,50) 
-	ZAP_TUNABLE_INT(contAging, 727, 0, 2000,50) 
 
 	ZAP_TUNABLE_INT(maxCapturePieceHistoryBonus,16000,256,32000,256)
 	ZAP_TUNABLE_INT(noisyHistBonusDepthScale, 318, 0, 500, 20)
