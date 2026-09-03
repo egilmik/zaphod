@@ -475,17 +475,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
             if (score > alpha) {
                 alpha = score;
-
-                // If we have a new best move, put the old in fail low.
-                if (bestMove) {
-                    if (!isNoisy) {
-                        failLowQuiet.push_back(bestMove);
-                    }
-                    else {
-                        failLowNoisy.push_back(bestMove);
-                    }
-                }
-
                 bestMove = move;
                 if (isRoot) {
                     bestMoveIteration.bestMove = move;
