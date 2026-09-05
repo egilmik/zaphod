@@ -2,7 +2,6 @@
 #include <sstream>
 #include "perft/perfttest.h"
 #include "perft/perft.h"
-#include "material.h"
 #include "tools/fentools.h"
 #include "params.h"
 

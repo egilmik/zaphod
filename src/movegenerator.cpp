@@ -1,6 +1,5 @@
 #include "movegenerator.h"
 #include <iostream>
-#include "material.h"
 #include <algorithm>
 #include "see.h"
 #include <cassert>
@@ -305,7 +304,7 @@ void MoveGenerator::sortNoisyMoves() {
         }
 
         if (move.getMoveType() == PROMOTION && move.getPromotionType(White) == Q) {
-            score += Material::pieceMaterialScoreArray[Q] - Material::pieceMaterialScoreArray[P];
+            score += pieceMaterialScoreArray[Q] - pieceMaterialScoreArray[P];
         }
     }
 

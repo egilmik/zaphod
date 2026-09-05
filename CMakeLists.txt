@@ -88,7 +88,6 @@ add_library(zaphod_core STATIC
     src/board.cpp
     src/board.h
     src/history.h
-    src/material.h
     src/move.h
     src/movegenerator.cpp
     src/movegenerator.h

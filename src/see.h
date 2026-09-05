@@ -4,9 +4,11 @@
 #include <string>
 #include <algorithm>
 #include "board.h"
-#include "material.h"
 
 namespace See {
+
+    inline static const std::array<int, 14> pieceMaterialScoreArray = { 0,500,320,330,900,2000,100,0,500,320,330,900,2000,100 };
+
     inline int see(Board& board, int fromSq, int toSq, BitBoardEnum sideToMove) {
 
         BitBoardEnum us = sideToMove;
@@ -17,7 +19,7 @@ namespace See {
 
         int ply, score[32];
 
-        score[0] = Material::pieceMaterialScoreArray[board.getPieceOnSquare(toSq)];
+        score[0] = pieceMaterialScoreArray[board.getPieceOnSquare(toSq)];
 
         BitBoard occupied = board.getBitboard(All);
         BitBoard toSqBB = board.sqBB[toSq];
@@ -66,7 +68,7 @@ namespace See {
 
 
 
-            score[ply] = -score[ply - 1] + Material::pieceMaterialScoreArray[attacker];
+            score[ply] = -score[ply - 1] + pieceMaterialScoreArray[attacker];
 
             if ((attackerBB = attackersTo & board.getBitboard(P + sideToMove))) {
                 fromSq = board.popLsb(attackerBB);

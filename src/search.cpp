@@ -1,6 +1,5 @@
 #include "search.h"
 #include "perft/perft.h"
-#include "material.h"
 #include <algorithm>
 #include <chrono>
 #include <cassert>
