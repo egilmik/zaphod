@@ -42,10 +42,7 @@ class Board {
         static constexpr BitBoard FileEMask = 0b100000001000000010000000100000001000000010000000100000001000;
         static constexpr BitBoard FileFMask = 0b10000000100000001000000010000000100000001000000010000000100;
         static constexpr BitBoard FileGMask = 0b1000000010000000100000001000000010000000100000001000000010;
-        static constexpr BitBoard FileHMask = 0b100000001000000010000000100000001000000010000000100000001;
-
-        static constexpr std::array<BitBoard, 8> fileArray = { FileAMask, FileBMask, FileCMask, FileDMask, FileEMask, FileFMask, FileGMask, FileHMask };
-        
+        static constexpr BitBoard FileHMask = 0b100000001000000010000000100000001000000010000000100000001;        
 
         static constexpr BitBoard Rank1Mask = 0xFF;
         static constexpr BitBoard Rank2Mask = Rank1Mask << (8 * 1);
@@ -55,8 +52,6 @@ class Board {
         static constexpr BitBoard Rank6Mask = Rank1Mask << (8 * 5);
         static constexpr BitBoard Rank7Mask = Rank1Mask << (8 * 6);
         static constexpr BitBoard Rank8Mask = Rank1Mask << (8 * 7);
-
-        static constexpr std::array<BitBoard, 8> rankArray = { Rank1Mask,Rank2Mask,Rank3Mask,Rank4Mask,Rank5Mask,Rank6Mask,Rank7Mask,Rank8Mask};
 
         // Converst a square to unit64 with the appropriate bits set.
         static constexpr BitBoard sqBB[64] = {1,
@@ -169,21 +164,14 @@ class Board {
          
         BitBoard getKnightMask(int square) { return knightmask[square]; };
         BitBoard getKingMask(int square) { return kingMask[square]; };
-        static BitBoard getRankMask(int square);
-        static BitBoard getLineMask(int square);
 
         void addPiece(int sq, BitBoardEnum piece, BitBoardEnum color);
         void removePiece(int sq, BitBoardEnum color);
 
         void parseFen(std::string fen);
         std::string boardToString();
-        std::string boardToString(BitBoard board);
         void printBoard();
-        void printBoard(BitBoard board);
-        void printBoard(BitBoard board, int origin);
-        static void setBit(BitBoard &board, int bitNr);
-        static void setBit(BitBoard &board, bool highLow, int bitNr);
-        void setBit(BitBoardEnum piece, int bitNr);
+        static void setBit(BitBoard &board, int bitNr);        
         bool checkBit(BitBoard &board, int bitNr);
         bool checkBit(BitBoardEnum piece, int bitNr);
         static int popLsb(BitBoard& board);
@@ -251,14 +239,6 @@ class Board {
 
         int getFullMoveClock() {
             return fullMoveClock;
-        }
-
-        void setGamePhase(int gamePhase) {
-            this->gamePhase = gamePhase;
-        }
-
-        int getGamePhase() {
-            return gamePhase;
         }
 
         int getNonPawnMaterial(BitBoardEnum side);
