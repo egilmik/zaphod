@@ -6,32 +6,6 @@
 #include <cstdlib>
 #include <cassert>
 
-static std::array<BitBoard,64> initSqToBitMapping(){
-    std::array<BitBoard, 64> mapping;
-
-
-    for(int i = 0; i < 64; i++){
-        BitBoard bb = 0;
-        Board::setBit(bb,i);
-        mapping[i] = bb;
-    }
-
-    return mapping;
-}
-
-static std::array<BitBoard,64> initInvertedSqToBitMapping(){
-    std::array<BitBoard,64> mapping;
-
-
-    for(int i = 0; i < 64; i++){
-        BitBoard bb = 0;
-        Board::setBit(bb,i);
-        mapping[i] = ~bb;
-    }
-
-    return mapping;
-}
-
 void Board::initSqBetween(){
 
     for (int sq1 = 0; sq1 < 64; sq1++) {
@@ -221,7 +195,7 @@ static std::array<BitBoard,64> initKingMask(){
         BitBoard piece = 0;
         BitBoard moves = 0;
         
-        Board::setBit(piece,true,i);
+        Board::setBit(piece,i);
 
         if(!(piece & Board::FileAMask)){
             moves |= piece >> 7 ;
@@ -252,7 +226,7 @@ static std::array<BitBoard,64> initKnightMask()
         BitBoard moves = 0;
 
         
-        Board::setBit(piece,true,i);
+        Board::setBit(piece,i);
 
         if(!(piece & Board::FileAMask)){
             moves |= piece >> 15;
@@ -305,18 +279,6 @@ Board::Board(){
 
 void Board::loadNetwork(std::string path) {
     nnue.load(path);
-}
-
-BitBoard Board::getRankMask(int square)
-{
-    BitBoard mask = 0xff;
-    return mask << (square & 56);
-}
-
-BitBoard Board::getLineMask(int square)
-{
-    BitBoard mask = 0x0101010101010101;
-    return mask << (square & 7);
 }
 
 void Board::clearBoard()
@@ -783,19 +745,6 @@ void Board::setBit(BitBoard &board, int bitNr)
     board |= 1ULL << bitNr;
 }
 
-void Board::setBit(BitBoard &board, bool highLow, int bitNr)
-{
-    board |= 1ULL << bitNr;
-}
-
-void Board::setBit(BitBoardEnum piece, int bitNr)
-{
-    BitBoard board = bitBoardArray[piece];    
-    board |= 1ULL << bitNr;    
-    bitBoardArray[piece] = board;
-
-}
-
 bool Board::checkBit(BitBoard &board, int bitNr)
 {
     return (board >> bitNr) & 1U;
@@ -1241,51 +1190,4 @@ std::string Board::boardToString() {
 
 void Board::printBoard(){
     std::cout << boardToString() << std::endl;
-}
-
-std::string Board::boardToString(BitBoard board) {
-    std::string result;
-    for (int i = 7; i >= 0; i--) {
-        int startSquare = 8 * i;
-        for (int x = 0; x < 8; x++) {
-            result += checkBit(board, startSquare + x) ? 'X' : '*';
-            result += ' ';
-        }
-        result += '\n';
-    }
-    result += '\n';
-    return result;
-}
-
-void Board::printBoard(BitBoard board)
-{
-    std::cout << boardToString(board) << std::endl;
-}
-
-void Board::printBoard(BitBoard board, int origin)
-{
-    char printBoard[64];
-
-    for(int i = 0; i < 64; i++){
-        printBoard[i] = '*';
-        if(checkBit(board,i)){
-            printBoard[i] = 'X';
-        }
-        if(origin == i){
-            printBoard[i] = 'O';
-        }
-    }
-
-    for (int i = 7; i >= 0; i--) {
-        int startSquare = 8 * i;
-        for (int x = 0; x < 8; x++) {
-            std::cout << printBoard[startSquare + x] << " ";
-        }
-
-        std::cout << std::endl;
-
-    }
-
-    std::cout << std::endl;
-    std::cout << std::endl;
 }
