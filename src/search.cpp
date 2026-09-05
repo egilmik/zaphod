@@ -46,7 +46,6 @@ Score Search::search(Board &board, SearchLimits lim)
     
     stopSearch = false;
     evaluatedNodes = 0;
-    pawnTTHits = 0;
     lmrHit = 0;
     lmrResearchHit = 0;
     exactHit = 0;
