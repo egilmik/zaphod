@@ -34,7 +34,6 @@ class Search {
     public:
         Search();
         unsigned long long evaluatedNodes = 0;
-        unsigned long long pawnTTHits = 0;
         int64_t lowerBoundHit = 0;
         int64_t upperBoundHit = 0;
         int64_t qsearchTTHit = 0;
@@ -53,7 +52,7 @@ class Search {
         int negamax(Board &board, int depth, int alpha, int beta, int ply, bool pvNode);
         int qsearch(Board &board, int alpha, int beta, int depth, int ply, bool pvNode);
         int evaluate(Board &board);
-        bool equal(Move &a, Move &b);
+
         bool isSearchStopped();
         bool isSearchStoppedSoft();
 
@@ -103,7 +102,6 @@ class Search {
         SearchLimits limits;
         SearchStack ss[MAXPLY + 1];
         bool printInfo = true;
-        bool clearTTOnSearch = true;
           
 };
 #endif
