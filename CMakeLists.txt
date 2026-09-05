@@ -30,7 +30,7 @@ option(ZAPHOD_SANITIZE "Build with address + undefined behaviour sanitizers" OFF
 
 set(ZAPHOD_NETWORK_NAME "768-512x2-1_1308206_fe8b690_10k_wdl_0.75.bin" CACHE STRING
     "File name of the NNUE network to embed")
-set(ZAPHOD_NETWORK_SHA256 "8fb4c12a3e61d04aa9f29bd0be935b08da2a69f52e73cf4bf0d78327546f822a"
+set(ZAPHOD_NETWORK_SHA256 "6a5d5a3e63b9ebc3d78eb9a84fe7fb1d3a5d8ea060414157d27f53bb72805bce"
     CACHE STRING "Expected SHA256 of ZAPHOD_NETWORK_NAME")
 set(ZAPHOD_NETWORK_URL "https://raw.githubusercontent.com/egilmik/Zaphod-nnue/main"
     CACHE STRING "Base URL the network is downloaded from")
