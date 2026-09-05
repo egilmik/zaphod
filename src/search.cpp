@@ -21,8 +21,6 @@ Score Search::search(Board &board, SearchLimits lim)
     for (int i = 0; i < MAXPLY; i++) {
         ss[i].checkExt = 0;
         ss[i].isNullMove = false;
-        ss[i].killerMove[0] = 0;
-        ss[i].killerMove[1] = 0;
         ss[i].staticEval = 0;
 	ss[i].movedPiece = All;
 	ss[i].move = 0;
@@ -313,7 +311,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 	}
     }
 
-    moveGen.init(board, ttHit ? tte.move : Move{}, false, ss[ply].killerMove, &history, conts);
+    moveGen.init(board, ttHit ? tte.move : Move{}, false, &history, conts);
     int moveCounter = 0;
     Move move;
     while ((move = moveGen.next())) {
@@ -620,7 +618,7 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
     int futilityValue = ss[ply].staticEval + futilityBaseQsearch();
     
     MoveGenerator& moveGen = moveGenStack[ply];
-    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true, ss[ply].killerMove, &history);
+    moveGen.init(board, tte.type != TType::NO_TYPE ? tte.move : Move{}, true, &history);
     int moveCounter = 0;
     Move move;
     while((move = moveGen.next())){

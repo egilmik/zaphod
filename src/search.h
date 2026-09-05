@@ -19,7 +19,6 @@ struct Score {
 struct SearchStack {
     int checkExt = 0;
     bool isNullMove = false;
-    Move killerMove[2] = {0};
     int staticEval = 0;
     BitBoardEnum movedPiece = All;
     Move move = 0;

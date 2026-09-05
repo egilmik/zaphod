@@ -29,21 +29,20 @@ class Perft {
         static int64_t invalidRMove;
 
         static unsigned long long perft(Board& board, int depth) {
-            Move killerMove[2] = { 0 };
             History table;
-            return perft(board, depth, killerMove, table);
+            return perft(board, depth, table);
 
         }
 
 
-        static unsigned long long perft(Board &board, int depth,Move killerMove[2], History& table){
+        static unsigned long long perft(Board &board, int depth, History& table){
             
             if(depth == 0){
                 return 0;
             }
                         
             MoveGenerator generator;
-            generator.init(board, 0, false, killerMove, &table);
+            generator.init(board, 0, false, &table);
             
             unsigned long long nrOfNodes = 0;
             if (depth == 1) {
@@ -56,7 +55,7 @@ class Perft {
             while (Move move = generator.next()) {
                 board.makeMove(move);
                 nrOfNodes++;
-                nrOfNodes += perft(board, depth - 1,killerMove,table);
+                nrOfNodes += perft(board, depth - 1,table);
                 board.revertLastMove();
             }
 

@@ -24,6 +24,7 @@ void MoveGenerator::init(Board& b, Move tt, bool onlyCaptures, History *hist, Hi
     quietIdx = 0;
     noisyCount = 0;
     quietCount = 0;
+    killerIdx = 0;
     ttMoveFound = false;
     board = &b;
     onlyNoisy = onlyCaptures;
@@ -229,6 +230,8 @@ Move MoveGenerator::next() {
                 }
             }
             
+            
+            //Remove killer moves
             [[fallthrough]];
         case QUIET:
             //Return quiet
