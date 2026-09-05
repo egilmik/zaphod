@@ -680,13 +680,6 @@ int Search::evaluate(Board &board)
     return board.evaluate();
 }
 
-
-bool Search::equal(Move &a, Move &b)
-{
-    return (a.from() == b.from() &&
-            a.to() == b.to());
-}
-
 void Search::setNewGame() {
     tt.clear();
     history.clear();
