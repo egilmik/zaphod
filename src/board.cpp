@@ -1155,7 +1155,13 @@ int Board::getNonPawnMaterial(BitBoardEnum color) {
 }
 
 int Board::evaluate() {
-    return nnue.forward(getSideToMove());
+    //TODO - move inside NNUE, leaking responsibility
+    constexpr int OUTPUT_BUCKETS = 8;
+    constexpr int OUTPUT_BUCKETS_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
+    int bucket = (countSetBits(All)-2)/OUTPUT_BUCKETS_DIVISOR;
+        
+
+    return nnue.forward(getSideToMove(), bucket);
 }
 
 std::string Board::boardToString() {

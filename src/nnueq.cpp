@@ -77,18 +77,18 @@ static inline int64_t div_round_i64(int64_t num, int64_t den) {
     return (num >= 0) ? (num + den / 2) / den : -((-num + den / 2) / den);
 }
 
-int NNUEQ::forward(BitBoardEnum stm) {
+int NNUEQ::forward(BitBoardEnum stm, int bucket) {
     const auto& stmAcc = (stm == White) ? accumulator[0] : accumulator[1];
     const auto& nstmAcc = (stm == White) ? accumulator[1] : accumulator[0];
 
     const int16_t* a = stmAcc.pre.data();
     const int16_t* b = nstmAcc.pre.data();
-    const int16_t* w0 = net->l1w.data();        // first H  = stm
+    const int16_t* w0 = net->l1w[bucket].data();        // first H  = stm
     const int16_t* w1 = w0 + H;            // next  H  = ntm
 
     int64_t sum = VectorizedSCReLU_AVX2(a, b, w0, w1);        // QB*QA^2
     int64_t sum_qaqb = div_round_i64(sum, QA);                // QA*QB
-    int64_t acc = sum_qaqb + net->l1b;                             // QA*QB
+    int64_t acc = sum_qaqb + net->l1b[bucket];                             // QA*QB
     int64_t out = div_round_i64(acc * SCALE, (int64_t)QA * QB);
 
     // optional clamp to engine range
@@ -209,10 +209,10 @@ bool NNUEQ::loadEmbedded() {
         off += bytes;
         };
 
-    take(net->l0w.data(), net->l0w.size() * sizeof(int16_t));
-    take(net->l0b.data(), net->l0b.size() * sizeof(int16_t));
-    take(net->l1w.data(), net->l1w.size() * sizeof(int16_t));
-    take(&net->l1b, sizeof(int16_t));
+    take(net->l0w.data(), sizeof(net->l0w));
+    take(net->l0b.data(), sizeof(net->l0b));
+    take(net->l1w.data(), sizeof(net->l1w));
+    take(net->l1b.data(), sizeof(net->l1b));
 
     clear();
     isInitialized = true;
