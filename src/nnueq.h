@@ -23,12 +23,13 @@ namespace NNUE{
     constexpr int IN = 768;
     constexpr int H = 512;
     constexpr int OUT = 1;
+    constexpr int OUTPUT_BUCKETS = 8;
 
     struct Network {
         alignas(32) std::array<int16_t, IN*H>  l0w;
         alignas(32) std::array<int16_t, H>  l0b;
-        alignas(32) std::array<int16_t, H*2>  l1w;
-        int16_t l1b;
+        alignas(32) std::array<std::array<int16_t, H*2>,OUTPUT_BUCKETS> l1w;
+        alignas(32) std::array<int16_t, OUTPUT_BUCKETS> l1b;
     };
 }
 
@@ -43,7 +44,7 @@ public:
 
     bool load(const std::string& path);
     bool loadEmbedded();
-    int forward(BitBoardEnum stm);
+    int forward(BitBoardEnum stm, int bucket);
 
     void addPiece(BitBoardEnum piece, int sq);
     void removePiece(BitBoardEnum piece, int sq);

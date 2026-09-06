@@ -28,9 +28,9 @@ set(ZAPHOD_ARCH_MSVC "/arch:AVX2" CACHE STRING
     "Architecture flag used by MSVC style drivers (cl, clang-cl).")
 option(ZAPHOD_SANITIZE "Build with address + undefined behaviour sanitizers" OFF)
 
-set(ZAPHOD_NETWORK_NAME "768-512x2-1_1308206_fe8b690_10k_wdl_0.75.bin" CACHE STRING
+set(ZAPHOD_NETWORK_NAME "768-512x2-8_1308206_fe8b690_10k_wdl_0.75.bin" CACHE STRING
     "File name of the NNUE network to embed")
-set(ZAPHOD_NETWORK_SHA256 "6a5d5a3e63b9ebc3d78eb9a84fe7fb1d3a5d8ea060414157d27f53bb72805bce"
+set(ZAPHOD_NETWORK_SHA256 "74d5d9152222da79e59f0b87cb60948347bcc3ea58527d0f1624d42afb6b44d2"
     CACHE STRING "Expected SHA256 of ZAPHOD_NETWORK_NAME")
 set(ZAPHOD_NETWORK_URL "https://raw.githubusercontent.com/egilmik/Zaphod-nnue/main"
     CACHE STRING "Base URL the network is downloaded from")
