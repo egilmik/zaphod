@@ -98,7 +98,8 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(maxContHistory, 16288, 256, 32000, 256)
 	ZAP_TUNABLE_INT(maxPieceToHistory, 16288, 256, 32000, 256)
 
-	
+	ZAP_TUNABLE_INT(pawnCorrectionWeight, 100, 0, 400, 20)
+	ZAP_TUNABLE_INT(correctionMaxWeight, 16, 1, 64, 2)
 
 	
 };
