@@ -109,7 +109,7 @@ public:
     [[nodiscard]] inline int correction(BitBoardEnum stm, BitBoard pawnKey) const {
         int side = (stm == Black);
         int sum = pawnCorrection[side][corrIndex(pawnKey)] * pawnCorrectionWeight();
-        return sum / (100 * CORRECTION_GRAIN);
+        return sum;
     }
 
     // diff = bestScore - rawStaticEval, in centipawns
