@@ -101,11 +101,35 @@ public:
         pieceTo[piece][move.to()][fromAttacked][toAttacked] = value;
     }
 
+    [[nodiscard]] inline int corrIndex(BitBoard key) const {
+        return static_cast<int>(key & (CORRECTION_SIZE - 1));
+    }
+
+    // Returns the correction in centipawns, already de-scaled.
+    [[nodiscard]] inline int correction(BitBoardEnum stm, BitBoard pawnKey) const {
+        int side = (stm == Black);
+        int sum = pawnCorrection[side][corrIndex(pawnKey)] * pawnCorrectionWeight();
+        return sum / (100 * CORRECTION_GRAIN);
+    }
+
+    // diff = bestScore - rawStaticEval, in centipawns
+    inline void updateCorrection(BitBoardEnum stm, BitBoard pawnKey,
+        int diff, int depth) {
+        int side = (stm == Black);
+        int w = std::min(depth + 1, correctionMaxWeight());   // 1..16
+        int target = diff * CORRECTION_GRAIN;
+
+        int16_t& entry = pawnCorrection[side][corrIndex(pawnKey)];
+        int value = (static_cast<int>(entry) * (256 - w) + target * w) / 256;
+        entry = static_cast<int16_t>(std::clamp(value, -CORRECTION_MAX, CORRECTION_MAX));
+    }
+
     void clear() {
         std::memset(&butterfly, 0, sizeof(butterfly));
 		std::memset(continuation.get(), 0, sizeof(ContTable));
         std::memset(&capturedPieceHistory, 0, sizeof(capturedPieceHistory));
         std::memset(&pieceTo, 0, sizeof(pieceTo));
+        std::memset(&pawnCorrection, 0, sizeof(pawnCorrection));
     }
 
 private:
@@ -120,6 +144,13 @@ private:
 	};
 
 	std::unique_ptr<ContTable> continuation;
+
+    static constexpr int CORRECTION_SIZE = 16384;
+    static constexpr int CORRECTION_GRAIN = 256;
+    static constexpr int CORRECTION_MAX = 32 * CORRECTION_GRAIN;
+
+    // [stm][pawn key]
+    int16_t pawnCorrection[2][CORRECTION_SIZE] = {};
 };
 
 #endif

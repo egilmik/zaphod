@@ -22,8 +22,9 @@ Score Search::search(Board &board, SearchLimits lim)
         ss[i].checkExt = 0;
         ss[i].isNullMove = false;
         ss[i].staticEval = 0;
-	ss[i].movedPiece = All;
-	ss[i].move = 0;
+        ss[i].rawStaticEval = 0;
+	    ss[i].movedPiece = All;
+	    ss[i].move = 0;
     }
 
     history.age();
@@ -232,12 +233,16 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
     if (inCheck) {
         ss[ply].staticEval = -MATESCORE - 1;
-    }
-    else if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
-        ss[ply].staticEval = tte.staticEval;
-    }
-    else {
-        ss[ply].staticEval = evaluate(board);
+        ss[ply].rawStaticEval = -MATESCORE - 1;
+    } else {
+        if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
+            ss[ply].rawStaticEval = tte.staticEval;
+        }
+        else {
+            ss[ply].rawStaticEval = evaluate(board);
+        }
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + history.correction(board.getSideToMove(),board.getPawnHashKey()),-MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+
     }
 
 
@@ -529,7 +534,22 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;   
-    tt.put(key, scoreToTT(bestScore,ply), ss[ply].staticEval, depth, bestMove, bound, pvNode);
+
+    bool bestIsNoisy = bestMove
+        && (board.getPieceOnSquare(bestMove.to()) != All
+            || bestMove.getMoveType() == PROMOTION);
+
+    if (!inCheck
+        && ss[ply].rawStaticEval != (-MATESCORE - 1)
+        && std::abs(bestScore) < MATE_IN_MAX
+        && !bestIsNoisy
+        && !(bound == LOWER && bestScore <= ss[ply].rawStaticEval)
+        && !(bound == UPPER && bestScore >= ss[ply].rawStaticEval))
+    {
+        history.updateCorrection(board.getSideToMove(),board.getPawnHashKey(),bestScore - ss[ply].rawStaticEval, depth);
+    }
+
+    tt.put(key, scoreToTT(bestScore,ply), ss[ply].rawStaticEval, depth, bestMove, bound, pvNode);
     
 
     return bestScore;
