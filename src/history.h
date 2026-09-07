@@ -116,12 +116,13 @@ public:
     inline void updateCorrection(BitBoardEnum stm, BitBoard pawnKey,
         int diff, int depth) {
         int side = (stm == Black);
-        int w = std::min(depth + 1, correctionMaxWeight());   // 1..16
-        int target = diff * CORRECTION_GRAIN;
 
+        int bonus = std::clamp(diff * depth / 8,-1024,1024);
         int16_t& entry = pawnCorrection[side][corrIndex(pawnKey)];
-        int value = (static_cast<int>(entry) * (256 - w) + target * w) / 256;
-        entry = static_cast<int16_t>(std::clamp(value, -CORRECTION_MAX, CORRECTION_MAX));
+        entry += bonus - entry * std::abs(bonus) / 1024;
+
+        //int value = (static_cast<int>(entry) * (256 - w) + target * w) / 256;
+        //entry = static_cast<int16_t>(std::clamp(value, -CORRECTION_MAX, CORRECTION_MAX));
     }
 
     void clear() {
