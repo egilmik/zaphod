@@ -11,6 +11,7 @@
 
 struct alignas(64) MoveUndoInfo {
     BitBoard hashKeyCopy = 0; // 8 byte
+    BitBoard pawnHashCopy = 0;
     Move move = 0; // 2 byte
 
     uint8_t sideToMove = static_cast<uint8_t>(BitBoardEnum::White); // 1 byte
@@ -227,6 +228,7 @@ class Board {
         BitBoard generateHashKey();
         BitBoard generatePawnHashKey();
         BitBoard getHashKey(){ return hashKey;};
+        BitBoard getPawnHashKey() { return pawnHashKey; }
 
         Zobrist zobrist;
 
@@ -279,6 +281,7 @@ class Board {
         bool castleBK = false;
         bool castleBQ = false;
         BitBoard hashKey = 0;
+        BitBoard pawnHashKey = 0;
 
         int gamePhase = 24;
         
