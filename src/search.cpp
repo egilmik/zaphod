@@ -540,13 +540,13 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             || bestMove.getMoveType() == PROMOTION);
 
     if (!inCheck
-        && ss[ply].rawStaticEval != (-MATESCORE - 1)
+        && ss[ply].staticEval != (-MATESCORE - 1)
         && std::abs(bestScore) < MATE_IN_MAX
         && !bestIsNoisy
-        && !(bound == LOWER && bestScore <= ss[ply].rawStaticEval)
-        && !(bound == UPPER && bestScore >= ss[ply].rawStaticEval))
+        && !(bound == LOWER && bestScore <= ss[ply].staticEval)
+        && !(bound == UPPER && bestScore >= ss[ply].staticEval))
     {
-        history.updateCorrection(board.getSideToMove(),board.getPawnHashKey(),bestScore - ss[ply].rawStaticEval, depth);
+        history.updateCorrection(board.getSideToMove(),board.getPawnHashKey(),bestScore - ss[ply].staticEval, depth);
     }
 
     tt.put(key, scoreToTT(bestScore,ply), ss[ply].rawStaticEval, depth, bestMove, bound, pvNode);
