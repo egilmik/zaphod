@@ -514,6 +514,7 @@ void Board::parseFen(std::string fen){
     }
 
     hashKey = generateHashKey();
+    pawnHashKey = generatePawnHashKey();
     historyPly = 0;
     calculateCheckersSnipersPins();
     calculateThreats();
@@ -774,6 +775,7 @@ bool Board::makeMove(Move move) {
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
     histMove->hashKeyCopy = hashKey;
+    histMove->pawnHashCopy = pawnHashKey;
     histMove->move = move;
     histMove->checkers = checkers;
     histMove->pins = pins;
@@ -810,11 +812,15 @@ bool Board::makeMove(Move move) {
             capturedPiece = mailBoxBoard[toSq - enpassantModifier];
             removePiece(toSq - enpassantModifier, otherSide);
             hashKey ^= zobrist.pieceKeys[otherSide + P][toSq - enpassantModifier];
+            pawnHashKey ^= zobrist.pieceKeys[otherSide + P][toSq - enpassantModifier];
         }
         else {
             capturedPiece = mailBoxBoard[toSq];
             removePiece(toSq, otherSide);
             hashKey ^= zobrist.pieceKeys[capturedPiece][toSq];
+            if (capturedPiece == P || capturedPiece == p) {
+                pawnHashKey ^= zobrist.pieceKeys[capturedPiece][toSq];
+            }
         }
         // Capture resets halfmoveclock
         halfMoveClock = 0;
@@ -826,6 +832,11 @@ bool Board::makeMove(Move move) {
 
     hashKey ^= zobrist.pieceKeys[piece][fromSq];
     hashKey ^= zobrist.pieceKeys[piece][toSq];
+
+    if (isPawn) {
+        pawnHashKey ^= zobrist.pieceKeys[piece][fromSq];
+        pawnHashKey ^= zobrist.pieceKeys[piece][toSq];
+    }
 
     // Reset halfmoveclock if there is a pawn move
     if (piece == P + sideToMove) {
@@ -892,6 +903,7 @@ bool Board::makeMove(Move move) {
         BitBoardEnum promotionPiece = move.getPromotionType(sideToMove);
         hashKey ^= zobrist.pieceKeys[piece][toSq];
         hashKey ^= zobrist.pieceKeys[promotionPiece][toSq];
+        pawnHashKey ^= zobrist.pieceKeys[piece][toSq];
         removePiece(toSq,sideToMove);
         addPiece(toSq, promotionPiece, sideToMove);
 
@@ -1060,6 +1072,7 @@ void Board::revertLastMove()
     }
 
     hashKey = info->hashKeyCopy;
+    pawnHashKey = info->pawnHashCopy;
 }
 
 void Board::makeNullMove() {
