@@ -618,11 +618,13 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
     }
     else {
         if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
-            ss[ply].staticEval = tte.staticEval;
+            ss[ply].rawStaticEval = tte.staticEval;
         }
         else {
-            ss[ply].staticEval = evaluate(board);
+            ss[ply].rawStaticEval = evaluate(board);
         }
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + history.correction(board.getSideToMove(), board.getPawnHashKey()), -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+
 
         if (ss[ply].staticEval >= beta) {
             return beta;
