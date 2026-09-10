@@ -108,7 +108,7 @@ public:
     // Returns the correction in centipawns, already de-scaled.
     [[nodiscard]] inline int correction(BitBoardEnum stm, BitBoard pawnKey) const {
         int side = (stm == Black);
-        int sum = pawnCorrection[side][corrIndex(pawnKey)] * pawnCorrectionWeight()/1024;
+        int sum = pawnCorrection[side][corrIndex(pawnKey)] * pawnCorrectionWeight()/CORRECTION_LIMIT;
         return sum;
         
     }
@@ -118,12 +118,9 @@ public:
         int diff, int depth) {
         int side = (stm == Black);
 
-        int bonus = std::clamp(diff * depth / 8,-1024,1024);
+        int bonus = std::clamp(diff * depth / 8,-CORRECTION_BONUS_MAX,CORRECTION_BONUS_MAX);
         int16_t& entry = pawnCorrection[side][corrIndex(pawnKey)];
-        entry += bonus - entry * std::abs(bonus) / 1024;
-
-        //int value = (static_cast<int>(entry) * (256 - w) + target * w) / 256;
-        //entry = static_cast<int16_t>(std::clamp(value, -CORRECTION_MAX, CORRECTION_MAX));
+        entry += bonus - entry * std::abs(bonus) / CORRECTION_LIMIT;
     }
 
     void clear() {
@@ -148,8 +145,8 @@ private:
 	std::unique_ptr<ContTable> continuation;
 
     static constexpr int CORRECTION_SIZE = 16384;
-    static constexpr int CORRECTION_GRAIN = 256;
-    static constexpr int CORRECTION_MAX = 32 * CORRECTION_GRAIN;
+    static constexpr int CORRECTION_BONUS_MAX = 256;
+    static constexpr int CORRECTION_LIMIT = 1024;
 
     // [stm][pawn key]
     int16_t pawnCorrection[2][CORRECTION_SIZE] = {};
