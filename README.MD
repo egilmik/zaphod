@@ -12,6 +12,27 @@ cmake --preset linux-clang      && cmake --build --preset linux-clang
 cmake --preset windows-clang-cl && cmake --build --preset windows-clang-cl
 ```
 
+## Depth benchmark
+
+`GenerateData` has a `-depth_bench` mode used to compare how deep two builds
+get on a fixed node budget. It searches N book positions, each from a clean
+slate, and reports the average of the last completed iterative deepening
+iteration:
+
+```
+GenerateData -depth_bench -book UHO_4060_v4.epd -positions 10000 -nodes 10000 \
+             -threads 4 -label my-build -bench_out my-build.csv
+```
+
+The positions are pulled on a single thread and every search starts with a
+cleared transposition table and history, so the result for a position does not
+depend on the thread count, on the positions searched before it, or on the wall
+clock. Runs are bit for bit reproducible, which makes a per position comparison
+between two builds meaningful. `-bench_out` writes
+`index,depth,seldepth,nodes,score,fen` per position; the summary line also
+prints a hash of the position set so two runs can be confirmed to have used the
+same positions.
+
 ## Versions
 
 | Version	| Estimated ELO		| Change log |
