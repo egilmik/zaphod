@@ -10,11 +10,6 @@
 #include "nnueq.h"
 
 struct alignas(64) MoveUndoInfo {
-    uint64_t hashKey = 0; // 8 byte
-    uint64_t pawnHash = 0;
-    uint64_t nonPawnKey[2] = {};
-    uint64_t minorPieceKey = 0;
-    uint64_t majorPieceKey = 0;
     Move move = 0; // 2 byte
 
     uint8_t sideToMove = static_cast<uint8_t>(BitBoardEnum::White); // 1 byte
@@ -30,6 +25,14 @@ struct alignas(64) MoveUndoInfo {
     int8_t halfMoveClock = 0; // 1 byte
     int8_t fullMoveClock = 1;
     int8_t enPassantSqCopy = -1; // 1 byte
+};
+
+struct HashKeys {
+    uint64_t hashKey = 0; // 8 byte
+    uint64_t pawnHash = 0;
+    uint64_t nonPawnKey[2] = {};
+    uint64_t minorPieceKey = 0;
+    uint64_t majorPieceKey = 0;
 };
 
 class Board {
@@ -274,6 +277,8 @@ class Board {
 	    BitBoard threats = 0;
 
         MoveUndoInfo moveHistory[MAXMOVEHISTORY];
+        HashKeys keyHistory[MAXMOVEHISTORY];
+
         int historyPly = 0;
 
         int halfMoveClock = 0;
