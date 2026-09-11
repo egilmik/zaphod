@@ -112,6 +112,8 @@ public:
         int sum = pawnCorrection[side][corrIndex(keyHistory[ply].pawnHash)] * pawnCorrectionWeight() / CORRECTION_LIMIT;
         sum += nonPawnCorrection[0][side][corrIndex(keyHistory[ply].nonPawnKey[0])] * 60 / CORRECTION_LIMIT;
         sum += nonPawnCorrection[1][side][corrIndex(keyHistory[ply].nonPawnKey[1])] * 60 / CORRECTION_LIMIT;
+        sum += minorPieceCorrection[side][corrIndex(keyHistory[ply].minorPieceKey)] * 50 / CORRECTION_LIMIT;
+        sum += majorPieceCorrection[side][corrIndex(keyHistory[ply].majorPieceKey)] * 50 / CORRECTION_LIMIT;
         return sum;
         
     }
@@ -130,6 +132,12 @@ public:
 
         int16_t& nonPawnBlackEntry = nonPawnCorrection[1][side][corrIndex(keyHistory[ply].nonPawnKey[1])];
         nonPawnBlackEntry += bonus - nonPawnBlackEntry * std::abs(bonus) / CORRECTION_LIMIT;
+
+        int16_t& minorEntry = minorPieceCorrection[side][corrIndex(keyHistory[ply].minorPieceKey)];
+        minorEntry += bonus - minorEntry * std::abs(bonus) / CORRECTION_LIMIT;
+
+        int16_t& majorEntry = majorPieceCorrection[side][corrIndex(keyHistory[ply].majorPieceKey)];
+        majorEntry += bonus - majorEntry * std::abs(bonus) / CORRECTION_LIMIT;
     }
 
     void clear() {
@@ -160,6 +168,8 @@ private:
     // [stm][pawn key]
     int16_t pawnCorrection[2][CORRECTION_SIZE] = {};
     int16_t nonPawnCorrection[2][2][CORRECTION_SIZE] = {};
+    int16_t minorPieceCorrection[2][CORRECTION_SIZE] = {};
+    int16_t majorPieceCorrection[2][CORRECTION_SIZE] = {};
     
 };
 
