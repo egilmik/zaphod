@@ -352,7 +352,7 @@ bool Board::hasPositionRepeated() {
     for (int i = historyPly-1; i >= 0; i--) {
 
          
-        if (moveHistory[i].hashKey == hashKey) {
+        if (keyHistory[i].hashKey == hashKey) {
             moveCounter++;
             if (moveCounter > 1) {
                 return true;
@@ -794,17 +794,19 @@ bool Board::makeMove(Move move) {
     histMove->sideToMove = static_cast<uint8_t>(sideToMove);
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
-    histMove->hashKey = hashKey;
-    histMove->pawnHash = pawnHashKey;
-    histMove->nonPawnKey[0] = nonPawnKey[0];
-    histMove->nonPawnKey[1] = nonPawnKey[1];
-    histMove->minorPieceKey = minorPieceKey;
-    histMove->majorPieceKey = majorPieceKey;
     histMove->move = move;
     histMove->checkers = checkers;
     histMove->pins = pins;
     histMove->snipers = snipers;
     histMove->threats = threats;
+
+    HashKeys* hashKeys = &keyHistory[historyPly];
+    hashKeys->hashKey = hashKey;
+    hashKeys->pawnHash = pawnHashKey;
+    hashKeys->nonPawnKey[0] = nonPawnKey[0];
+    hashKeys->nonPawnKey[1] = nonPawnKey[1];
+    hashKeys->minorPieceKey = minorPieceKey;
+    hashKeys->majorPieceKey = majorPieceKey;
 
     historyPly++;
 
@@ -1095,12 +1097,14 @@ void Board::revertLastMove()
         addPiece(info->move.to(), capturedPiece, getOtherSide());
     }
 
-    hashKey = info->hashKey;
-    pawnHashKey = info->pawnHash;
-    nonPawnKey[0] = info->nonPawnKey[0];
-    nonPawnKey[1] = info->nonPawnKey[1];
-    minorPieceKey = info->minorPieceKey;
-    majorPieceKey = info->majorPieceKey;
+    HashKeys* haskKeys = &keyHistory[historyPly];
+
+    hashKey = haskKeys->hashKey;
+    pawnHashKey = haskKeys->pawnHash;
+    nonPawnKey[0] = haskKeys->nonPawnKey[0];
+    nonPawnKey[1] = haskKeys->nonPawnKey[1];
+    minorPieceKey = haskKeys->minorPieceKey;
+    majorPieceKey = haskKeys->majorPieceKey;
 }
 
 void Board::makeNullMove() {
@@ -1108,19 +1112,20 @@ void Board::makeNullMove() {
 
     histMove->halfMoveClock = halfMoveClock;
     histMove->sideToMove = static_cast<uint8_t>(sideToMove);
-
-    histMove->hashKey = hashKey;
-    histMove->pawnHash = pawnHashKey;
-    histMove->nonPawnKey[0] = nonPawnKey[0];
-    histMove->nonPawnKey[1] = nonPawnKey[1];
-    histMove->minorPieceKey = minorPieceKey;
-    histMove->majorPieceKey = majorPieceKey;
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
     histMove->checkers = checkers;
     histMove->pins = pins;
     histMove->snipers = snipers;
     histMove->threats = threats;
+    
+    HashKeys* hashKeys = &keyHistory[historyPly];
+    hashKeys->hashKey = hashKey;
+    hashKeys->pawnHash = pawnHashKey;
+    hashKeys->nonPawnKey[0] = nonPawnKey[0];
+    hashKeys->nonPawnKey[1] = nonPawnKey[1];
+    hashKeys->minorPieceKey = minorPieceKey;
+    hashKeys->majorPieceKey = majorPieceKey;
 
 
     if (enPassantSq != noSq) {
@@ -1147,16 +1152,19 @@ void Board::revertNullMove() {
     castleWQ = (info->castleMask & 2) != 0;
     castleBK = (info->castleMask & 4) != 0;
     castleBQ = (info->castleMask & 8) != 0;
-    hashKey = info->hashKey;
-    pawnHashKey = info->pawnHash;
-    nonPawnKey[0] = info->nonPawnKey[0];
-    nonPawnKey[1] = info->nonPawnKey[1];
-    minorPieceKey = info->minorPieceKey;
-    majorPieceKey = info->majorPieceKey;
     checkers = info->checkers;
     snipers = info->snipers;
     pins = info->pins;
     threats = info->threats;
+
+    HashKeys* haskKeys = &keyHistory[historyPly];
+
+    hashKey = haskKeys->hashKey;
+    pawnHashKey = haskKeys->pawnHash;
+    nonPawnKey[0] = haskKeys->nonPawnKey[0];
+    nonPawnKey[1] = haskKeys->nonPawnKey[1];
+    minorPieceKey = haskKeys->minorPieceKey;
+    majorPieceKey = haskKeys->majorPieceKey;
 }
 
 void Board::calculateThreats(){
