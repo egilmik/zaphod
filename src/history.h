@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <span>
 #include "params.h"
 
 using namespace zaphod::params;
@@ -106,28 +107,28 @@ public:
     }
 
     // Returns the correction in centipawns, already de-scaled.
-    [[nodiscard]] inline int correction(BitBoardEnum stm, BitBoard pawnKey, uint64_t nonPawnKeyWhite, uint64_t nonPawnKeyBlack) const {
+    [[nodiscard]] inline int correction(BitBoardEnum stm, std::span<HashKeys> keyHistory, int ply) const {
         int side = (stm == Black);
-        int sum = pawnCorrection[side][corrIndex(pawnKey)] * pawnCorrectionWeight()/CORRECTION_LIMIT;
-        sum += nonPawnCorrection[0][side][corrIndex(nonPawnKeyWhite)] * 60 / CORRECTION_LIMIT;
-        sum += nonPawnCorrection[1][side][corrIndex(nonPawnKeyWhite)] * 60 / CORRECTION_LIMIT;
+        int sum = pawnCorrection[side][corrIndex(keyHistory[ply].pawnHash)] * pawnCorrectionWeight() / CORRECTION_LIMIT;
+        sum += nonPawnCorrection[0][side][corrIndex(keyHistory[ply].nonPawnKey[0])] * 60 / CORRECTION_LIMIT;
+        sum += nonPawnCorrection[1][side][corrIndex(keyHistory[ply].nonPawnKey[1])] * 60 / CORRECTION_LIMIT;
         return sum;
         
     }
 
     // diff = bestScore - rawStaticEval, in centipawns
-    inline void updateCorrection(BitBoardEnum stm, BitBoard pawnKey, uint64_t nonPawnKeyWhite, uint64_t nonPawnKeyBlack,
+    inline void updateCorrection(BitBoardEnum stm, std::span<HashKeys> keyHistory, int ply,
         int diff, int depth) {
         int side = (stm == Black);
 
         int bonus = std::clamp(diff * depth / 8,-CORRECTION_BONUS_MAX,CORRECTION_BONUS_MAX);
-        int16_t& entry = pawnCorrection[side][corrIndex(pawnKey)];
+        int16_t& entry = pawnCorrection[side][corrIndex(keyHistory[ply].pawnHash)];
         entry += bonus - entry * std::abs(bonus) / CORRECTION_LIMIT;
 
-        int16_t& nonPawnWhiteEntry = nonPawnCorrection[0][side][corrIndex(nonPawnKeyWhite)];
+        int16_t& nonPawnWhiteEntry = nonPawnCorrection[0][side][corrIndex(keyHistory[ply].nonPawnKey[0])];
         nonPawnWhiteEntry += bonus - nonPawnWhiteEntry * std::abs(bonus) / CORRECTION_LIMIT;
 
-        int16_t& nonPawnBlackEntry = nonPawnCorrection[1][side][corrIndex(nonPawnKeyBlack)];
+        int16_t& nonPawnBlackEntry = nonPawnCorrection[1][side][corrIndex(keyHistory[ply].nonPawnKey[1])];
         nonPawnBlackEntry += bonus - nonPawnBlackEntry * std::abs(bonus) / CORRECTION_LIMIT;
     }
 
