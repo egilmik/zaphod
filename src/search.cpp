@@ -227,7 +227,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
     Move bestMove{};
     
-    int correction = history.correction(board.getSideToMove(),board.getPawnHashKey());
+    int correction = history.correction(board.getSideToMove(),board.getPawnHashKey())/1024;
     bool inCheck = board.getCheckers() > 0;
 
     if (inCheck) {
@@ -433,7 +433,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
             r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
-	    r -= std::abs(correction)*38/100;
+	    r -= std::abs(correction)*3891/262144;
 
             r /= 100;
 

@@ -108,7 +108,7 @@ public:
     // Returns the correction in centipawns, already de-scaled.
     [[nodiscard]] inline int correction(BitBoardEnum stm, BitBoard pawnKey) const {
         int side = (stm == Black);
-        int sum = pawnCorrection[side][corrIndex(pawnKey)] * pawnCorrectionWeight()/CORRECTION_LIMIT;
+        int sum = pawnCorrection[side][corrIndex(pawnKey)] * pawnCorrectionWeight();
         return sum;
         
     }
