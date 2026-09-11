@@ -8,6 +8,7 @@
 #include "zobrist.h"
 #include <array>
 #include "nnueq.h"
+#include <span>
 
 struct alignas(64) MoveUndoInfo {
     Move move = 0; // 2 byte
@@ -229,7 +230,11 @@ class Board {
             return checkers != 0;
         }
 
-        
+        std::span<HashKeys> getKeyHistory() {
+            return keyHistory;
+        }
+
+        int getHistoryPly() { return historyPly; }
 
         uint64_t generateHashKey();
         uint64_t generatePawnHashKey();
