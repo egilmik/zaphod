@@ -10,8 +10,11 @@
 #include "nnueq.h"
 
 struct alignas(64) MoveUndoInfo {
-    BitBoard hashKeyCopy = 0; // 8 byte
-    BitBoard pawnHashCopy = 0;
+    uint64_t hashKey = 0; // 8 byte
+    uint64_t pawnHash = 0;
+    uint64_t nonPawnKey[2] = {};
+    uint64_t minorPieceKey = 0;
+    uint64_t majorPieceKey = 0;
     Move move = 0; // 2 byte
 
     uint8_t sideToMove = static_cast<uint8_t>(BitBoardEnum::White); // 1 byte
@@ -225,10 +228,12 @@ class Board {
 
         
 
-        BitBoard generateHashKey();
-        BitBoard generatePawnHashKey();
-        BitBoard getHashKey(){ return hashKey;};
-        BitBoard getPawnHashKey() { return pawnHashKey; }
+        uint64_t generateHashKey();
+        uint64_t generatePawnHashKey();
+        uint64_t getHashKey(){ return hashKey;};
+        uint64_t getPawnHashKey() { return pawnHashKey; }
+        uint64_t getNonPawnHashKeyWhite() { return nonPawnKey[0]; }
+        uint64_t getNonPawnHashKeyBlack() { return nonPawnKey[1]; }
 
         Zobrist zobrist;
 
@@ -255,7 +260,9 @@ class Board {
 
         void calculateCheckersSnipersPins();
         BitBoard calculateSnipers(int kingSquare, BitBoardEnum attackerColor);
-	void calculateThreats();
+	    void calculateThreats();
+
+        inline void toggleHashKeys(BitBoardEnum piece, int sq);
 
         constexpr static int MAXMOVEHISTORY = 1024;
         
@@ -264,7 +271,7 @@ class Board {
         BitBoard checkers = 0;
         BitBoard pins = 0;
         BitBoard snipers = 0;
-	BitBoard threats = 0;
+	    BitBoard threats = 0;
 
         MoveUndoInfo moveHistory[MAXMOVEHISTORY];
         int historyPly = 0;
@@ -280,8 +287,11 @@ class Board {
         bool castleWQ = false;
         bool castleBK = false;
         bool castleBQ = false;
-        BitBoard hashKey = 0;
-        BitBoard pawnHashKey = 0;
+        uint64_t hashKey = 0;
+        uint64_t pawnHashKey = 0;
+        uint64_t nonPawnKey[2] = { 0,0 };
+        uint64_t minorPieceKey = 0;
+        uint64_t majorPieceKey = 0;
 
         int gamePhase = 24;
         
