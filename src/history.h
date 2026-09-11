@@ -106,21 +106,29 @@ public:
     }
 
     // Returns the correction in centipawns, already de-scaled.
-    [[nodiscard]] inline int correction(BitBoardEnum stm, BitBoard pawnKey) const {
+    [[nodiscard]] inline int correction(BitBoardEnum stm, BitBoard pawnKey, uint64_t nonPawnKeyWhite, uint64_t nonPawnKeyBlack) const {
         int side = (stm == Black);
         int sum = pawnCorrection[side][corrIndex(pawnKey)] * pawnCorrectionWeight()/CORRECTION_LIMIT;
+        sum += nonPawnCorrection[0][side][corrIndex(nonPawnKeyWhite)] * 60 / CORRECTION_LIMIT;
+        sum += nonPawnCorrection[1][side][corrIndex(nonPawnKeyWhite)] * 60 / CORRECTION_LIMIT;
         return sum;
         
     }
 
     // diff = bestScore - rawStaticEval, in centipawns
-    inline void updateCorrection(BitBoardEnum stm, BitBoard pawnKey,
+    inline void updateCorrection(BitBoardEnum stm, BitBoard pawnKey, uint64_t nonPawnKeyWhite, uint64_t nonPawnKeyBlack,
         int diff, int depth) {
         int side = (stm == Black);
 
         int bonus = std::clamp(diff * depth / 8,-CORRECTION_BONUS_MAX,CORRECTION_BONUS_MAX);
         int16_t& entry = pawnCorrection[side][corrIndex(pawnKey)];
         entry += bonus - entry * std::abs(bonus) / CORRECTION_LIMIT;
+
+        int16_t& nonPawnWhiteEntry = nonPawnCorrection[0][side][corrIndex(nonPawnKeyWhite)];
+        nonPawnWhiteEntry += bonus - nonPawnWhiteEntry * std::abs(bonus) / CORRECTION_LIMIT;
+
+        int16_t& nonPawnBlackEntry = nonPawnCorrection[1][side][corrIndex(nonPawnKeyBlack)];
+        nonPawnBlackEntry += bonus - nonPawnBlackEntry * std::abs(bonus) / CORRECTION_LIMIT;
     }
 
     void clear() {
@@ -150,6 +158,8 @@ private:
 
     // [stm][pawn key]
     int16_t pawnCorrection[2][CORRECTION_SIZE] = {};
+    int16_t nonPawnCorrection[2][2][CORRECTION_SIZE] = {};
+    
 };
 
 #endif
