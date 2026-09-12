@@ -243,6 +243,11 @@ class Board {
         uint64_t getNonPawnHashKeyWhite() { return nonPawnKey[0]; }
         uint64_t getNonPawnHashKeyBlack() { return nonPawnKey[1]; }
 
+        HashKeys getCurrentKeys() const {
+            return HashKeys{ hashKey, pawnHashKey, { nonPawnKey[0], nonPawnKey[1] }, minorPieceKey, majorPieceKey };
+        }
+
+
         Zobrist zobrist;
 
         bool hasPositionRepeated();
