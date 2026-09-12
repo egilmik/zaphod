@@ -109,12 +109,12 @@ public:
     // Returns the correction in centipawns, already de-scaled.
     [[nodiscard]] inline int correction(BitBoardEnum stm, std::span<HashKeys> keyHistory, int ply) const {
         int side = (stm == Black);
-        int sum = pawnCorrection[side][corrIndex(keyHistory[ply].pawnHash)] * pawnCorrectionWeight() / CORRECTION_LIMIT;
-        sum += nonPawnCorrection[0][side][corrIndex(keyHistory[ply].nonPawnKey[0])] * 60 / CORRECTION_LIMIT;
-        sum += nonPawnCorrection[1][side][corrIndex(keyHistory[ply].nonPawnKey[1])] * 60 / CORRECTION_LIMIT;
-        sum += minorPieceCorrection[side][corrIndex(keyHistory[ply].minorPieceKey)] * 50 / CORRECTION_LIMIT;
-        sum += majorPieceCorrection[side][corrIndex(keyHistory[ply].majorPieceKey)] * 50 / CORRECTION_LIMIT;
-        return sum;
+        int sum = pawnCorrection[side][corrIndex(keyHistory[ply].pawnHash)] * pawnCorrectionWeight();
+        sum += nonPawnCorrection[0][side][corrIndex(keyHistory[ply].nonPawnKey[0])] * 60;
+        sum += nonPawnCorrection[1][side][corrIndex(keyHistory[ply].nonPawnKey[1])] * 60;
+        sum += minorPieceCorrection[side][corrIndex(keyHistory[ply].minorPieceKey)] * 50;
+        sum += majorPieceCorrection[side][corrIndex(keyHistory[ply].majorPieceKey)] * 50;
+        return sum/CORRECTION_LIMIT;
         
     }
 
@@ -146,6 +146,9 @@ public:
         std::memset(&capturedPieceHistory, 0, sizeof(capturedPieceHistory));
         std::memset(&pieceTo, 0, sizeof(pieceTo));
         std::memset(&pawnCorrection, 0, sizeof(pawnCorrection));
+        std::memset(&nonPawnCorrection, 0, sizeof(nonPawnCorrection));
+        std::memset(&minorPieceCorrection, 0, sizeof(minorPieceCorrection));
+        std::memset(&majorPieceCorrection, 0, sizeof(majorPieceCorrection));
     }
 
 private:
