@@ -16,8 +16,6 @@ public:
 
 	using ContSlice = int16_t[14][64];
 
-	History() : continuation(std::make_unique<ContTable>()) {}
-
     void updateQuietHistory();
 
     inline void age() {
@@ -107,37 +105,42 @@ public:
     }
 
     // Returns the correction in centipawns, already de-scaled.
-    [[nodiscard]] inline int correction(BitBoardEnum stm, HashKeys keyHistory) const {
+    [[nodiscard]] inline int correction(BitBoardEnum stm, HashKeys keys, std::span<HashKeys> keyHistory, int historyPly) const {
         int side = (stm == Black);
-        int sum = pawnCorrection[side][corrIndex(keyHistory.pawnHash)] * pawnCorrectionWeight();
-        sum += nonPawnCorrection[0][side][corrIndex(keyHistory.nonPawnKey[0])] * 60;
-        sum += nonPawnCorrection[1][side][corrIndex(keyHistory.nonPawnKey[1])] * 60;
-        sum += minorPieceCorrection[side][corrIndex(keyHistory.minorPieceKey)] * 50;
-        sum += majorPieceCorrection[side][corrIndex(keyHistory.majorPieceKey)] * 50;
+        int sum = corrHist->pawnCorrection[side][corrIndex(keys.pawnHash)] * pawnCorrectionWeight();
+        sum += corrHist->nonPawnCorrection[0][side][corrIndex(keys.nonPawnKey[0])] * 60;
+        sum += corrHist->nonPawnCorrection[1][side][corrIndex(keys.nonPawnKey[1])] * 60;
+        sum += corrHist->minorPieceCorrection[side][corrIndex(keys.minorPieceKey)] * 50;
+        sum += corrHist->majorPieceCorrection[side][corrIndex(keys.majorPieceKey)] * 50;
+        
+         //History ply is the previous ply, so this is current - 1
+        // Cont correction for 1,2,4
+        sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly].hashKey)]*50;
+        sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly - 1].hashKey)]*50;
+        sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly - 3].hashKey)]*50;
+
         return sum/CORRECTION_LIMIT;
         
     }
 
     // diff = bestScore - rawStaticEval, in centipawns
-    inline void updateCorrection(BitBoardEnum stm, HashKeys keyHistory, 
+    inline void updateCorrection(BitBoardEnum stm, HashKeys keys, std::span<HashKeys> keyHistory, int historyPly,
         int diff, int depth) {
         int side = (stm == Black);
 
         int bonus = std::clamp(diff * depth / 8,-CORRECTION_BONUS_MAX,CORRECTION_BONUS_MAX);
-        int16_t& entry = pawnCorrection[side][corrIndex(keyHistory.pawnHash)];
-        entry += bonus - entry * std::abs(bonus) / CORRECTION_LIMIT;
+        corrHist->pawnCorrection[side][corrIndex(keys.pawnHash)].update(bonus);
+        corrHist->nonPawnCorrection[0][side][corrIndex(keys.nonPawnKey[0])].update(bonus);
+        corrHist->nonPawnCorrection[1][side][corrIndex(keys.nonPawnKey[1])].update(bonus);
+        corrHist->minorPieceCorrection[side][corrIndex(keys.minorPieceKey)].update(bonus);
+        corrHist->majorPieceCorrection[side][corrIndex(keys.majorPieceKey)].update(bonus);
 
-        int16_t& nonPawnWhiteEntry = nonPawnCorrection[0][side][corrIndex(keyHistory.nonPawnKey[0])];
-        nonPawnWhiteEntry += bonus - nonPawnWhiteEntry * std::abs(bonus) / CORRECTION_LIMIT;
-
-        int16_t& nonPawnBlackEntry = nonPawnCorrection[1][side][corrIndex(keyHistory.nonPawnKey[1])];
-        nonPawnBlackEntry += bonus - nonPawnBlackEntry * std::abs(bonus) / CORRECTION_LIMIT;
-
-        int16_t& minorEntry = minorPieceCorrection[side][corrIndex(keyHistory.minorPieceKey)];
-        minorEntry += bonus - minorEntry * std::abs(bonus) / CORRECTION_LIMIT;
-
-        int16_t& majorEntry = majorPieceCorrection[side][corrIndex(keyHistory.majorPieceKey)];
-        majorEntry += bonus - majorEntry * std::abs(bonus) / CORRECTION_LIMIT;
+        //History ply is the previous ply, so this is current - 1
+        // Cont correction for 1,2,4
+        corrHist->contCorrection[side][corrIndex(keyHistory[historyPly].hashKey)].update(bonus);
+        corrHist->contCorrection[side][corrIndex(keyHistory[historyPly-1].hashKey)].update(bonus);
+        corrHist->contCorrection[side][corrIndex(keyHistory[historyPly-3].hashKey)].update(bonus);
+        
     }
 
     void clear() {
@@ -145,13 +148,16 @@ public:
 		std::memset(continuation.get(), 0, sizeof(ContTable));
         std::memset(&capturedPieceHistory, 0, sizeof(capturedPieceHistory));
         std::memset(&pieceTo, 0, sizeof(pieceTo));
-        std::memset(&pawnCorrection, 0, sizeof(pawnCorrection));
-        std::memset(&nonPawnCorrection, 0, sizeof(nonPawnCorrection));
-        std::memset(&minorPieceCorrection, 0, sizeof(minorPieceCorrection));
-        std::memset(&majorPieceCorrection, 0, sizeof(majorPieceCorrection));
+        std::memset(&corrHist->pawnCorrection, 0, sizeof(corrHist->pawnCorrection));
+        std::memset(&corrHist->nonPawnCorrection, 0, sizeof(corrHist->nonPawnCorrection));
+        std::memset(&corrHist->minorPieceCorrection, 0, sizeof(corrHist->minorPieceCorrection));
+        std::memset(&corrHist->majorPieceCorrection, 0, sizeof(corrHist->majorPieceCorrection));
+        std::memset(&corrHist->contCorrection, 0, sizeof(corrHist->contCorrection));
     }
 
 private:
+
+    
 
     // [stm][from][to][from attacked][to attacked]
     int32_t butterfly[2][64][64][2][2] = {};
@@ -162,18 +168,38 @@ private:
 			int16_t data[14][64][14][64] = {};
 	};
 
-	std::unique_ptr<ContTable> continuation;
+	std::unique_ptr<ContTable> continuation = std::make_unique<ContTable>();
+
+
+    // Corrections
 
     static constexpr int CORRECTION_SIZE = 16384;
     static constexpr int CORRECTION_BONUS_MAX = 256;
     static constexpr int CORRECTION_LIMIT = 1024;
 
-    // [stm][pawn key]
-    int16_t pawnCorrection[2][CORRECTION_SIZE] = {};
-    int16_t nonPawnCorrection[2][2][CORRECTION_SIZE] = {};
-    int16_t minorPieceCorrection[2][CORRECTION_SIZE] = {};
-    int16_t majorPieceCorrection[2][CORRECTION_SIZE] = {};
+    struct CorrectionEntry {
+        int32_t value = 0;
+
+        inline void update(int32_t bonus) {
+            value += bonus - value * std::abs(bonus / CORRECTION_LIMIT);
+        }
+
+        [[nodiscard]] inline operator int32_t() const {
+            return value;
+        }
+    };
     
+    struct CorrectionHistory {
+        // [stm][pawn key]
+        CorrectionEntry pawnCorrection[2][CORRECTION_SIZE] = {};
+        CorrectionEntry nonPawnCorrection[2][2][CORRECTION_SIZE] = {};
+        CorrectionEntry minorPieceCorrection[2][CORRECTION_SIZE] = {};
+        CorrectionEntry majorPieceCorrection[2][CORRECTION_SIZE] = {};
+        CorrectionEntry contCorrection[2][CORRECTION_SIZE * 2] = {};
+    };
+
+    std::unique_ptr<CorrectionHistory> corrHist = std::make_unique<CorrectionHistory>();
+
 };
 
 #endif
