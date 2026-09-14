@@ -113,13 +113,12 @@ public:
         sum += corrHist->minorPieceCorrection[side][corrIndex(keys.minorPieceKey)] * 50;
         sum += corrHist->majorPieceCorrection[side][corrIndex(keys.majorPieceKey)] * 50;
         
-         //History ply is the previous ply, so this is current - 1
+        //History ply is the previous ply, so this is current - 1
         // Cont correction for 1,2,4
-        /*
         sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly].hashKey)]*50;
         sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly - 1].hashKey)]*50;
         sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly - 3].hashKey)]*50;
-        */
+        
 
         return sum/CORRECTION_LIMIT;
         
@@ -183,7 +182,7 @@ private:
         int32_t value = 0;
 
         inline void update(int32_t bonus) {
-            value += bonus - value * std::abs(bonus / CORRECTION_LIMIT);
+            value += bonus - value * std::abs(bonus) / CORRECTION_LIMIT;
         }
 
         [[nodiscard]] inline operator int32_t() const {
