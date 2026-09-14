@@ -115,9 +115,11 @@ public:
         
          //History ply is the previous ply, so this is current - 1
         // Cont correction for 1,2,4
+        /*
         sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly].hashKey)]*50;
         sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly - 1].hashKey)]*50;
         sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly - 3].hashKey)]*50;
+        */
 
         return sum/CORRECTION_LIMIT;
         
