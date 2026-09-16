@@ -129,15 +129,13 @@ public:
     [[nodiscard]] inline int correction(BitBoardEnum stm, HashKeys keys, CorrectionEntry* corrEntry) const {
         int side = (stm == Black);
         int sum = corrHist->pawnCorrection[side][corrIndex(keys.pawnHash)] * pawnCorrectionWeight();
-        sum += corrHist->nonPawnCorrection[0][side][corrIndex(keys.nonPawnKey[0])] * 60;
-        sum += corrHist->nonPawnCorrection[1][side][corrIndex(keys.nonPawnKey[1])] * 60;
-        sum += corrHist->minorPieceCorrection[side][corrIndex(keys.minorPieceKey)] * 50;
-        sum += corrHist->majorPieceCorrection[side][corrIndex(keys.majorPieceKey)] * 50;
+        sum += corrHist->nonPawnCorrection[0][side][corrIndex(keys.nonPawnKey[0])] * nonPawnCorrectionWeight();
+        sum += corrHist->nonPawnCorrection[1][side][corrIndex(keys.nonPawnKey[1])] * nonPawnCorrectionWeight();
+        sum += corrHist->minorPieceCorrection[side][corrIndex(keys.minorPieceKey)] * minorCorrectionWeight();
+        sum += corrHist->majorPieceCorrection[side][corrIndex(keys.majorPieceKey)] * majorCorrectionWeight();
         
-        //History ply is the previous ply, so this is current - 1
-        // Cont correction for 1,2,4
 	    if(corrEntry)
-            sum += *corrEntry * 50;
+            sum += *corrEntry * contCorrectionWeight();
         
 
         return sum/CORRECTION_LIMIT;
