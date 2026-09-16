@@ -3,8 +3,13 @@
 
 #include <cstdint>
 #include <cstring>
-#include <span>
+#include <memory>
+#include <algorithm>
 #include "params.h"
+#include "bitboard.h"
+#include "move.h"
+#include "board.h"
+
 
 using namespace zaphod::params;
 
@@ -16,7 +21,18 @@ public:
 
 	using ContSlice = int16_t[14][64];
 
-    void updateQuietHistory();
+    struct CorrectionEntry {
+        int32_t value = 0;
+
+        inline void update(int32_t bonus) {
+            value += bonus - value * std::abs(bonus) / CORRECTION_LIMIT;
+        }
+
+        [[nodiscard]] inline operator int32_t() const {
+            return value;
+        }
+    };
+
 
     inline void age() {
         for (int stm = 0; stm < 2; stm++) {
@@ -104,8 +120,13 @@ public:
         return static_cast<int>(key & (CORRECTION_SIZE - 1));
     }
 
+    [[nodiscard]] CorrectionEntry* correctionEntry(BitBoardEnum prevPrevPiece, int prevPrevSq, BitBoardEnum prevPiece, int prevSq){
+        return &corrHist->contCorrection[prevPrevPiece][prevPrevSq][prevPiece][prevSq];
+    }
+    
+
     // Returns the correction in centipawns, already de-scaled.
-    [[nodiscard]] inline int correction(BitBoardEnum stm, HashKeys keys, std::span<HashKeys> keyHistory, int historyPly) const {
+    [[nodiscard]] inline int correction(BitBoardEnum stm, HashKeys keys, CorrectionEntry* corrEntry) const {
         int side = (stm == Black);
         int sum = corrHist->pawnCorrection[side][corrIndex(keys.pawnHash)] * pawnCorrectionWeight();
         sum += corrHist->nonPawnCorrection[0][side][corrIndex(keys.nonPawnKey[0])] * 60;
@@ -115,9 +136,8 @@ public:
         
         //History ply is the previous ply, so this is current - 1
         // Cont correction for 1,2,4
-        sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly].hashKey)]*50;
-        sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly - 1].hashKey)]*50;
-        sum += corrHist->contCorrection[side][corrIndex(keyHistory[historyPly - 3].hashKey)]*50;
+	    if(corrEntry)
+            sum += *corrEntry * 50;
         
 
         return sum/CORRECTION_LIMIT;
@@ -125,8 +145,7 @@ public:
     }
 
     // diff = bestScore - rawStaticEval, in centipawns
-    inline void updateCorrection(BitBoardEnum stm, HashKeys keys, std::span<HashKeys> keyHistory, int historyPly,
-        int diff, int depth) {
+    inline void updateCorrection(BitBoardEnum stm, HashKeys keys, CorrectionEntry* corrEntry, int diff, int depth) {
         int side = (stm == Black);
 
         int bonus = std::clamp(diff * depth / 8,-CORRECTION_BONUS_MAX,CORRECTION_BONUS_MAX);
@@ -135,13 +154,9 @@ public:
         corrHist->nonPawnCorrection[1][side][corrIndex(keys.nonPawnKey[1])].update(bonus);
         corrHist->minorPieceCorrection[side][corrIndex(keys.minorPieceKey)].update(bonus);
         corrHist->majorPieceCorrection[side][corrIndex(keys.majorPieceKey)].update(bonus);
-
-        //History ply is the previous ply, so this is current - 1
-        // Cont correction for 1,2,4
-        corrHist->contCorrection[side][corrIndex(keyHistory[historyPly].hashKey)].update(bonus);
-        corrHist->contCorrection[side][corrIndex(keyHistory[historyPly-1].hashKey)].update(bonus);
-        corrHist->contCorrection[side][corrIndex(keyHistory[historyPly-3].hashKey)].update(bonus);
-        
+        if(corrEntry){
+            corrEntry->update(bonus);
+        }
     }
 
     void clear() {
@@ -178,25 +193,13 @@ private:
     static constexpr int CORRECTION_BONUS_MAX = 256;
     static constexpr int CORRECTION_LIMIT = 1024;
 
-    struct CorrectionEntry {
-        int32_t value = 0;
-
-        inline void update(int32_t bonus) {
-            value += bonus - value * std::abs(bonus) / CORRECTION_LIMIT;
-        }
-
-        [[nodiscard]] inline operator int32_t() const {
-            return value;
-        }
-    };
-    
     struct CorrectionHistory {
         // [stm][pawn key]
         CorrectionEntry pawnCorrection[2][CORRECTION_SIZE] = {};
         CorrectionEntry nonPawnCorrection[2][2][CORRECTION_SIZE] = {};
         CorrectionEntry minorPieceCorrection[2][CORRECTION_SIZE] = {};
         CorrectionEntry majorPieceCorrection[2][CORRECTION_SIZE] = {};
-        CorrectionEntry contCorrection[2][CORRECTION_SIZE * 2] = {};
+        CorrectionEntry contCorrection[14][64][14][64] = {};
     };
 
     std::unique_ptr<CorrectionHistory> corrHist = std::make_unique<CorrectionHistory>();
