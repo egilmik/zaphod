@@ -55,6 +55,8 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(lmrContWeight4Ply, 100, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrContWeight6Ply, 21, 0, 200, 10)
 	
+	ZAP_TUNABLE_INT(lmrCorrWeight, 30, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrCorrMax, 100, 0, 300, 20)
 
 	//Razoring
 	ZAP_TUNABLE_INT(razoringMargin, 261, 100, 400, 20)
@@ -98,7 +100,11 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(maxContHistory, 16288, 256, 32000, 256)
 	ZAP_TUNABLE_INT(maxPieceToHistory, 16288, 256, 32000, 256)
 
-	ZAP_TUNABLE_INT(pawnCorrectionWeight, 100, 0, 400, 20)
+	ZAP_TUNABLE_INT(pawnCorrectionWeight, 100, 0, 400, 10)
+	ZAP_TUNABLE_INT(nonPawnCorrectionWeight, 60, 0, 400, 10)
+	ZAP_TUNABLE_INT(minorCorrectionWeight, 50, 0, 400, 10)
+	ZAP_TUNABLE_INT(majorCorrectionWeight, 50, 0, 400, 10)
+	ZAP_TUNABLE_INT(contCorrectionWeight, 50, 0, 400, 10)
 
 	
 };

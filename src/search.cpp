@@ -438,7 +438,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
             r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
-	    r -= std::abs(correction)*38/100;
+	        r -= std::min(std::abs(correction)*lmrCorrWeight()/100,lmrCorrMax());
 
             r /= 100;
 
