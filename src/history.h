@@ -120,7 +120,12 @@ public:
         return static_cast<int>(key & (CORRECTION_SIZE - 1));
     }
 
+    // All marks a stack slot with no move in it, a null move or a ply that was
+    // never played, and is one past the last piece the table is sized for. Those
+    // plies have no continuation entry, so the callers fall back to no cont
+    // correction instead of indexing off the end of the table.
     [[nodiscard]] CorrectionEntry* correctionEntry(BitBoardEnum prevPrevPiece, int prevPrevSq, BitBoardEnum prevPiece, int prevSq){
+        if (prevPrevPiece == All || prevPiece == All) return nullptr;
         return &corrHist->contCorrection[prevPrevPiece][prevPrevSq][prevPiece][prevSq];
     }
     
@@ -175,7 +180,10 @@ private:
 
     // [stm][from][to][from attacked][to attacked]
     int32_t butterfly[2][64][64][2][2] = {};
-    int32_t capturedPieceHistory[14][64][14] = {};
+    // The captured piece is All for a promotion or an en passant capture, where
+    // the destination square is empty, so that dimension holds one slot more
+    // than there are pieces.
+    int32_t capturedPieceHistory[14][64][15] = {};
     int32_t pieceTo[14][64][2][2] = {};
 
 	struct ContTable {
