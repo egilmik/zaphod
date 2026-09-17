@@ -180,7 +180,10 @@ private:
 
     // [stm][from][to][from attacked][to attacked]
     int32_t butterfly[2][64][64][2][2] = {};
-    int32_t capturedPieceHistory[14][64][14] = {};
+    // The captured piece is All for a promotion or an en passant capture, where
+    // the destination square is empty, so that dimension holds one slot more
+    // than there are pieces.
+    int32_t capturedPieceHistory[14][64][15] = {};
     int32_t pieceTo[14][64][2][2] = {};
 
 	struct ContTable {
