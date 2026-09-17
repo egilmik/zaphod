@@ -38,73 +38,73 @@ namespace zaphod::params {
 	///////////
 	// LMR
 	///////////
-	ZAP_TUNABLE_INT(lmrDividerQuiet, 198, 100, 350, 10)
-	ZAP_TUNABLE_INT(lmrDividerNoisy, 217, 100, 350, 10)
-	ZAP_TUNABLE_INT(lmrBaseQuiet, 68, 0, 150, 10)
-	ZAP_TUNABLE_INT(lmrBaseNoisy, -63, -100, 100, 10)
-	ZAP_TUNABLE_INT(lmrPVReduction, 100, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrImprovingReduction, 79, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrCheckReduction, 98, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrHistoryReduction, 196,20,600,20)
+	ZAP_TUNABLE_INT(lmrDividerQuiet, 206, 100, 350, 10)
+	ZAP_TUNABLE_INT(lmrDividerNoisy, 210, 100, 350, 10)
+	ZAP_TUNABLE_INT(lmrBaseQuiet, 77, 0, 150, 10)
+	ZAP_TUNABLE_INT(lmrBaseNoisy, -60, -100, 100, 10)
+	ZAP_TUNABLE_INT(lmrPVReduction, 98, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrImprovingReduction, 84, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrCheckReduction, 101, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrHistoryReduction, 201,20,600,20)
 	
-	ZAP_TUNABLE_INT(lmrButterflyWeight, 100, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrButterflyWeight, 95, 0, 200, 10)
 	ZAP_TUNABLE_INT(lmrPieceToWeight, 89, 0, 200, 10)
 
-	ZAP_TUNABLE_INT(lmrContWeight1Ply, 115, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrContWeight2Ply, 101, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrContWeight4Ply, 100, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrContWeight6Ply, 21, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrContWeight1Ply, 129, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrContWeight2Ply, 111, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrContWeight4Ply, 105, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrContWeight6Ply, 24, 0, 200, 10)
 	
-	ZAP_TUNABLE_INT(lmrCorrWeight, 30, 0, 200, 10)
-	ZAP_TUNABLE_INT(lmrCorrMax, 100, 0, 300, 20)
+	ZAP_TUNABLE_INT(lmrCorrWeight, 37, 0, 200, 10)
+	ZAP_TUNABLE_INT(lmrCorrMax, 92, 0, 300, 20)
 
 	//Razoring
-	ZAP_TUNABLE_INT(razoringMargin, 261, 100, 400, 20)
+	ZAP_TUNABLE_INT(razoringMargin, 242, 100, 400, 20)
 
 	//Qsearch
-	ZAP_TUNABLE_INT(futilityBaseQsearch, 88, 0, 300, 20)
+	ZAP_TUNABLE_INT(futilityBaseQsearch, 72, 0, 300, 20)
 
 	//Reverse Futility Pruning
-	ZAP_TUNABLE_INT(rfpLinear, 73, 0, 200, 20)
+	ZAP_TUNABLE_INT(rfpLinear, 63, 0, 200, 20)
 
-	ZAP_TUNABLE_INT(rfpImproving, 80, 0, 200, 20)
+	ZAP_TUNABLE_INT(rfpImproving, 82, 0, 200, 20)
 
 	///////////
 	// Move generator
 	///////////
 	ZAP_TUNABLE_INT(movegenContWeight1Ply, 108, 0, 200, 10)
-	ZAP_TUNABLE_INT(movegenContWeight2Ply, 107, 0, 200, 10)
-	ZAP_TUNABLE_INT(movegenContWeight4Ply, 89, 0, 200, 10)
-	ZAP_TUNABLE_INT(movegenContWeight6Ply, 27, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight2Ply, 99, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight4Ply, 109, 0, 200, 10)
+	ZAP_TUNABLE_INT(movegenContWeight6Ply, 20, 0, 200, 10)
 
 	///////////
 	//History
 	///////////
-	ZAP_TUNABLE_INT(quietHistBonusDepthScale, 363, 0, 500, 20)
-	ZAP_TUNABLE_INT(quietHistBonusOffset, 318, 0, 500, 20)
+	ZAP_TUNABLE_INT(quietHistBonusDepthScale, 371, 0, 500, 20)
+	ZAP_TUNABLE_INT(quietHistBonusOffset, 329, 0, 500, 20)
 	ZAP_TUNABLE_INT(quietHistMaxBonus, 16280, 0, 32000, 256)
-	ZAP_TUNABLE_INT(quietHistPenaltyDepthScale, 286, 0, 500, 20)
-	ZAP_TUNABLE_INT(quietHistPenaltyOffset, 229, 0, 500, 20)
+	ZAP_TUNABLE_INT(quietHistPenaltyDepthScale, 277, 0, 500, 20)
+	ZAP_TUNABLE_INT(quietHistPenaltyOffset, 219, 0, 500, 20)
 	ZAP_TUNABLE_INT(quietHistMaxPenalty, 15951, 0, 32000, 256)
 	ZAP_TUNABLE_INT(maxButterflyHistory, 16349, 256, 32000, 256)
-	ZAP_TUNABLE_INT(butterflyAging, 800, 0, 2000,50) 
+	ZAP_TUNABLE_INT(butterflyAging, 809, 0, 2000,50) 
 
 	ZAP_TUNABLE_INT(maxCapturePieceHistoryBonus,16000,256,32000,256)
-	ZAP_TUNABLE_INT(noisyHistBonusDepthScale, 295, 0, 500, 20)
-	ZAP_TUNABLE_INT(noisyHistBonusOffset, 316, 0, 500, 20)
+	ZAP_TUNABLE_INT(noisyHistBonusDepthScale, 288, 0, 500, 20)
+	ZAP_TUNABLE_INT(noisyHistBonusOffset, 323, 0, 500, 20)
 	ZAP_TUNABLE_INT(noisyHistMaxBonus, 16150, 0, 32000, 256)
-	ZAP_TUNABLE_INT(noisyHistPenaltyDepthScale, 301, 0, 500, 20)
+	ZAP_TUNABLE_INT(noisyHistPenaltyDepthScale, 323, 0, 500, 20)
 	ZAP_TUNABLE_INT(noisyHistPenaltyOffset, 248, 0, 500, 20)
 	ZAP_TUNABLE_INT(noisyHistMaxPenalty, 15942, 0, 32000, 256)
 
 	ZAP_TUNABLE_INT(maxContHistory, 16288, 256, 32000, 256)
 	ZAP_TUNABLE_INT(maxPieceToHistory, 16288, 256, 32000, 256)
 
-	ZAP_TUNABLE_INT(pawnCorrectionWeight, 100, 0, 400, 10)
-	ZAP_TUNABLE_INT(nonPawnCorrectionWeight, 60, 0, 400, 10)
-	ZAP_TUNABLE_INT(minorCorrectionWeight, 50, 0, 400, 10)
-	ZAP_TUNABLE_INT(majorCorrectionWeight, 50, 0, 400, 10)
-	ZAP_TUNABLE_INT(contCorrectionWeight, 50, 0, 400, 10)
+	ZAP_TUNABLE_INT(pawnCorrectionWeight, 97, 0, 400, 10)
+	ZAP_TUNABLE_INT(nonPawnCorrectionWeight, 75, 0, 400, 10)
+	ZAP_TUNABLE_INT(minorCorrectionWeight, 44, 0, 400, 10)
+	ZAP_TUNABLE_INT(majorCorrectionWeight, 58, 0, 400, 10)
+	ZAP_TUNABLE_INT(contCorrectionWeight, 56, 0, 400, 10)
 
 	
 };
