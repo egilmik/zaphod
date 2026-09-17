@@ -228,7 +228,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     Move bestMove{};
     
     History::CorrectionEntry *corrEntry = nullptr;
-    if(ply > 2){
+    if(ply > 2 && ss[ply-1].movedPiece != All && ss[ply-2].movedPiece != All) {
         corrEntry = history.correctionEntry(ss[ply-2].movedPiece,ss[ply-2].move.to(),ss[ply-1].movedPiece,ss[ply-1].move.to());
     } 
 
@@ -616,7 +616,7 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
 
     
     History::CorrectionEntry *corrEntry = nullptr;
-    if(ply > 2){
+    if (ply > 2 && ss[ply - 1].movedPiece != All && ss[ply - 2].movedPiece != All) {
         corrEntry = history.correctionEntry(ss[ply-2].movedPiece,ss[ply-2].move.to(),ss[ply-1].movedPiece,ss[ply-1].move.to());
     } 
 
