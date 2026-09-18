@@ -671,8 +671,13 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
             continue;
         }
         
-        evaluatedNodes++;
+	    BitBoardEnum movedPiece = board.getPieceOnSquare(move.from());
+        BitBoardEnum capturedPiece = board.getPieceOnSquare(move.to());
         board.makeMove(move);
+	    ss[ply].movedPiece = movedPiece;
+	    ss[ply].move = move;
+        evaluatedNodes++;
+
         score = -qsearch(board,-beta,-alpha,depth-1, ply+1,pvNode);
 
         if(score > alpha){
