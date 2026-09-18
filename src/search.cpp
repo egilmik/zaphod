@@ -228,8 +228,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     Move bestMove{};
     
     History::CorrectionEntry *corrEntry = nullptr;
-    if(ply > 2 && ss[ply-1].movedPiece != All && ss[ply-2].movedPiece != All) {
-        corrEntry = history.correctionEntry(ss[ply-2].movedPiece,ss[ply-2].move.to(),ss[ply-1].movedPiece,ss[ply-1].move.to());
+    if(ply > 4 && ss[ply-2].movedPiece != All && ss[ply-4].movedPiece != All) {
+        corrEntry = history.correctionEntry(ss[ply-4].movedPiece,ss[ply-4].move.to(),ss[ply-2].movedPiece,ss[ply-2].move.to());
     } 
 
     int correction = history.correction(board.getSideToMove(),board.getCurrentKeys(), corrEntry);
@@ -616,8 +616,8 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
 
     
     History::CorrectionEntry *corrEntry = nullptr;
-    if (ply > 2 && ss[ply - 1].movedPiece != All && ss[ply - 2].movedPiece != All) {
-        corrEntry = history.correctionEntry(ss[ply-2].movedPiece,ss[ply-2].move.to(),ss[ply-1].movedPiece,ss[ply-1].move.to());
+    if (ply > 4 && ss[ply - 2].movedPiece != All && ss[ply - 4].movedPiece != All) {
+        corrEntry = history.correctionEntry(ss[ply-4].movedPiece,ss[ply-4].move.to(),ss[ply-2].movedPiece,ss[ply-2].move.to());
     } 
 
     bool inCheck = board.getCheckers() > 0;
