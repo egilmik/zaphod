@@ -127,7 +127,7 @@ public:
 
     [[nodiscard]] inline int32_t contCorrectionScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to, int ply) {
         if (slices[ply]) {
-            return (*slices[ply])[piece][to]/CORRECTION_LIMIT;
+            return (*slices[ply])[piece][to];
         }
         return 0;
     }
@@ -179,7 +179,7 @@ public:
         std::memset(&corrHist->nonPawnCorrection, 0, sizeof(corrHist->nonPawnCorrection));
         std::memset(&corrHist->minorPieceCorrection, 0, sizeof(corrHist->minorPieceCorrection));
         std::memset(&corrHist->majorPieceCorrection, 0, sizeof(corrHist->majorPieceCorrection));
-        std::memset(&corrHist->contCorrection, 0, sizeof(corrHist->contCorrection));
+        std::memset(contCorrectionHistory.get(), 0, sizeof(ContTable));
     }
 
 private:
@@ -213,7 +213,6 @@ private:
         CorrectionEntry nonPawnCorrection[2][2][CORRECTION_SIZE] = {};
         CorrectionEntry minorPieceCorrection[2][CORRECTION_SIZE] = {};
         CorrectionEntry majorPieceCorrection[2][CORRECTION_SIZE] = {};
-        CorrectionEntry contCorrection[14][64][14][64] = {};
     };
 
     std::unique_ptr<CorrectionHistory> corrHist = std::make_unique<CorrectionHistory>();
