@@ -446,7 +446,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
             r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
-	        r -= std::min(std::abs(correction)*lmrCorrWeight()/100,lmrCorrMax());
+	        r -= std::min(std::abs(correction+contCorrection)*lmrCorrWeight()/100,lmrCorrMax());
 
             r /= 100;
 
@@ -625,13 +625,20 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
 
 
     
-    History::CorrectionEntry *corrEntry = nullptr;
-    if (ply > 2 && ss[ply - 1].movedPiece != All && ss[ply - 2].movedPiece != All) {
-        corrEntry = history.correctionEntry(ss[ply-2].movedPiece,ss[ply-2].move.to(),ss[ply-1].movedPiece,ss[ply-1].move.to());
-    } 
+    History::ContSlice* contCorrections[History::CONT_PLIES] = {};
+    for (int i = 0; i < History::CONT_PLIES; i++) {
+        int prev = ply - History::contOffset[i];
+        if (prev >= 0 && ss[prev].movedPiece != All) {
+            contCorrections[i] = history.contSlice(BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
+        }
+        else if (prev >= 0 && ss[prev].isNullMove) {
+            contCorrections[i] = history.contSlice(BitBoardEnum(P), 0);
+        }
+    }
 
     int correction = history.correction(board.getSideToMove(), board.getCurrentKeys());
     int contCorrection = history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 0) * contCorrectionWeight();
+
 
 
     bool inCheck = board.getCheckers() > 0;
