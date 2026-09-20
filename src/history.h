@@ -140,7 +140,7 @@ public:
                 continue;
             }
             int32_t value = (*slices[i])[piece][to];
-            value += bonus - value * std::abs(bonus) / maxContHistory();
+            value += bonus - value * std::abs(bonus) / CORRECTION_LIMIT;
             (*slices[i])[piece][to] = static_cast<int16_t>(value);
         }
     }

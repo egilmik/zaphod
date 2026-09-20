@@ -240,10 +240,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     int correction = history.correction(board.getSideToMove(),board.getCurrentKeys());
-    int contCorrection = history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 0) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 1) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 2) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 3) * contCorrectionWeight();
+    int contCorrection = history.contCorrectionScore(contCorrections, ss[ply-1].movedPiece, ss[ply-1].move.to(), 0) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, ss[ply-1].movedPiece, ss[ply-1].move.to(), 1) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, ss[ply-1].movedPiece, ss[ply-1].move.to(), 2) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, ss[ply-1].movedPiece, ss[ply-1].move.to(), 3) * contCorrectionWeight();
     contCorrection /= 1024;
 
     bool inCheck = board.getCheckers() > 0;
@@ -643,10 +643,10 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
     }
 
     int correction = history.correction(board.getSideToMove(), board.getCurrentKeys());
-    int contCorrection = history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 0) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 1) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 2) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 3) * contCorrectionWeight();
+    int contCorrection = history.contCorrectionScore(contCorrections, ss[ply - 1].movedPiece, ss[ply - 1].move.to(), 0) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, ss[ply - 1].movedPiece, ss[ply - 1].move.to(), 1) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, ss[ply - 1].movedPiece, ss[ply - 1].move.to(), 2) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, ss[ply - 1].movedPiece, ss[ply - 1].move.to(), 3) * contCorrectionWeight();
     contCorrection /= 1024;
 
 
