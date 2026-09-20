@@ -120,35 +120,46 @@ public:
         return static_cast<int>(key & (CORRECTION_SIZE - 1));
     }
 
-    // All marks a stack slot with no move in it, a null move or a ply that was
-    // never played, and is one past the last piece the table is sized for. Those
-    // plies have no continuation entry, so the callers fall back to no cont
-    // correction instead of indexing off the end of the table.
-    [[nodiscard]] CorrectionEntry* correctionEntry(BitBoardEnum prevPrevPiece, int prevPrevSq, BitBoardEnum prevPiece, int prevSq){
-        if (prevPrevPiece == All || prevPiece == All) return nullptr;
-        return &corrHist->contCorrection[prevPrevPiece][prevPrevSq][prevPiece][prevSq];
-    }
     
+    [[nodiscard]] inline ContSlice* contCorrectionSlice(BitBoardEnum prevPiece, uint32_t prevTo) {
+        return &contCorrectionHistory->data[prevPiece][prevTo];
+    }
+
+    [[nodiscard]] inline int32_t contCorrectionScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to, int ply) {
+        if (slices[ply]) {
+            return (*slices[ply])[piece][to]/CORRECTION_LIMIT;
+        }
+        return 0;
+    }
+
+    inline void updateContCorrectionScore(ContSlice* const* slices, BitBoardEnum piece, uint32_t to, int diff, int depth) {
+        int bonus = std::clamp(diff * depth / 8, -CORRECTION_BONUS_MAX, CORRECTION_BONUS_MAX);
+
+        for (int i = 0; i < CONT_PLIES; i++) {
+            if (!slices[i]) {
+                continue;
+            }
+            int32_t value = (*slices[i])[piece][to];
+            value += bonus - value * std::abs(bonus) / maxContHistory();
+            (*slices[i])[piece][to] = static_cast<int16_t>(value);
+        }
+    }
 
     // Returns the correction in centipawns, already de-scaled.
-    [[nodiscard]] inline int correction(BitBoardEnum stm, HashKeys keys, CorrectionEntry* corrEntry) const {
+    [[nodiscard]] inline int correction(BitBoardEnum stm, HashKeys keys) const {
         int side = (stm == Black);
         int sum = corrHist->pawnCorrection[side][corrIndex(keys.pawnHash)] * pawnCorrectionWeight();
         sum += corrHist->nonPawnCorrection[0][side][corrIndex(keys.nonPawnKey[0])] * nonPawnCorrectionWeight();
         sum += corrHist->nonPawnCorrection[1][side][corrIndex(keys.nonPawnKey[1])] * nonPawnCorrectionWeight();
         sum += corrHist->minorPieceCorrection[side][corrIndex(keys.minorPieceKey)] * minorCorrectionWeight();
         sum += corrHist->majorPieceCorrection[side][corrIndex(keys.majorPieceKey)] * majorCorrectionWeight();
-        
-	    if(corrEntry)
-            sum += *corrEntry * contCorrectionWeight();
-        
 
         return sum/CORRECTION_LIMIT;
         
     }
 
     // diff = bestScore - rawStaticEval, in centipawns
-    inline void updateCorrection(BitBoardEnum stm, HashKeys keys, CorrectionEntry* corrEntry, int diff, int depth) {
+    inline void updateCorrection(BitBoardEnum stm, HashKeys keys, int diff, int depth) {
         int side = (stm == Black);
 
         int bonus = std::clamp(diff * depth / 8,-CORRECTION_BONUS_MAX,CORRECTION_BONUS_MAX);
@@ -157,9 +168,6 @@ public:
         corrHist->nonPawnCorrection[1][side][corrIndex(keys.nonPawnKey[1])].update(bonus);
         corrHist->minorPieceCorrection[side][corrIndex(keys.minorPieceKey)].update(bonus);
         corrHist->majorPieceCorrection[side][corrIndex(keys.majorPieceKey)].update(bonus);
-        if(corrEntry){
-            corrEntry->update(bonus);
-        }
     }
 
     void clear() {
@@ -209,6 +217,7 @@ private:
     };
 
     std::unique_ptr<CorrectionHistory> corrHist = std::make_unique<CorrectionHistory>();
+    std::unique_ptr<ContTable> contCorrectionHistory = std::make_unique<ContTable>();
 
 };
 

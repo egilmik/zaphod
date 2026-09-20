@@ -227,12 +227,20 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
     Move bestMove{};
     
-    History::CorrectionEntry *corrEntry = nullptr;
-    if(ply > 2 && ss[ply-1].movedPiece != All && ss[ply-2].movedPiece != All) {
-        corrEntry = history.correctionEntry(ss[ply-2].movedPiece,ss[ply-2].move.to(),ss[ply-1].movedPiece,ss[ply-1].move.to());
-    } 
+    History::ContSlice* contCorrections[History::CONT_PLIES] = {};
+    for (int i = 0; i < History::CONT_PLIES; i++) {
+        int prev = ply - History::contOffset[i];
+        if (prev >= 0 && ss[prev].movedPiece != All) {
+            contCorrections[i] = history.contSlice(BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
+        }
+        else if (prev >= 0 && ss[prev].isNullMove) {
+            contCorrections[i] = history.contSlice(BitBoardEnum(P), 0);
+        }
+    }
 
-    int correction = history.correction(board.getSideToMove(),board.getCurrentKeys(), corrEntry);
+    int correction = history.correction(board.getSideToMove(),board.getCurrentKeys());
+    int contCorrection = history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 0) * contCorrectionWeight();
+
     bool inCheck = board.getCheckers() > 0;
 
     if (inCheck) {
@@ -245,7 +253,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         else {
             ss[ply].rawStaticEval = evaluate(board);
         }
-        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + correction,-MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + contCorrection + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
 
     }
 
@@ -551,7 +559,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         && !(bound == LOWER && bestScore <= ss[ply].staticEval)
         && !(bound == UPPER && bestScore >= ss[ply].staticEval))
     {
-        history.updateCorrection(board.getSideToMove(),board.getCurrentKeys(),corrEntry , bestScore - ss[ply].staticEval, depth);
+        history.updateCorrection(board.getSideToMove(),board.getCurrentKeys(), bestScore - ss[ply].staticEval, depth);
+        BitBoardEnum piece = board.getPieceOnSquare(bestMove.from());
+        history.updateContCorrectionScore(contCorrections, piece, bestMove.to(), bestScore - ss[ply].staticEval, depth);
     }
 
     tt.put(key, scoreToTT(bestScore,ply), ss[ply].rawStaticEval, depth, bestMove, bound, pvNode);
@@ -615,10 +625,20 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
 
 
     
-    History::CorrectionEntry *corrEntry = nullptr;
-    if (ply > 2 && ss[ply - 1].movedPiece != All && ss[ply - 2].movedPiece != All) {
-        corrEntry = history.correctionEntry(ss[ply-2].movedPiece,ss[ply-2].move.to(),ss[ply-1].movedPiece,ss[ply-1].move.to());
-    } 
+    History::ContSlice* contCorrections[History::CONT_PLIES] = {};
+    for (int i = 0; i < History::CONT_PLIES; i++) {
+        int prev = ply - History::contOffset[i];
+        if (prev >= 0 && ss[prev].movedPiece != All) {
+            contCorrections[i] = history.contSlice(BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
+        }
+        else if (prev >= 0 && ss[prev].isNullMove) {
+            contCorrections[i] = history.contSlice(BitBoardEnum(P), 0);
+        }
+    }
+
+    int correction = history.correction(board.getSideToMove(), board.getCurrentKeys());
+    int contCorrection = history.contCorrectionScore(contCorrections, ss[ply].movedPiece, ss[ply].move.to(), 0) * contCorrectionWeight();
+
 
     bool inCheck = board.getCheckers() > 0;
 
@@ -632,7 +652,7 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
         else {
             ss[ply].rawStaticEval = evaluate(board);
         }
-        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + history.correction(board.getSideToMove(), board.getCurrentKeys(), corrEntry), -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + contCorrection + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
 
 
         if (ss[ply].staticEval >= beta) {
