@@ -566,7 +566,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     {
         history.updateCorrection(board.getSideToMove(),board.getCurrentKeys(), bestScore - ss[ply].staticEval, depth);
         BitBoardEnum piece = board.getPieceOnSquare(bestMove.from());
-        history.updateContCorrectionScore(contCorrections, piece, bestMove.to(), bestScore - ss[ply].staticEval, depth);
+        history.updateContCorrectionScore(contCorrections, ss[ply-1].movedPiece, ss[ply-1].move.to(), bestScore - ss[ply].staticEval, depth);
     }
 
     tt.put(key, scoreToTT(bestScore,ply), ss[ply].rawStaticEval, depth, bestMove, bound, pvNode);
