@@ -18,6 +18,8 @@ public:
 
 	static constexpr int CONT_PLIES = 4;
 	static constexpr int contOffset[CONT_PLIES] = {1,2,4,6};
+    static constexpr int contCorrectionOffset[CONT_PLIES] = { 0,1,3,5 };
+
 
 	using ContSlice = int16_t[14][64];
 
