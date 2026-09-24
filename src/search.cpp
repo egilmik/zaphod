@@ -251,10 +251,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             toSq = 0;
         }
         
-        contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight();
-        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight();
-        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight();
-        contCorrection += history.contCorrectionScore(contCorrections, piece,toSq, 3) * contCorrectionWeight();
+        contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight1Ply();
+        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight2Ply();
+        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight4Ply();
+        contCorrection += history.contCorrectionScore(contCorrections, piece,toSq, 3) * contCorrectionWeight6Ply();
         contCorrection /= 1024;
     }
 
@@ -671,10 +671,10 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
         toSq = 0;
     }
 
-    int contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 3) * contCorrectionWeight();
+    int contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight1Ply();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight2Ply();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight4Ply();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 3) * contCorrectionWeight6Ply();
     contCorrection /= 1024;
 
 
