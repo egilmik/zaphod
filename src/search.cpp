@@ -240,9 +240,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     int correction = history.correction(board.getSideToMove(),board.getCurrentKeys());
-    int contCorrection = 0;
     if (ply > 0){
 
+        int contCorrection = 0;
         BitBoardEnum piece = ss[ply - 1].movedPiece;
         int toSq = ss[ply - 1].move.to();
 
@@ -256,6 +256,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight4Ply();
         contCorrection += history.contCorrectionScore(contCorrections, piece,toSq, 3) * contCorrectionWeight6Ply();
         contCorrection /= 1024;
+        correction += contCorrection;
     }
 
     bool inCheck = board.getCheckers() > 0;
@@ -270,7 +271,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         else {
             ss[ply].rawStaticEval = evaluate(board);
         }
-        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + contCorrection + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval +  correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
 
     }
 
@@ -299,6 +300,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     int futilityMargin =(1+ depth) * rfpLinear();
     //futilityMargin += rfpQuadratic()*depth*depth;
     futilityMargin -= rfpImproving()*improving;
+    futilityMargin += correction * 50/100;
     if (!pvNode && !inCheck && depth <= 6 && (ss[ply].staticEval - futilityMargin >= beta) && ss[ply].staticEval < MATESCORE-MAXPLY) {
         reverseFutilityPruningHit++;
         return (ss[ply].staticEval+beta)/2;
@@ -463,7 +465,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
             r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
-	        r -= std::min(std::abs(correction+contCorrection)*lmrCorrWeight()/100,lmrCorrMax());
+	        r -= std::min(std::abs(correction)*lmrCorrWeight()/100,lmrCorrMax());
 
             r /= 100;
 
@@ -677,6 +679,8 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
     contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 3) * contCorrectionWeight6Ply();
     contCorrection /= 1024;
 
+    correction += contCorrection;
+
 
 
     bool inCheck = board.getCheckers() > 0;
@@ -691,7 +695,7 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
         else {
             ss[ply].rawStaticEval = evaluate(board);
         }
-        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + contCorrection + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
 
 
         if (ss[ply].staticEval >= beta) {
