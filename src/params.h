@@ -66,7 +66,7 @@ namespace zaphod::params {
 
 	//Reverse Futility Pruning
 	ZAP_TUNABLE_INT(rfpLinear, 43, 0, 200, 20)
-	ZAP_TUNABLE_INT(rfpCorrection, 50, 0, 200, 10)
+	ZAP_TUNABLE_INT(rfpCorrection, 20, 0, 200, 10)
 	ZAP_TUNABLE_INT(rfpImproving, 35, 0, 200, 20)
 
 	///////////
