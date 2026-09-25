@@ -281,15 +281,6 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     ////////////
-    // Internal Iterative Reduction
-    ///////////
-    
-    if(depth > 6 && !inCheck && !ttHit){
-        depth--;
-    }
-
-
-    ////////////
     // Razoring
     ////////////
     if (!isRoot && !ttHit && depth <= 4 && ss[ply].staticEval < (alpha - razoringMargin() *depth) ) {
