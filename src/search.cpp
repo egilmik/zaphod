@@ -299,7 +299,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     int futilityMargin =(1+ depth) * rfpLinear();
     futilityMargin -= rfpImproving()*improving;
-    futilityMargin += correction * rfpCorrection()/100;
+    futilityMargin += std::abs(correction) * rfpCorrection()/100;
     if (!pvNode && !inCheck && depth <= 6 && (ss[ply].staticEval - futilityMargin >= beta) && ss[ply].staticEval < MATESCORE-MAXPLY) {
         reverseFutilityPruningHit++;
         return (ss[ply].staticEval+beta)/2;
