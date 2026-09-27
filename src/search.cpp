@@ -22,8 +22,9 @@ Score Search::search(Board &board, SearchLimits lim)
         ss[i].checkExt = 0;
         ss[i].isNullMove = false;
         ss[i].staticEval = 0;
-	ss[i].movedPiece = All;
-	ss[i].move = 0;
+        ss[i].rawStaticEval = 0;
+	    ss[i].movedPiece = All;
+	    ss[i].move = 0;
     }
 
     history.age();
@@ -226,18 +227,51 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
     Move bestMove{};
     
+    History::ContSlice* contCorrections[History::CONT_PLIES] = {};
+    for (int i = 0; i < History::CONT_PLIES; i++) {
+        // No move has been made yet, so ply - 1
+        int prev = ply - History::contCorrectionOffset[i]-1;
+        if (prev >= 0 && ss[prev].movedPiece != All) {
+            contCorrections[i] = history.contCorrectionSlice(BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
+        }
+        else if (prev >= 0 && ss[prev].isNullMove) {
+            contCorrections[i] = history.contCorrectionSlice(BitBoardEnum(P), 0);
+        }
+    }
 
-    
+    int correction = history.correction(board.getSideToMove(),board.getCurrentKeys());
+    int contCorrection = 0;
+    if (ply > 0){
+
+        BitBoardEnum piece = ss[ply - 1].movedPiece;
+        int toSq = ss[ply - 1].move.to();
+
+        if(ss[ply-1].isNullMove || piece == All){
+            piece = P;
+            toSq = 0;
+        }
+        
+        contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight();
+        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight();
+        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight();
+        contCorrection += history.contCorrectionScore(contCorrections, piece,toSq, 3) * contCorrectionWeight();
+        contCorrection /= 1024;
+    }
+
     bool inCheck = board.getCheckers() > 0;
 
     if (inCheck) {
         ss[ply].staticEval = -MATESCORE - 1;
-    }
-    else if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
-        ss[ply].staticEval = tte.staticEval;
-    }
-    else {
-        ss[ply].staticEval = evaluate(board);
+        ss[ply].rawStaticEval = -MATESCORE - 1;
+    } else {
+        if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
+            ss[ply].rawStaticEval = tte.staticEval;
+        }
+        else {
+            ss[ply].rawStaticEval = evaluate(board);
+        }
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + contCorrection + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+
     }
 
 
@@ -429,6 +463,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
             r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
+	        r -= std::min(std::abs(correction+contCorrection)*lmrCorrWeight()/100,lmrCorrMax());
 
             r /= 100;
 
@@ -529,7 +564,31 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     TType bound = bestScore >= beta ? LOWER : bestScore <= alphaOrginal ? UPPER : EXACT;   
-    tt.put(key, scoreToTT(bestScore,ply), ss[ply].staticEval, depth, bestMove, bound, pvNode);
+
+    bool bestIsNoisy = bestMove
+        && (board.getPieceOnSquare(bestMove.to()) != All
+            || bestMove.getMoveType() == PROMOTION);
+
+    if (!inCheck
+        && ss[ply].staticEval != (-MATESCORE - 1)
+        && std::abs(bestScore) < MATE_IN_MAX
+        && !bestIsNoisy
+        && !(bound == LOWER && bestScore <= ss[ply].staticEval)
+        && !(bound == UPPER && bestScore >= ss[ply].staticEval))
+    {
+        history.updateCorrection(board.getSideToMove(),board.getCurrentKeys(), bestScore - ss[ply].staticEval, depth);
+        BitBoardEnum piece = ss[ply - 1].movedPiece;
+        int toSq = ss[ply - 1].move.to();
+
+        if (ss[ply - 1].isNullMove || piece == All) {
+            piece = P;
+            toSq = 0;
+        }
+
+        history.updateContCorrectionScore(contCorrections, piece,toSq, bestScore - ss[ply].staticEval, depth);
+    }
+
+    tt.put(key, scoreToTT(bestScore,ply), ss[ply].rawStaticEval, depth, bestMove, bound, pvNode);
     
 
     return bestScore;
@@ -590,6 +649,35 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
 
 
     
+    History::ContSlice* contCorrections[History::CONT_PLIES] = {};
+    for (int i = 0; i < History::CONT_PLIES; i++) {
+        // No move has been made yet, so ply - 1
+        int prev = ply - History::contCorrectionOffset[i]-1;
+        if (prev >= 0 && ss[prev].movedPiece != All) {
+            contCorrections[i] = history.contCorrectionSlice(BitBoardEnum(ss[prev].movedPiece), ss[prev].move.to());
+        }
+        else if (prev >= 0 && ss[prev].isNullMove) {
+            contCorrections[i] = history.contCorrectionSlice(BitBoardEnum(P), 0);
+        }
+    }
+
+    int correction = history.correction(board.getSideToMove(), board.getCurrentKeys());
+    
+    BitBoardEnum piece = ss[ply - 1].movedPiece;
+    int toSq = ss[ply - 1].move.to();
+
+    if (ss[ply - 1].isNullMove || piece == All) {
+        piece = P;
+        toSq = 0;
+    }
+
+    int contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 3) * contCorrectionWeight();
+    contCorrection /= 1024;
+
+
 
     bool inCheck = board.getCheckers() > 0;
 
@@ -598,11 +686,13 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
     }
     else {
         if (ttHit && tte.staticEval != (-MATESCORE - 1)) {
-            ss[ply].staticEval = tte.staticEval;
+            ss[ply].rawStaticEval = tte.staticEval;
         }
         else {
-            ss[ply].staticEval = evaluate(board);
+            ss[ply].rawStaticEval = evaluate(board);
         }
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + contCorrection + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+
 
         if (ss[ply].staticEval >= beta) {
             return beta;
@@ -640,8 +730,13 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
             continue;
         }
         
-        evaluatedNodes++;
+	    BitBoardEnum movedPiece = board.getPieceOnSquare(move.from());
+        BitBoardEnum capturedPiece = board.getPieceOnSquare(move.to());
         board.makeMove(move);
+	    ss[ply].movedPiece = movedPiece;
+	    ss[ply].move = move;
+        evaluatedNodes++;
+
         score = -qsearch(board,-beta,-alpha,depth-1, ply+1,pvNode);
 
         if(score > alpha){

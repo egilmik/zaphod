@@ -8,9 +8,9 @@
 #include "zobrist.h"
 #include <array>
 #include "nnueq.h"
+#include <span>
 
 struct alignas(64) MoveUndoInfo {
-    BitBoard hashKeyCopy = 0; // 8 byte
     Move move = 0; // 2 byte
 
     uint8_t sideToMove = static_cast<uint8_t>(BitBoardEnum::White); // 1 byte
@@ -26,6 +26,14 @@ struct alignas(64) MoveUndoInfo {
     int8_t halfMoveClock = 0; // 1 byte
     int8_t fullMoveClock = 1;
     int8_t enPassantSqCopy = -1; // 1 byte
+};
+
+struct HashKeys {
+    uint64_t hashKey = 0; // 8 byte
+    uint64_t pawnHash = 0;
+    uint64_t nonPawnKey[2] = {};
+    uint64_t minorPieceKey = 0;
+    uint64_t majorPieceKey = 0;
 };
 
 class Board {
@@ -222,11 +230,23 @@ class Board {
             return checkers != 0;
         }
 
-        
+        std::span<HashKeys> getKeyHistory() {
+            return keyHistory;
+        }
 
-        BitBoard generateHashKey();
-        BitBoard generatePawnHashKey();
-        BitBoard getHashKey(){ return hashKey;};
+        int getHistoryPly() { return historyPly; }
+
+        uint64_t generateHashKey();
+        uint64_t generatePawnHashKey();
+        uint64_t getHashKey(){ return hashKey;};
+        uint64_t getPawnHashKey() { return pawnHashKey; }
+        uint64_t getNonPawnHashKeyWhite() { return nonPawnKey[0]; }
+        uint64_t getNonPawnHashKeyBlack() { return nonPawnKey[1]; }
+
+        HashKeys getCurrentKeys() const {
+            return HashKeys{ hashKey, pawnHashKey, { nonPawnKey[0], nonPawnKey[1] }, minorPieceKey, majorPieceKey };
+        }
+
 
         Zobrist zobrist;
 
@@ -253,7 +273,9 @@ class Board {
 
         void calculateCheckersSnipersPins();
         BitBoard calculateSnipers(int kingSquare, BitBoardEnum attackerColor);
-	void calculateThreats();
+	    void calculateThreats();
+
+        inline void toggleHashKeys(BitBoardEnum piece, int sq);
 
         constexpr static int MAXMOVEHISTORY = 1024;
         
@@ -262,9 +284,11 @@ class Board {
         BitBoard checkers = 0;
         BitBoard pins = 0;
         BitBoard snipers = 0;
-	BitBoard threats = 0;
+	    BitBoard threats = 0;
 
         MoveUndoInfo moveHistory[MAXMOVEHISTORY];
+        HashKeys keyHistory[MAXMOVEHISTORY];
+
         int historyPly = 0;
 
         int halfMoveClock = 0;
@@ -278,7 +302,11 @@ class Board {
         bool castleWQ = false;
         bool castleBK = false;
         bool castleBQ = false;
-        BitBoard hashKey = 0;
+        uint64_t hashKey = 0;
+        uint64_t pawnHashKey = 0;
+        uint64_t nonPawnKey[2] = { 0,0 };
+        uint64_t minorPieceKey = 0;
+        uint64_t majorPieceKey = 0;
 
         int gamePhase = 24;
         

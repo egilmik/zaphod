@@ -294,6 +294,13 @@ void Board::clearBoard()
     historyPly = 0;
     halfMoveClock = 0;
 
+    hashKey = 0;
+    pawnHashKey = 0;
+    nonPawnKey[0] = 0;
+    nonPawnKey[1] = 0;
+    minorPieceKey = 0;
+    majorPieceKey = 0;
+
     sideToMove = White;
     enPassantSq = noSq;
     castleWK = false;
@@ -302,10 +309,21 @@ void Board::clearBoard()
     castleBQ = false;
 }
 
+void Board::toggleHashKeys(BitBoardEnum piece, int sq) {
+    BitBoard key = zobrist.pieceKeys[piece][sq];
+    bool stm = piece > Black;                       
+    BitBoardEnum type = stm ? BitBoardEnum(piece - Black) : piece;
+    if (type == P) return;
+    nonPawnKey[stm] ^= key;
+    if (type == N || type == B || type == K) minorPieceKey ^= key;
+    if (type == R || type == Q || type == K) majorPieceKey ^= key;
+}
+
 void Board::addPiece(int sq, BitBoardEnum piece, BitBoardEnum color)
 {
     assert(piece != All);
     nnue.addPiece(piece, sq);
+    toggleHashKeys(piece, sq);
 
     mailBoxBoard[sq] = piece;
     bitBoardArray[All] |= sqBB[sq];
@@ -318,6 +336,8 @@ void Board::removePiece(int sq, BitBoardEnum color)
 
     assert(mailBoxBoard[sq] != All);
     nnue.removePiece(mailBoxBoard[sq], sq);
+    toggleHashKeys(mailBoxBoard[sq], sq);
+
     bitBoardArray[All] &= ~sqBB[sq];
     bitBoardArray[color] &= ~sqBB[sq];
     bitBoardArray[mailBoxBoard[sq]] &= ~sqBB[sq];
@@ -332,7 +352,7 @@ bool Board::hasPositionRepeated() {
     for (int i = historyPly-1; i >= 0; i--) {
 
          
-        if (moveHistory[i].hashKeyCopy == hashKey) {
+        if (keyHistory[i].hashKey == hashKey) {
             moveCounter++;
             if (moveCounter > 1) {
                 return true;
@@ -514,6 +534,7 @@ void Board::parseFen(std::string fen){
     }
 
     hashKey = generateHashKey();
+    pawnHashKey = generatePawnHashKey();
     historyPly = 0;
     calculateCheckersSnipersPins();
     calculateThreats();
@@ -773,12 +794,19 @@ bool Board::makeMove(Move move) {
     histMove->sideToMove = static_cast<uint8_t>(sideToMove);
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
-    histMove->hashKeyCopy = hashKey;
     histMove->move = move;
     histMove->checkers = checkers;
     histMove->pins = pins;
     histMove->snipers = snipers;
     histMove->threats = threats;
+
+    HashKeys* hashKeys = &keyHistory[historyPly];
+    hashKeys->hashKey = hashKey;
+    hashKeys->pawnHash = pawnHashKey;
+    hashKeys->nonPawnKey[0] = nonPawnKey[0];
+    hashKeys->nonPawnKey[1] = nonPawnKey[1];
+    hashKeys->minorPieceKey = minorPieceKey;
+    hashKeys->majorPieceKey = majorPieceKey;
 
     historyPly++;
 
@@ -810,11 +838,15 @@ bool Board::makeMove(Move move) {
             capturedPiece = mailBoxBoard[toSq - enpassantModifier];
             removePiece(toSq - enpassantModifier, otherSide);
             hashKey ^= zobrist.pieceKeys[otherSide + P][toSq - enpassantModifier];
+            pawnHashKey ^= zobrist.pieceKeys[otherSide + P][toSq - enpassantModifier];
         }
         else {
             capturedPiece = mailBoxBoard[toSq];
             removePiece(toSq, otherSide);
             hashKey ^= zobrist.pieceKeys[capturedPiece][toSq];
+            if (capturedPiece == P || capturedPiece == p) {
+                pawnHashKey ^= zobrist.pieceKeys[capturedPiece][toSq];
+            }
         }
         // Capture resets halfmoveclock
         halfMoveClock = 0;
@@ -826,6 +858,11 @@ bool Board::makeMove(Move move) {
 
     hashKey ^= zobrist.pieceKeys[piece][fromSq];
     hashKey ^= zobrist.pieceKeys[piece][toSq];
+
+    if (isPawn) {
+        pawnHashKey ^= zobrist.pieceKeys[piece][fromSq];
+        pawnHashKey ^= zobrist.pieceKeys[piece][toSq];
+    }
 
     // Reset halfmoveclock if there is a pawn move
     if (piece == P + sideToMove) {
@@ -892,6 +929,7 @@ bool Board::makeMove(Move move) {
         BitBoardEnum promotionPiece = move.getPromotionType(sideToMove);
         hashKey ^= zobrist.pieceKeys[piece][toSq];
         hashKey ^= zobrist.pieceKeys[promotionPiece][toSq];
+        pawnHashKey ^= zobrist.pieceKeys[piece][toSq];
         removePiece(toSq,sideToMove);
         addPiece(toSq, promotionPiece, sideToMove);
 
@@ -1059,7 +1097,14 @@ void Board::revertLastMove()
         addPiece(info->move.to(), capturedPiece, getOtherSide());
     }
 
-    hashKey = info->hashKeyCopy;
+    HashKeys* haskKeys = &keyHistory[historyPly];
+
+    hashKey = haskKeys->hashKey;
+    pawnHashKey = haskKeys->pawnHash;
+    nonPawnKey[0] = haskKeys->nonPawnKey[0];
+    nonPawnKey[1] = haskKeys->nonPawnKey[1];
+    minorPieceKey = haskKeys->minorPieceKey;
+    majorPieceKey = haskKeys->majorPieceKey;
 }
 
 void Board::makeNullMove() {
@@ -1067,14 +1112,20 @@ void Board::makeNullMove() {
 
     histMove->halfMoveClock = halfMoveClock;
     histMove->sideToMove = static_cast<uint8_t>(sideToMove);
-
-    histMove->hashKeyCopy = hashKey;
     histMove->enPassantSqCopy = enPassantSq;
     histMove->castleMask = (castleWK ? 1 : 0) | (castleWQ ? 2 : 0) | (castleBK ? 4 : 0) | (castleBQ ? 8 : 0);
     histMove->checkers = checkers;
     histMove->pins = pins;
     histMove->snipers = snipers;
     histMove->threats = threats;
+    
+    HashKeys* hashKeys = &keyHistory[historyPly];
+    hashKeys->hashKey = hashKey;
+    hashKeys->pawnHash = pawnHashKey;
+    hashKeys->nonPawnKey[0] = nonPawnKey[0];
+    hashKeys->nonPawnKey[1] = nonPawnKey[1];
+    hashKeys->minorPieceKey = minorPieceKey;
+    hashKeys->majorPieceKey = majorPieceKey;
 
 
     if (enPassantSq != noSq) {
@@ -1101,11 +1152,19 @@ void Board::revertNullMove() {
     castleWQ = (info->castleMask & 2) != 0;
     castleBK = (info->castleMask & 4) != 0;
     castleBQ = (info->castleMask & 8) != 0;
-    hashKey = info->hashKeyCopy;
     checkers = info->checkers;
     snipers = info->snipers;
     pins = info->pins;
     threats = info->threats;
+
+    HashKeys* haskKeys = &keyHistory[historyPly];
+
+    hashKey = haskKeys->hashKey;
+    pawnHashKey = haskKeys->pawnHash;
+    nonPawnKey[0] = haskKeys->nonPawnKey[0];
+    nonPawnKey[1] = haskKeys->nonPawnKey[1];
+    minorPieceKey = haskKeys->minorPieceKey;
+    majorPieceKey = haskKeys->majorPieceKey;
 }
 
 void Board::calculateThreats(){

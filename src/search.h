@@ -20,6 +20,7 @@ struct SearchStack {
     int checkExt = 0;
     bool isNullMove = false;
     int staticEval = 0;
+    int rawStaticEval = 0;
     BitBoardEnum movedPiece = All;
     Move move = 0;
 };

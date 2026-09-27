@@ -4,7 +4,7 @@
 #include "../board.h"
 #include <vector>
 #include "../movegenerator.h"
-#include <iostream>
+#include <cassert>
 
 class Perft {
     public:
@@ -35,6 +35,7 @@ class Perft {
 
             while (Move move = generator.next()) {
                 board.makeMove(move);
+                assert(board.getPawnHashKey() == board.generatePawnHashKey());
                 nrOfNodes++;
                 nrOfNodes += perft(board, depth - 1,table);
                 board.revertLastMove();
