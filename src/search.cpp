@@ -240,9 +240,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     int correction = history.correction(board.getSideToMove(),board.getCurrentKeys());
-    int contCorrection = 0;
     if (ply > 0){
 
+        int contCorrection = 0;
         BitBoardEnum piece = ss[ply - 1].movedPiece;
         int toSq = ss[ply - 1].move.to();
 
@@ -251,11 +251,12 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             toSq = 0;
         }
         
-        contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight();
-        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight();
-        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight();
-        contCorrection += history.contCorrectionScore(contCorrections, piece,toSq, 3) * contCorrectionWeight();
+        contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight1Ply();
+        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight2Ply();
+        contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight4Ply();
+        contCorrection += history.contCorrectionScore(contCorrections, piece,toSq, 3) * contCorrectionWeight6Ply();
         contCorrection /= 1024;
+        correction += contCorrection;
     }
 
     bool inCheck = board.getCheckers() > 0;
@@ -270,13 +271,21 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         else {
             ss[ply].rawStaticEval = evaluate(board);
         }
-        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + contCorrection + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval +  correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
 
     }
 
 
     if (ply >= 4 && !inCheck) {
         improving = (ss[ply].staticEval > ss[ply - 2].staticEval && ss[ply - 2].staticEval > ss[ply - 4].staticEval);
+    }
+
+    ////////////
+    // Internal iterative reduction
+    ////////////
+    
+    if(depth > 6 && !inCheck && !ttHit){
+        depth--;
     }
 
     ////////////
@@ -297,8 +306,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     // Reverse futility pruning
     ////////////
     int futilityMargin =(1+ depth) * rfpLinear();
-    //futilityMargin += rfpQuadratic()*depth*depth;
     futilityMargin -= rfpImproving()*improving;
+    futilityMargin += std::abs(correction) * rfpCorrection()/100;
     if (!pvNode && !inCheck && depth <= 6 && (ss[ply].staticEval - futilityMargin >= beta) && ss[ply].staticEval < MATESCORE-MAXPLY) {
         reverseFutilityPruningHit++;
         return (ss[ply].staticEval+beta)/2;
@@ -463,7 +472,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             r -= improving*lmrImprovingReduction();
             r -= givesCheck*lmrCheckReduction();
             r -= std::clamp(historyScore/lmrHistoryReduction(),-200,200);
-	        r -= std::min(std::abs(correction+contCorrection)*lmrCorrWeight()/100,lmrCorrMax());
+	        r -= std::min(std::abs(correction)*lmrCorrWeight()/100,lmrCorrMax());
 
             r /= 100;
 
@@ -671,11 +680,13 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
         toSq = 0;
     }
 
-    int contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight();
-    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 3) * contCorrectionWeight();
+    int contCorrection = history.contCorrectionScore(contCorrections, piece, toSq, 0) * contCorrectionWeight1Ply();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 1) * contCorrectionWeight2Ply();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 2) * contCorrectionWeight4Ply();
+    contCorrection += history.contCorrectionScore(contCorrections, piece, toSq, 3) * contCorrectionWeight6Ply();
     contCorrection /= 1024;
+
+    correction += contCorrection;
 
 
 
@@ -691,7 +702,7 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
         else {
             ss[ply].rawStaticEval = evaluate(board);
         }
-        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + contCorrection + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
+        ss[ply].staticEval = std::clamp(ss[ply].rawStaticEval + correction, -MATE_IN_MAX + 1, MATE_IN_MAX - 1);
 
 
         if (ss[ply].staticEval >= beta) {
