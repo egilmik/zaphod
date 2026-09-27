@@ -1,6 +1,5 @@
 Zaphod is just a hobby!
 
-
 ## Building
 
 Requires CMake 3.25+ and a compiler with C++23 and `#embed`, which means
