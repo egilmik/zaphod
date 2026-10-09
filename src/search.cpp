@@ -327,6 +327,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             int R = 3 + (depth >= 6) + improving;
             //R = std::clamp(R, 2, 4);
             board.makeNullMove();
+            tt.prefetch(board.getHashKey());
             ss[ply].isNullMove = true;
 	    ss[ply].movedPiece = All;
             int nullScore = -negamax(board, depth - 1 - R, -beta, -beta + 1, ply + 1,false);
@@ -421,6 +422,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 	    BitBoardEnum movedPiece = board.getPieceOnSquare(move.from());
         BitBoardEnum capturedPiece = board.getPieceOnSquare(move.to());
         board.makeMove(move);
+        tt.prefetch(board.getHashKey());
 	    ss[ply].movedPiece = movedPiece;
 	    ss[ply].move = move;
         evaluatedNodes++;
@@ -744,6 +746,7 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
 	    BitBoardEnum movedPiece = board.getPieceOnSquare(move.from());
         BitBoardEnum capturedPiece = board.getPieceOnSquare(move.to());
         board.makeMove(move);
+        tt.prefetch(board.getHashKey());
 	    ss[ply].movedPiece = movedPiece;
 	    ss[ply].move = move;
         evaluatedNodes++;

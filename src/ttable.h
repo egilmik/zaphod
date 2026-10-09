@@ -10,7 +10,16 @@
 #include <bit>
 #include <cstddef>
 #include <cstring>
+#include <cstdlib>
+#include <new>
+#include <immintrin.h>
 #include "move.h"
+
+#if defined(__linux__)
+    #include <sys/mman.h>
+#elif defined(_WIN32)
+    #include <malloc.h>
+#endif
 
 #if defined _MSC_VER
     #include <__msvc_int128.hpp>
@@ -51,7 +60,7 @@ public:
         if (size < 1024) size = 1024;
         nrOfBuckets = size;
         if (nrOfBuckets == 0) nrOfBuckets = 1024;   // safety in case sizeMB==0
-        table.reset(new Bucket[nrOfBuckets]);
+        table.reset(allocateBuckets(nrOfBuckets));
         generation = 0;
     }
 
@@ -66,6 +75,11 @@ public:
             std::memset(table.get(), 0, nrOfBuckets * sizeof(Bucket));
         }
         tableAge = 0;
+    }
+
+    // Pull the bucket of key into the cache, ahead of the probe for it.
+    void prefetch(uint64_t key) const noexcept {
+        _mm_prefetch(reinterpret_cast<const char*>(&table[index(key)]), _MM_HINT_T0);
     }
 
     TTEntry probe(uint64_t key) const noexcept {
@@ -149,7 +163,37 @@ private:
     };
 
 
-    std::unique_ptr<Bucket[]> table;
+    // The table is backed by 2 MB pages where the OS allows it, every probe
+    // is a random access into it and would otherwise mostly miss the TLB.
+    static constexpr size_t TABLE_ALIGNMENT = 2 * 1024 * 1024;
+
+    static Bucket* allocateBuckets(size_t count) {
+        size_t bytes = (count * sizeof(Bucket) + TABLE_ALIGNMENT - 1) / TABLE_ALIGNMENT * TABLE_ALIGNMENT;
+#if defined(_WIN32)
+        void* mem = _aligned_malloc(bytes, TABLE_ALIGNMENT);
+#else
+        void* mem = std::aligned_alloc(TABLE_ALIGNMENT, bytes);
+#endif
+        if (!mem) throw std::bad_alloc();
+#if defined(__linux__)
+        madvise(mem, bytes, MADV_HUGEPAGE);
+#endif
+        Bucket* buckets = static_cast<Bucket*>(mem);
+        std::uninitialized_value_construct_n(buckets, count);
+        return buckets;
+    }
+
+    struct BucketDeleter {
+        void operator()(Bucket* buckets) const noexcept {
+#if defined(_WIN32)
+            _aligned_free(buckets);
+#else
+            std::free(buckets);
+#endif
+        }
+    };
+
+    std::unique_ptr<Bucket[], BucketDeleter> table;
     uint64_t nrOfBuckets = 0;
     uint32_t tableAge = 0;
     uint16_t generation = 0;
