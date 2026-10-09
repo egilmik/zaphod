@@ -71,7 +71,7 @@ class MoveGenerator {
         void generateKingNoisy();
         void generateKingQuiet();
         
-        void sortNoisyMoves();
+        void scoreNoisyMoves();
         void scoreQuietMoves();
 
         Board* board;

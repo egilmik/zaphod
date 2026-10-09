@@ -163,6 +163,22 @@ bool MoveGenerator::isMoveLegalSliders(Move move, bool isCapture, BitBoard moves
     return false;
 }
 
+// Moves come out highest score first, ties broken by the move value. That is
+// a total order, so picking the best of the remaining moves each time gives
+// the same sequence as sorting the list up front. Most nodes cut off after a
+// few moves, so most of the list is never ordered.
+static inline ScoredMove& pickBest(ScoredMove* moves, int idx, int count) {
+    int best = idx;
+    for (int i = idx + 1; i < count; i++) {
+        if (moves[i].score > moves[best].score
+            || (moves[i].score == moves[best].score && moves[i].move.value < moves[best].move.value)) {
+            best = i;
+        }
+    }
+    std::swap(moves[idx], moves[best]);
+    return moves[idx];
+}
+
 Move MoveGenerator::next() {
 
   
@@ -197,12 +213,12 @@ Move MoveGenerator::next() {
             }
             generateKingNoisy();
 
-            sortNoisyMoves();
+            scoreNoisyMoves();
             [[fallthrough]];
         case GOOD_NOISY:
             
             //Return good noisy
-            if (noisyIdx < noisyCount && noisyMoves[noisyIdx].score > 0) {
+            if (noisyIdx < noisyCount && pickBest(noisyMoves, noisyIdx, noisyCount).score > 0) {
                 return noisyMoves[noisyIdx++].move;
             } 
 
@@ -235,7 +251,7 @@ Move MoveGenerator::next() {
             // if no more moves left, next stage
             if (!skipQuiets) {
                 if (quietIdx < quietCount) {
-                    return quietMoves[quietIdx++].move;
+                    return pickBest(quietMoves, quietIdx++, quietCount).move;
                 }
             }
 
@@ -246,7 +262,7 @@ Move MoveGenerator::next() {
             //Return bad noisy
             // if no more moves left, next stage
             if (noisyIdx < noisyCount) {
-                return noisyMoves[noisyIdx++].move;
+                return pickBest(noisyMoves, noisyIdx++, noisyCount).move;
             }
             currentStage = END;
             [[fallthrough]];
@@ -257,23 +273,7 @@ Move MoveGenerator::next() {
 
 }
 
-// Highest score first, ties broken by the move value. That is a total order,
-// so the result is the same as with any other sort. Insertion sort, because
-// the lists are short and std::stable_sort allocates a buffer on every call.
-static void sortScoredMoves(ScoredMove* moves, int count) {
-    for (int i = 1; i < count; i++) {
-        ScoredMove current = moves[i];
-        int j = i - 1;
-        while (j >= 0 && (moves[j].score < current.score
-            || (moves[j].score == current.score && moves[j].move.value > current.move.value))) {
-            moves[j + 1] = moves[j];
-            j--;
-        }
-        moves[j + 1] = current;
-    }
-}
-
-void MoveGenerator::sortNoisyMoves() {
+void MoveGenerator::scoreNoisyMoves() {
     int side = 0;
     if (board->getSideToMove() == Black) {
         side = 1;
@@ -300,7 +300,6 @@ void MoveGenerator::sortNoisyMoves() {
         }
     }
 
-    sortScoredMoves(noisyMoves, noisyCount);
 }
 
 void MoveGenerator::scoreQuietMoves() {
@@ -325,7 +324,6 @@ void MoveGenerator::scoreQuietMoves() {
         }	       
     }
 
-    sortScoredMoves(quietMoves, quietCount);
 
 }
 
