@@ -28,7 +28,7 @@ presets will not configure.
 
 The engine speaks UCI on stdin/stdout. Non-standard commands for development:
 - `bench` — depth-12 search over 35 positions; last line is `<nodes> nodes <nps> nps`.
-- `perft` — perft suite, 6 positions at depth 5–8. Slow (billions of nodes, many minutes).
+- `perft` — perft suite, 6 positions at depth 5–8. Slow: ~15 min single-threaded (billions of nodes); run it in the background.
 - `eval`, `d` (print board), `fen`.
 
     echo -e "bench\nquit" | ./build/linux-clang/bin/Zaphod | tail -1
