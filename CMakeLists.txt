@@ -27,6 +27,7 @@ set(ZAPHOD_ARCH "x86-64-v3" CACHE STRING
 set(ZAPHOD_ARCH_MSVC "/arch:AVX2" CACHE STRING
     "Architecture flag used by MSVC style drivers (cl, clang-cl).")
 option(ZAPHOD_SANITIZE "Build with address + undefined behaviour sanitizers" OFF)
+option(ZAPHOD_LTO "Link time optimisation for the optimised build types" ON)
 
 set(ZAPHOD_NETWORK_NAME "768-512x2-1_1308206_fe8b690_10k_wdl_0.75.bin" CACHE STRING
     "File name of the NNUE network to embed")
@@ -75,6 +76,21 @@ if(ZAPHOD_SANITIZE)
             -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -g)
         target_link_options(zaphod_flags INTERFACE
             -fsanitize=address -fsanitize=undefined)
+    endif()
+endif()
+
+# Link time optimisation lets the compiler inline across source files, the
+# board, NNUE and search code call each other in the hot path. Debug and
+# sanitizer builds are left alone.
+if(ZAPHOD_LTO AND NOT ZAPHOD_SANITIZE)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT ZAPHOD_IPO_SUPPORTED OUTPUT ZAPHOD_IPO_OUTPUT LANGUAGES CXX)
+    if(ZAPHOD_IPO_SUPPORTED)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL ON)
+    else()
+        message(STATUS "Zaphod: link time optimisation not supported, building without it")
     endif()
 endif()
 
