@@ -96,37 +96,58 @@ int NNUEQ::forward(BitBoardEnum stm) {
     return (int)out;
 }
 
-// dst = src + the rows in add - the rows in sub, in one pass over the
-// accumulator. The adds and subs wrap instead of saturating: with this
-// network an accumulator stays far inside the int16 range (see
+// dst = src + the rows in add - the rows in sub, for both perspectives in one
+// pass over the accumulator. The adds and subs wrap instead of saturating:
+// with this network an accumulator stays far inside the int16 range (see
 // checkAccumulatorRange()), so the order of the changes does not matter.
 template<int Adds, int Subs>
-static inline void updateRows(const int16_t* src, int16_t* dst,
-    const int16_t* const* add, const int16_t* const* sub) {
+static inline void updateRows(const Accumulator& src, Accumulator& dst,
+    const int16_t* const (*add)[2], const int16_t* const (*sub)[2]) {
 #if defined(__AVX2__)
     for (int j = 0; j < H; j += 16) {
-        __m256i v = _mm256_load_si256(reinterpret_cast<const __m256i*>(src + j));
+        __m256i white = _mm256_load_si256(reinterpret_cast<const __m256i*>(src.pre[0] + j));
+        __m256i black = _mm256_load_si256(reinterpret_cast<const __m256i*>(src.pre[1] + j));
         for (int i = 0; i < Adds; i++) {
-            v = _mm256_add_epi16(v, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(add[i] + j)));
+            white = _mm256_add_epi16(white, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(add[i][0] + j)));
+            black = _mm256_add_epi16(black, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(add[i][1] + j)));
         }
         for (int i = 0; i < Subs; i++) {
-            v = _mm256_sub_epi16(v, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(sub[i] + j)));
+            white = _mm256_sub_epi16(white, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(sub[i][0] + j)));
+            black = _mm256_sub_epi16(black, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(sub[i][1] + j)));
         }
-        _mm256_store_si256(reinterpret_cast<__m256i*>(dst + j), v);
+        _mm256_store_si256(reinterpret_cast<__m256i*>(dst.pre[0] + j), white);
+        _mm256_store_si256(reinterpret_cast<__m256i*>(dst.pre[1] + j), black);
     }
 #else
-    for (int j = 0; j < H; j++) {
-        int16_t v = src[j];
-        for (int i = 0; i < Adds; i++) v += add[i][j];
-        for (int i = 0; i < Subs; i++) v -= sub[i][j];
-        dst[j] = v;
+    for (int side = 0; side < 2; side++) {
+        for (int j = 0; j < H; j++) {
+            int16_t v = src.pre[side][j];
+            for (int i = 0; i < Adds; i++) v += add[i][side][j];
+            for (int i = 0; i < Subs; i++) v -= sub[i][side][j];
+            dst.pre[side][j] = v;
+        }
     }
 #endif
 }
 
+// Offset of the weight row of a piece on a square, from the white [0] and the
+// black [1] perspective. Indexed by BitBoardEnum, the colour entries are unused.
+static const auto featureOffsets = [] {
+    std::array<std::array<std::array<int32_t, 2>, 64>, 15> offsets{};
+    for (int piece = 0; piece < 15; piece++) {
+        int plane = NNUEQ::plane_index_from_piece(static_cast<BitBoardEnum>(piece));
+        if (plane < 0) continue;
+        for (int sq = 0; sq < 64; sq++) {
+            offsets[piece][sq][0] = NNUEQ::encodeFeature(plane, sq, White) * H;
+            offsets[piece][sq][1] = NNUEQ::encodeFeature(plane, sq, Black) * H;
+        }
+    }
+    return offsets;
+}();
+
 // to = from with the queued changes applied.
 void NNUEQ::applyPending(const Accumulator& from, Accumulator& to) {
-    const int count = pendingCount;
+    int count = pendingCount;
     pendingCount = 0;
     if (!isInitialized) {
         to = from;
@@ -134,48 +155,41 @@ void NNUEQ::applyPending(const Accumulator& from, Accumulator& to) {
     }
 
     // A piece that is added and removed again on the same square (the pawn
-    // of a promotion) cancels out.
-    PendingChange changes[64];
-    int changeCount = 0;
-    for (int i = 0; i < count; i++) {
-        bool cancelled = false;
-        for (int c = 0; c < changeCount; c++) {
-            if (changes[c].piece == pending[i].piece && changes[c].sq == pending[i].sq && changes[c].add != pending[i].add) {
-                changes[c] = changes[--changeCount];
-                cancelled = true;
-                break;
+    // of a promotion) cancels out. Only promotions and castling queue four
+    // or more changes, so shorter lists are left as they are.
+    if (count >= 4) {
+        for (int i = 0; i < count; i++) {
+            for (int c = i + 1; c < count; c++) {
+                if (pending[c].piece == pending[i].piece && pending[c].sq == pending[i].sq && pending[c].add != pending[i].add) {
+                    pending[c] = pending[--count];
+                    pending[i] = pending[--count];
+                    i--;
+                    break;
+                }
             }
-        }
-        if (!cancelled) {
-            changes[changeCount++] = pending[i];
         }
     }
 
-    for (int side = 0; side < 2; side++) {
-        const BitBoardEnum color = side == 0 ? White : Black;
-        const int16_t* add[64];
-        const int16_t* sub[64];
-        int adds = 0;
-        int subs = 0;
-        for (int i = 0; i < changeCount; i++) {
-            int plane = plane_index_from_piece(static_cast<BitBoardEnum>(changes[i].piece));
-            const int16_t* row = net->l0w.data() + encodeFeature(plane, changes[i].sq, color) * H;
-            if (changes[i].add) add[adds++] = row;
-            else sub[subs++] = row;
-        }
+    const int16_t* add[64][2];
+    const int16_t* sub[64][2];
+    int adds = 0;
+    int subs = 0;
+    const int16_t* weights = net->l0w.data();
+    for (int i = 0; i < count; i++) {
+        const auto& offset = featureOffsets[pending[i].piece][pending[i].sq];
+        const int16_t* (&rows)[2] = pending[i].add ? add[adds++] : sub[subs++];
+        rows[0] = weights + offset[0];
+        rows[1] = weights + offset[1];
+    }
 
-        const int16_t* src = from.pre[side];
-        int16_t* dst = to.pre[side];
-
-        if (adds == 1 && subs == 1) updateRows<1, 1>(src, dst, add, sub);        // quiet move
-        else if (adds == 1 && subs == 2) updateRows<1, 2>(src, dst, add, sub);   // capture
-        else if (adds == 2 && subs == 2) updateRows<2, 2>(src, dst, add, sub);   // castling
-        else {
-            // Promotions and setting up a position
-            std::memcpy(dst, src, sizeof(int16_t) * H);
-            for (int i = 0; i < adds; i++) updateRows<1, 0>(dst, dst, add + i, sub);
-            for (int i = 0; i < subs; i++) updateRows<0, 1>(dst, dst, add, sub + i);
-        }
+    if (adds == 1 && subs == 1) updateRows<1, 1>(from, to, add, sub);        // quiet move
+    else if (adds == 1 && subs == 2) updateRows<1, 2>(from, to, add, sub);   // capture
+    else if (adds == 2 && subs == 2) updateRows<2, 2>(from, to, add, sub);   // castling
+    else {
+        // Promotions and setting up a position
+        to = from;
+        for (int i = 0; i < adds; i++) updateRows<1, 0>(to, to, add + i, sub);
+        for (int i = 0; i < subs; i++) updateRows<0, 1>(to, to, add, sub + i);
     }
 }
 
