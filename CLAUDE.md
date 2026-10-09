@@ -16,8 +16,8 @@ Targets x86-64-v3 (AVX2/BMI2 required).
 - Binaries land in `build/<preset>/bin/`: `Zaphod` (engine), `GenerateData` (datagen).
 - Configure downloads the network into `nnue/` (gitignored) and verifies its
   SHA256. Needs network access, or pass `-DZAPHOD_NETWORK_FILE=/path/net.bin`.
-- Changing the network: update `ZAPHOD_NETWORK_NAME` and `ZAPHOD_NETWORK_SHA256`
-  in CMakeLists.txt together.
+- The network is selected by `ZAPHOD_NETWORK_NAME` + `ZAPHOD_NETWORK_SHA256` in
+  CMakeLists.txt (see "Do not change" below).
 
 **Claude Code cloud sessions:** the SessionStart hook (`.claude/hooks/session-start.sh`)
 installs Clang 20 and makes it the default `clang++`, because the Ubuntu image
@@ -67,6 +67,14 @@ measure it. Do not claim Elo gains.
 - `params.h` — SPSA-tunable parameters
 - `uci.*` — UCI loop; `main.cpp` — engine entry; `generatedata.cpp` — self-play datagen
 - `perft/`, `tools/` — perft suite, FEN helpers, opening book
+
+## Do not change
+
+Unless the maintainer explicitly asks:
+- `README.MD` (including the version / Elo table).
+- Values of existing tunables in `params.h` (value, min, max, step). These come
+  from SPSA runs. Adding a new tunable for a new feature is fine.
+- The network name / SHA256 in CMakeLists.txt.
 
 ## Guidelines
 
