@@ -78,11 +78,10 @@ static inline int64_t div_round_i64(int64_t num, int64_t den) {
 }
 
 int NNUEQ::forward(BitBoardEnum stm) {
-    const auto& stmAcc = (stm == White) ? accumulator[0] : accumulator[1];
-    const auto& nstmAcc = (stm == White) ? accumulator[1] : accumulator[0];
+    const Accumulator& current = accStack[top];
 
-    const int16_t* a = stmAcc.pre.data();
-    const int16_t* b = nstmAcc.pre.data();
+    const int16_t* a = current.pre[stm == White ? 0 : 1];
+    const int16_t* b = current.pre[stm == White ? 1 : 0];
     const int16_t* w0 = net->l1w.data();        // first H  = stm
     const int16_t* w1 = w0 + H;            // next  H  = ntm
 
@@ -97,84 +96,130 @@ int NNUEQ::forward(BitBoardEnum stm) {
     return (int)out;
 }
 
-void NNUEQ::removePiece(BitBoardEnum piece, int sq) {
-    if (!isInitialized) {
-        return;
+// dst = src + the rows in add - the rows in sub, in one pass over the
+// accumulator. The adds and subs wrap instead of saturating: with this
+// network an accumulator stays far inside the int16 range (see
+// checkAccumulatorRange()), so the order of the changes does not matter.
+template<int Adds, int Subs>
+static inline void updateRows(const int16_t* src, int16_t* dst,
+    const int16_t* const* add, const int16_t* const* sub) {
+#if defined(__AVX2__)
+    for (int j = 0; j < H; j += 16) {
+        __m256i v = _mm256_load_si256(reinterpret_cast<const __m256i*>(src + j));
+        for (int i = 0; i < Adds; i++) {
+            v = _mm256_add_epi16(v, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(add[i] + j)));
+        }
+        for (int i = 0; i < Subs; i++) {
+            v = _mm256_sub_epi16(v, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(sub[i] + j)));
+        }
+        _mm256_store_si256(reinterpret_cast<__m256i*>(dst + j), v);
     }
-    int plane = plane_index_from_piece(piece);
-    int featureWhite = encodeFeature(plane, sq, White);
-    int featureBlack = encodeFeature(plane, sq, Black);
-
-    const int16_t* weightW = net->l0w.data() + featureWhite * H;
-    const int16_t* weightB = net->l0w.data() + featureBlack * H;
-    int16_t* accW = accumulator[0].pre.data();
-    int16_t* accB = accumulator[1].pre.data();
-
-
-    #if defined(__AVX2__)
-    sub_row_i16_avx2(weightW, accW);
-    sub_row_i16_avx2(weightB, accB);
-
-    #else
-    for (int i = 0; i < H; ++i) { accW[i] -= weightW[i]; accB[i] -= weightB[i]; }
-    #endif
+#else
+    for (int j = 0; j < H; j++) {
+        int16_t v = src[j];
+        for (int i = 0; i < Adds; i++) v += add[i][j];
+        for (int i = 0; i < Subs; i++) v -= sub[i][j];
+        dst[j] = v;
+    }
+#endif
 }
 
-void NNUEQ::addPiece(BitBoardEnum piece, int sq) {
+// to = from with the queued changes applied.
+void NNUEQ::applyPending(const Accumulator& from, Accumulator& to) {
+    const int count = pendingCount;
+    pendingCount = 0;
     if (!isInitialized) {
+        to = from;
         return;
     }
-    int plane = plane_index_from_piece(piece);
-    int featureWhite = encodeFeature(plane, sq, White);
-    int featureBlack = encodeFeature(plane, sq, Black);
-    
-    const int16_t* weightW = net->l0w.data() + featureWhite * H;
-    const int16_t* weightB = net->l0w.data() + featureBlack * H;
-    int16_t* accW = accumulator[0].pre.data();
-    int16_t* accB = accumulator[1].pre.data();
-    
 
-    #if defined(__AVX2__)
-        
+    // A piece that is added and removed again on the same square (the pawn
+    // of a promotion) cancels out.
+    PendingChange changes[64];
+    int changeCount = 0;
+    for (int i = 0; i < count; i++) {
+        bool cancelled = false;
+        for (int c = 0; c < changeCount; c++) {
+            if (changes[c].piece == pending[i].piece && changes[c].sq == pending[i].sq && changes[c].add != pending[i].add) {
+                changes[c] = changes[--changeCount];
+                cancelled = true;
+                break;
+            }
+        }
+        if (!cancelled) {
+            changes[changeCount++] = pending[i];
+        }
+    }
 
-        add_row_i16_avx2(weightW, accW);
-        add_row_i16_avx2(weightB, accB);
+    for (int side = 0; side < 2; side++) {
+        const BitBoardEnum color = side == 0 ? White : Black;
+        const int16_t* add[64];
+        const int16_t* sub[64];
+        int adds = 0;
+        int subs = 0;
+        for (int i = 0; i < changeCount; i++) {
+            int plane = plane_index_from_piece(static_cast<BitBoardEnum>(changes[i].piece));
+            const int16_t* row = net->l0w.data() + encodeFeature(plane, changes[i].sq, color) * H;
+            if (changes[i].add) add[adds++] = row;
+            else sub[subs++] = row;
+        }
 
-    #else
-    for (int i = 0; i < H; ++i) { accW[i] += weightW[i]; accB[i] += weightB[i]; }
-    #endif
+        const int16_t* src = from.pre[side];
+        int16_t* dst = to.pre[side];
+
+        if (adds == 1 && subs == 1) updateRows<1, 1>(src, dst, add, sub);        // quiet move
+        else if (adds == 1 && subs == 2) updateRows<1, 2>(src, dst, add, sub);   // capture
+        else if (adds == 2 && subs == 2) updateRows<2, 2>(src, dst, add, sub);   // castling
+        else {
+            // Promotions and setting up a position
+            std::memcpy(dst, src, sizeof(int16_t) * H);
+            for (int i = 0; i < adds; i++) updateRows<1, 0>(dst, dst, add + i, sub);
+            for (int i = 0; i < subs; i++) updateRows<0, 1>(dst, dst, add, sub + i);
+        }
+    }
+}
+
+// The accumulator updates do not saturate, which is only exact while no
+// accumulator can leave the int16 range. Bias plus 32 pieces, each with the
+// largest weight in the net, is a safe upper bound for a legal position.
+bool NNUEQ::checkAccumulatorRange() const {
+    int maxWeight = 0;
+    int maxBias = 0;
+    for (int16_t w : net->l0w) maxWeight = std::max(maxWeight, std::abs(int(w)));
+    for (int16_t b : net->l0b) maxBias = std::max(maxBias, std::abs(int(b)));
+    if (maxBias + 32 * maxWeight > INT16_MAX) {
+        std::cerr << "warning: NNUE accumulator may overflow int16 with this network" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+void NNUEQ::push() {
+    assert(top + 1 < ACC_STACK_SIZE);
+    applyPending(accStack[top], accStack[top + 1]);
+    top++;
+}
+
+void NNUEQ::refresh() {
+    top = 0;
+    Accumulator bias;
+    for (int h = 0; h < H; ++h) {
+        bias.pre[0][h] = net->l0b[h];
+        bias.pre[1][h] = net->l0b[h];
+    }
+    applyPending(bias, accStack[0]);
 }
 
 void NNUEQ::clear() {
+    top = 0;
+    pendingCount = 0;
     if (!isInitialized) {
         return;
     }
 
     for (int h = 0; h < H; ++h) {
-        accumulator[0].pre[h] = net->l0b[h];
-        accumulator[1].pre[h] = net->l0b[h];
-    }
-}
-
-void NNUEQ::add_row_i16_avx2(const int16_t* __restrict w, int16_t* __restrict acc) {
-    for (int i = 0; i < H; i += 32) {
-        __m256i a0 = _mm256_loadu_si256((const __m256i*)(acc + i));
-        __m256i w0 = _mm256_loadu_si256((const __m256i*)(w + i));
-        __m256i a1 = _mm256_loadu_si256((const __m256i*)(acc + i + 16));
-        __m256i w1 = _mm256_loadu_si256((const __m256i*)(w + i + 16));
-        _mm256_storeu_si256((__m256i*)(acc + i), _mm256_adds_epi16(a0, w0)); // sat add
-        _mm256_storeu_si256((__m256i*)(acc + i + 16), _mm256_adds_epi16(a1, w1));
-    }
-}
-
-void NNUEQ::sub_row_i16_avx2(const int16_t* __restrict w,int16_t* __restrict acc) {
-    for (int i = 0; i < H; i += 32) {
-        __m256i a0 = _mm256_loadu_si256((const __m256i*)(acc + i));
-        __m256i w0 = _mm256_loadu_si256((const __m256i*)(w + i));
-        __m256i a1 = _mm256_loadu_si256((const __m256i*)(acc + i + 16));
-        __m256i w1 = _mm256_loadu_si256((const __m256i*)(w + i + 16));
-        _mm256_storeu_si256((__m256i*)(acc + i), _mm256_subs_epi16(a0, w0)); // sat sub
-        _mm256_storeu_si256((__m256i*)(acc + i + 16), _mm256_subs_epi16(a1, w1));
+        accStack[0].pre[0][h] = net->l0b[h];
+        accStack[0].pre[1][h] = net->l0b[h];
     }
 }
 
@@ -199,10 +244,6 @@ int NNUEQ::encodeFeature(int piece, int sq, BitBoardEnum color) {
 
 bool NNUEQ::loadEmbedded() {
 
-    accumulator.clear();
-    accumulator.push_back(Accumulator(H));
-    accumulator.push_back(Accumulator(H));
-
     size_t off = 0;
     auto take = [&](void* dst, size_t bytes) {
         std::memcpy(dst, embeddedNetwork + off, bytes);
@@ -214,6 +255,7 @@ bool NNUEQ::loadEmbedded() {
     take(net->l1w.data(), net->l1w.size() * sizeof(int16_t));
     take(&net->l1b, sizeof(int16_t));
 
+    checkAccumulatorRange();
     clear();
     isInitialized = true;
     return true;
@@ -226,10 +268,6 @@ bool NNUEQ::load(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
     if (!f) return false;
     
-    accumulator.clear();
-
-    accumulator.push_back(Accumulator(H));
-    accumulator.push_back(Accumulator(H));
 
     
     f.read((char*)net->l0w.data(), net->l0w.size() * sizeof(int16_t));
@@ -237,7 +275,7 @@ bool NNUEQ::load(const std::string& path) {
     f.read((char*)net->l1w.data(), net->l1w.size() * sizeof(int16_t));
     f.read(reinterpret_cast<char*>(&net->l1b), sizeof(int16_t));
 
-
+    checkAccumulatorRange();
     clear();
     isInitialized = true;
     return true;

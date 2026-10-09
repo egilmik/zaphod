@@ -533,6 +533,8 @@ void Board::parseFen(std::string fen){
         }
     }
 
+    nnue.refresh();
+
     hashKey = generateHashKey();
     pawnHashKey = generatePawnHashKey();
     historyPly = 0;
@@ -1021,6 +1023,8 @@ bool Board::makeMove(Move move) {
 
     changeSideToMove();
 
+    nnue.push();
+
     calculateCheckersSnipersPins();
     calculateThreats();
 
@@ -1105,6 +1109,8 @@ void Board::revertLastMove()
     nonPawnKey[1] = haskKeys->nonPawnKey[1];
     minorPieceKey = haskKeys->minorPieceKey;
     majorPieceKey = haskKeys->majorPieceKey;
+
+    nnue.pop();
 }
 
 void Board::makeNullMove() {
