@@ -9,6 +9,11 @@ void TTable::put(uint64_t key, int score, int staticEval, int depth, Move move, 
     auto minAge = std::numeric_limits<int32_t>::max();
 
     for (auto& candidate : entries.entries) {
+        // An entry from before the last clear() counts as empty
+        if (candidate.generation != generation) {
+            candidate = InternalEntry{};
+            candidate.generation = generation;
+        }
         if (candidate.shortKey == packedKey || candidate.type() == TType::NO_TYPE) {
             entryPtr = &candidate;
             break;

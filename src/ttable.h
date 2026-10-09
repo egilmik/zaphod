@@ -52,13 +52,19 @@ public:
         nrOfBuckets = size;
         if (nrOfBuckets == 0) nrOfBuckets = 1024;   // safety in case sizeMB==0
         table.reset(new Bucket[nrOfBuckets]);
+        generation = 0;
     }
 
     TTable(const TTable&) = delete;
     TTable& operator=(const TTable&) = delete;
 
+    // Entries written before the last clear() carry an older generation and
+    // are treated as empty, which makes clearing O(1). The table is only
+    // really wiped when the 16-bit generation wraps around.
     void clear() noexcept {
-        std::memset(table.get(), 0, nrOfBuckets * sizeof(Bucket));
+        if (++generation == 0) {
+            std::memset(table.get(), 0, nrOfBuckets * sizeof(Bucket));
+        }
         tableAge = 0;
     }
 
@@ -68,7 +74,7 @@ public:
         TTEntry entry{};
 
         for (const auto internal : entries.entries) {
-            if (internal.shortKey == packedKey) {
+            if (internal.generation == generation && internal.shortKey == packedKey) {
                 entry.key = key;
                 entry.score = internal.score;
                 entry.staticEval = internal.staticEval;
@@ -112,6 +118,8 @@ private:
         Move move;
         uint8_t depth;
         uint8_t agePVType;
+        // Fills the padding at the end of the entry, so the size stays 16 bytes
+        uint16_t generation;
 
         uint32_t age() const {
             return static_cast<uint32_t>(agePVType >> 3);
@@ -131,6 +139,8 @@ private:
 
     };
 
+    static_assert(sizeof(InternalEntry) == 16, "TT entry should stay 16 bytes");
+
     struct alignas(32) Bucket {
         static constexpr uint8_t size = 3;
         std::array<InternalEntry, size> entries{};
@@ -142,6 +152,7 @@ private:
     std::unique_ptr<Bucket[]> table;
     uint64_t nrOfBuckets = 0;
     uint32_t tableAge = 0;
+    uint16_t generation = 0;
 };
 
 #endif // TTABLE_H
