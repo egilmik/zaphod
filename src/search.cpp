@@ -14,6 +14,19 @@ using namespace zaphod::params;
 Search::Search() {
 }
 
+namespace {
+    // The moves searched in a node that did not become the best move, for the
+    // history penalties. Fixed size and left uninitialised, so a node does not
+    // allocate. A move fits in 16 bits.
+    struct FailedMoves {
+        uint16_t moves[256];
+        int count = 0;
+
+        void add(Move move) { moves[count++] = static_cast<uint16_t>(move.value); }
+        Move operator[](int i) const { return Move(moves[i]); }
+    };
+}
+
 Score Search::search(Board &board, SearchLimits lim)
 {   
     startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
@@ -341,8 +354,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     MoveGenerator& moveGen = moveGenStack[ply];
-    std::vector<Move> failLowQuiet;
-    std::vector<Move> failLowNoisy;
+    FailedMoves failLowQuiet;
+    FailedMoves failLowNoisy;
 
     History::ContSlice* conts[History::CONT_PLIES] = {};
     for(int i = 0; i < History::CONT_PLIES; i++){
@@ -533,10 +546,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         if (move != bestMove) {
             if (!isNoisy) {
-                failLowQuiet.push_back(move);
+                failLowQuiet.add(move);
             }
             else {
-                failLowNoisy.push_back(move);
+                failLowNoisy.add(move);
             }
         }
 
@@ -556,7 +569,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             history.updatePieceToScore(board.getPieceOnSquare(bestMove.from()), bestMove, board.getThreats(), bonus);
 
             int penalty = -std::clamp(depth * quietHistPenaltyDepthScale() - quietHistPenaltyOffset(), 0, quietHistMaxPenalty());
-            for (Move move : failLowQuiet) {
+            for (int i = 0; i < failLowQuiet.count; i++) {
+                Move move = failLowQuiet[i];
                 history.updateButterflyScore(board.getSideToMove(), move, board.getThreats(), penalty);
 		        history.updateContScore(conts, board.getPieceOnSquare(move.from()), move.to(), penalty);
                 history.updatePieceToScore(board.getPieceOnSquare(move.from()), move, board.getThreats(), penalty);
@@ -567,7 +581,8 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             history.updateCapturedPiece(board.getPieceOnSquare(bestMove.from()), bestMove.to(), board.getPieceOnSquare(bestMove.to()),bonus);
 
             int penalty = -std::clamp(depth * noisyHistPenaltyDepthScale() - noisyHistPenaltyOffset(), 0, noisyHistMaxPenalty());
-            for (Move move : failLowNoisy) {
+            for (int i = 0; i < failLowNoisy.count; i++) {
+                Move move = failLowNoisy[i];
                 history.updateCapturedPiece(board.getPieceOnSquare(move.from()), move.to(), board.getPieceOnSquare(move.to()), penalty);
             }
             

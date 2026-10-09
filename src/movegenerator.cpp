@@ -257,6 +257,22 @@ Move MoveGenerator::next() {
 
 }
 
+// Highest score first, ties broken by the move value. That is a total order,
+// so the result is the same as with any other sort. Insertion sort, because
+// the lists are short and std::stable_sort allocates a buffer on every call.
+static void sortScoredMoves(ScoredMove* moves, int count) {
+    for (int i = 1; i < count; i++) {
+        ScoredMove current = moves[i];
+        int j = i - 1;
+        while (j >= 0 && (moves[j].score < current.score
+            || (moves[j].score == current.score && moves[j].move.value > current.move.value))) {
+            moves[j + 1] = moves[j];
+            j--;
+        }
+        moves[j + 1] = current;
+    }
+}
+
 void MoveGenerator::sortNoisyMoves() {
     int side = 0;
     if (board->getSideToMove() == Black) {
@@ -284,11 +300,7 @@ void MoveGenerator::sortNoisyMoves() {
         }
     }
 
-    std::stable_sort(noisyMoves, noisyMoves+noisyCount,
-        [](const ScoredMove& a, const ScoredMove& b) {
-            if (a.score != b.score) return a.score > b.score;     // strict order
-            return a.move.value < b.move.value;                   // total tie-break
-        });
+    sortScoredMoves(noisyMoves, noisyCount);
 }
 
 void MoveGenerator::scoreQuietMoves() {
@@ -313,11 +325,7 @@ void MoveGenerator::scoreQuietMoves() {
         }	       
     }
 
-    std::stable_sort(quietMoves, quietMoves+quietCount,
-        [](const ScoredMove& a, const ScoredMove& b) {
-            if (a.score != b.score) return a.score > b.score;     // strict order
-            return a.move.value < b.move.value;                   // total tie-break
-        });
+    sortScoredMoves(quietMoves, quietCount);
 
 }
 
