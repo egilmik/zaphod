@@ -400,10 +400,9 @@ bool Board::hasInsufficientMaterial() {
 
 }
 
-void Board::calculateCheckersSnipersPins() {
+void Board::calculateSnipersPins() {
     BitBoard king = getBitboard(K + getSideToMove());
-    BitBoard kingCopy = king;
-    int kingSquare = Board::popLsb(kingCopy);
+    int kingSquare = Board::popLsb(king);
     snipers = calculateSnipers(kingSquare, getOtherSide());
     BitBoard sniperCopy = snipers;
 
@@ -418,6 +417,19 @@ void Board::calculateCheckersSnipersPins() {
             pins |= potentialPinned & getBitboard(getSideToMove());
         }
     }
+    pinsValid = true;
+}
+
+// Checkers are needed in every node. Pins, snipers and threats are only
+// needed to generate moves and order them, many nodes return before that,
+// so those are computed on first use (getPins(), getSnipers(), getThreats()).
+void Board::calculateCheckersSnipersPins() {
+    BitBoard king = getBitboard(K + getSideToMove());
+    BitBoard kingCopy = king;
+    int kingSquare = Board::popLsb(kingCopy);
+
+    pinsValid = false;
+    threatsValid = false;
 
     //  Finding pieces giving check to the current side to move
     checkers = 0;
@@ -539,7 +551,6 @@ void Board::parseFen(std::string fen){
     pawnHashKey = generatePawnHashKey();
     historyPly = 0;
     calculateCheckersSnipersPins();
-    calculateThreats();
 }
 
 BitBoard Board::generatePawnHashKey() {
@@ -801,6 +812,8 @@ bool Board::makeMove(Move move) {
     histMove->pins = pins;
     histMove->snipers = snipers;
     histMove->threats = threats;
+    histMove->pinsValid = pinsValid;
+    histMove->threatsValid = threatsValid;
 
     HashKeys* hashKeys = &keyHistory[historyPly];
     hashKeys->hashKey = hashKey;
@@ -1026,7 +1039,6 @@ bool Board::makeMove(Move move) {
     nnue.push();
 
     calculateCheckersSnipersPins();
-    calculateThreats();
 
     return true;
 }
@@ -1044,6 +1056,8 @@ void Board::revertLastMove()
     snipers = info->snipers;
     pins = info->pins;
     threats = info->threats;
+    pinsValid = info->pinsValid;
+    threatsValid = info->threatsValid;
 
     castleWK = (info->castleMask & 1) != 0;
     castleWQ = (info->castleMask & 2) != 0;
@@ -1124,6 +1138,8 @@ void Board::makeNullMove() {
     histMove->pins = pins;
     histMove->snipers = snipers;
     histMove->threats = threats;
+    histMove->pinsValid = pinsValid;
+    histMove->threatsValid = threatsValid;
     
     HashKeys* hashKeys = &keyHistory[historyPly];
     hashKeys->hashKey = hashKey;
@@ -1143,7 +1159,6 @@ void Board::makeNullMove() {
     historyPly++;
     changeSideToMove();
     calculateCheckersSnipersPins();
-    calculateThreats();
 }
 
 void Board::revertNullMove() {
@@ -1162,6 +1177,8 @@ void Board::revertNullMove() {
     snipers = info->snipers;
     pins = info->pins;
     threats = info->threats;
+    pinsValid = info->pinsValid;
+    threatsValid = info->threatsValid;
 
     HashKeys* haskKeys = &keyHistory[historyPly];
 
@@ -1174,6 +1191,7 @@ void Board::revertNullMove() {
 }
 
 void Board::calculateThreats(){
+    threatsValid = true;
     threats = 0; 
     BitBoardEnum attacker = getOtherSide();
     BitBoard queenRooks = bitBoardArray[Q+attacker] | bitBoardArray[R+attacker];

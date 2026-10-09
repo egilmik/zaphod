@@ -22,6 +22,8 @@ struct alignas(64) MoveUndoInfo {
     BitBoard snipers = 0;
     BitBoard pins = 0;
     BitBoard threats = 0;
+    bool pinsValid = false;
+    bool threatsValid = false;
 
     int8_t halfMoveClock = 0; // 1 byte
     int8_t fullMoveClock = 1;
@@ -222,9 +224,18 @@ class Board {
         bool getCastleRightsBQ(){return castleBQ;};
 
         BitBoard getCheckers() { return checkers; };
-        BitBoard getPins() { return pins; };
-        BitBoard getSnipers() { return snipers; };
-        BitBoard getThreats() { return threats; };
+        BitBoard getPins() {
+            if (!pinsValid) calculateSnipersPins();
+            return pins;
+        };
+        BitBoard getSnipers() {
+            if (!pinsValid) calculateSnipersPins();
+            return snipers;
+        };
+        BitBoard getThreats() {
+            if (!threatsValid) calculateThreats();
+            return threats;
+        };
 
         inline bool isCheck() {
             return checkers != 0;
@@ -272,6 +283,7 @@ class Board {
         void clearBoard();
 
         void calculateCheckersSnipersPins();
+        void calculateSnipersPins();
         BitBoard calculateSnipers(int kingSquare, BitBoardEnum attackerColor);
 	    void calculateThreats();
 
@@ -285,6 +297,9 @@ class Board {
         BitBoard pins = 0;
         BitBoard snipers = 0;
 	    BitBoard threats = 0;
+        // Pins/snipers and threats are computed on first use, see calculateCheckersSnipersPins()
+        bool pinsValid = false;
+        bool threatsValid = false;
 
         MoveUndoInfo moveHistory[MAXMOVEHISTORY];
         HashKeys keyHistory[MAXMOVEHISTORY];

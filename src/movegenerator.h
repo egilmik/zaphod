@@ -86,6 +86,8 @@ class MoveGenerator {
         int kingSquare = 0;
         BitBoard checkMask = 0;
         BitBoard kingDangerMask = 0;
+        BitBoard pins = 0;
+        BitBoard snipers = 0;
         bool onlyNoisy = false;
         bool ttMoveFound = false;
         bool skipQuiets = false;
