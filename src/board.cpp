@@ -345,6 +345,24 @@ void Board::removePiece(int sq, BitBoardEnum color)
 
 }
 
+// Board only versions of addPiece / removePiece for revertLastMove, which
+// restores the hash keys from keyHistory and pops the NNUE accumulator.
+inline void Board::placePiece(int sq, BitBoardEnum piece, BitBoardEnum color)
+{
+    mailBoxBoard[sq] = piece;
+    bitBoardArray[All] |= sqBB[sq];
+    bitBoardArray[piece] |= sqBB[sq];
+    bitBoardArray[color] |= sqBB[sq];
+}
+
+inline void Board::clearPiece(int sq, BitBoardEnum color)
+{
+    bitBoardArray[All] &= ~sqBB[sq];
+    bitBoardArray[color] &= ~sqBB[sq];
+    bitBoardArray[mailBoxBoard[sq]] &= ~sqBB[sq];
+    mailBoxBoard[sq] = All;
+}
+
 bool Board::hasPositionRepeated() {
     int moves = std::min(halfMoveClock, historyPly);
     int moveCounter = 0;
@@ -1073,33 +1091,33 @@ void Board::revertLastMove()
     if (info->move.getMoveType() == CASTLING) {
         if (sideToMove == White) {
             if (info->move.to() == 2) {
-                removePiece(3, White);
-                addPiece(0, R, White);
+                clearPiece(3, White);
+                placePiece(0, R, White);
             }
             else {
-                removePiece(5, White);
-                addPiece(7, R, White);
+                clearPiece(5, White);
+                placePiece(7, R, White);
             }
         }
         else {
             if (info->move.to() == 58) {
-                removePiece(59, Black);
-                addPiece(56, r, Black);
+                clearPiece(59, Black);
+                placePiece(56, r, Black);
             }
             else {
-                removePiece(61, Black);
-                addPiece(63, r, Black);
+                clearPiece(61, Black);
+                placePiece(63, r, Black);
             }
         }
     }
 
     if (info->move.getMoveType() == PROMOTION) {
-        removePiece(info->move.to(), sideToMove);
-        addPiece(info->move.from(), static_cast<BitBoardEnum>(P + sideToMove), sideToMove);
+        clearPiece(info->move.to(), sideToMove);
+        placePiece(info->move.from(), static_cast<BitBoardEnum>(P + sideToMove), sideToMove);
     }
     else {
-        removePiece(info->move.to(), sideToMove);
-        addPiece(info->move.from(), movedPiece, sideToMove);
+        clearPiece(info->move.to(), sideToMove);
+        placePiece(info->move.from(), movedPiece, sideToMove);
     }
 
     if (info->move.getMoveType() == EN_PASSANT) {
@@ -1107,12 +1125,12 @@ void Board::revertLastMove()
         if (sideToMove == White) {
             enpassantModifier = 8;
         }
-        addPiece(info->move.to() - enpassantModifier, static_cast<BitBoardEnum>(P + getOtherSide()), getOtherSide());
+        placePiece(info->move.to() - enpassantModifier, static_cast<BitBoardEnum>(P + getOtherSide()), getOtherSide());
 
     }
 
     if (capturedPiece != All) {     
-        addPiece(info->move.to(), capturedPiece, getOtherSide());
+        placePiece(info->move.to(), capturedPiece, getOtherSide());
     }
 
     HashKeys* haskKeys = &keyHistory[historyPly];

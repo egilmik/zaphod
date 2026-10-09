@@ -288,6 +288,8 @@ class Board {
 	    void calculateThreats();
 
         inline void toggleHashKeys(BitBoardEnum piece, int sq);
+        inline void placePiece(int sq, BitBoardEnum piece, BitBoardEnum color);
+        inline void clearPiece(int sq, BitBoardEnum color);
 
         constexpr static int MAXMOVEHISTORY = 1024;
         
