@@ -753,7 +753,7 @@ int Search::qsearch(Board &board, int alpha, int beta,int depth, int ply, bool p
         //////////////////////////
         // Futility pruning
         //////////////////////////
-        if (isCapture && !inCheck && futilityValue <= alpha && 0 > See::see(board, move.from(), move.to(), board.getSideToMove())) {
+        if (isCapture && !inCheck && futilityValue <= alpha && 0 > moveGen.seeOfLastMove(move)) {
             qsearchFutilityPruningHit++;
             continue;
         }

@@ -183,7 +183,15 @@ static inline ScoredMove& pickBest(ScoredMove* moves, int idx, int count) {
     return moves[idx];
 }
 
+int MoveGenerator::seeOfLastMove(Move move) {
+    if (lastSee != SEE_UNKNOWN) {
+        return lastSee;
+    }
+    return See::see(*board, move.from(), move.to(), board->getSideToMove());
+}
+
 Move MoveGenerator::next() {
+    lastSee = SEE_UNKNOWN;
 
   
 
@@ -223,6 +231,7 @@ Move MoveGenerator::next() {
             
             //Return good noisy
             if (noisyIdx < noisyCount && pickBest(noisyMoves, noisyIdx, noisyCount).score > 0) {
+                lastSee = noisyMoves[noisyIdx].see;
                 return noisyMoves[noisyIdx++].move;
             } 
 
@@ -266,7 +275,9 @@ Move MoveGenerator::next() {
             //Return bad noisy
             // if no more moves left, next stage
             if (noisyIdx < noisyCount) {
-                return pickBest(noisyMoves, noisyIdx++, noisyCount).move;
+                const ScoredMove& picked = pickBest(noisyMoves, noisyIdx++, noisyCount);
+                lastSee = picked.see;
+                return picked.move;
             }
             currentStage = END;
             [[fallthrough]];
@@ -296,7 +307,8 @@ void MoveGenerator::scoreNoisyMoves() {
         //TODO - This does not handle En passant properly. En passant get 0 score
         if (board->getPieceOnSquare(move.to()) != All) {
             score = history->capturedPieceScore(board->getPieceOnSquare(move.from()), move.to(), board->getPieceOnSquare(move.to()))/16;
-            score += see(*board, move.from(), move.to(), board->getSideToMove());
+            noisyMoves[i].see = see(*board, move.from(), move.to(), board->getSideToMove());
+            score += noisyMoves[i].see;
         }
 
         if (move.getMoveType() == PROMOTION && move.getPromotionType(White) == Q) {

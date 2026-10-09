@@ -19,6 +19,8 @@ enum Stage {
 struct ScoredMove {
     int score = 0;
     Move move;
+    // Static exchange evaluation of a capture, filled in while scoring
+    int see = 0;
 };
 
 class MoveGenerator {
@@ -35,6 +37,10 @@ class MoveGenerator {
         void skipQuiet() {
             skipQuiets = true;
         }
+
+        // SEE of the move next() returned last. Captures from the noisy list
+        // were already evaluated to order them, anything else is computed.
+        int seeOfLastMove(Move move);
 
 
         ScoredMove noisyMoves[256];
@@ -55,8 +61,11 @@ class MoveGenerator {
         bool isMoveLegal(Move move);
         bool isMoveLegalSliders(Move move, bool isCapture, BitBoard moves, BitBoard pieceBoard, BitBoard enemyBoard, BitBoard emptySquares);
 
-	    inline void addNoisy(Move m){ noisyMoves[noisyCount++] = { 0, m}; }
-	    inline void addQuiet(Move m){ quietMoves[quietCount++] = { 0, m}; }
+	    inline void addNoisy(Move m){ noisyMoves[noisyCount++] = { 0, m, SEE_UNKNOWN }; }
+	    inline void addQuiet(Move m){ quietMoves[quietCount++] = { 0, m, SEE_UNKNOWN }; }
+
+        static constexpr int SEE_UNKNOWN = INT32_MIN;
+        int lastSee = SEE_UNKNOWN;
 
         void generatePawnNoisy();
         void generatePawnQuiet();
