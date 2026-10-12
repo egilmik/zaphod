@@ -441,14 +441,14 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             ////////////
             // Futility pruning
             ////////////
-            /*
-            constexpr int FpDepth = 5;
-            constexpr int FpMult = 148;
-            if (!pvNode && !inCheck && depth <= FpDepth && ss[ply].staticEval +18 + FpMult * depth <= alpha) {
+            // A quiet move this far below alpha will not raise it at low depth,
+            // and the quiets after it are ordered worse, so skip them all.
+            if (!pvNode && !inCheck && !isNoisy && depth <= fpDepth()
+                && ss[ply].staticEval + fpBase() + fpMultiplier() * depth <= alpha) {
                 futilityPruningHit++;
+                moveGen.skipQuiet();
                 continue;
             }
-            */
             
             ////////////
             // Late move pruning

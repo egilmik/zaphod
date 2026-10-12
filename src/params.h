@@ -72,6 +72,10 @@ namespace zaphod::params {
 	//Singular extension
 	ZAP_TUNABLE_INT(seMinDepth, 7, 4, 12, 1)
 	ZAP_TUNABLE_INT(seBetaMargin, 32, 8, 96, 4)
+	//Futility pruning (quiet moves)
+	ZAP_TUNABLE_INT(fpDepth, 6, 1, 10, 1)
+	ZAP_TUNABLE_INT(fpBase, 100, 0, 300, 20)
+	ZAP_TUNABLE_INT(fpMultiplier, 100, 20, 250, 10)
 
 	///////////
 	// Move generator
