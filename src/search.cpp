@@ -342,7 +342,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     if (!pvNode && !inCheck && !isExcluded && ss[ply].staticEval >= beta && depth >= 3 && !isRoot && !ss[ply - 1].isNullMove) {
         if(board.getNonPawnMaterial(board.getSideToMove()) > 0 ){
-            int R = 3 + (depth >= 6) + improving;
+            int R = nmpBase() + depth / nmpDepthDivisor() + std::min((ss[ply].staticEval - beta) / nmpEvalDivisor(), nmpEvalMax());
             //R = std::clamp(R, 2, 4);
             board.makeNullMove();
             tt.prefetch(board.getHashKey());
