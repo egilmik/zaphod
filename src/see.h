@@ -19,7 +19,10 @@ namespace See {
 
         int ply, score[32];
 
-        score[0] = pieceMaterialScoreArray[board.getPieceOnSquare(toSq)];
+        // The target is empty for a quiet move or an en passant capture, and
+        // All lies past the end of the value table.
+        BitBoardEnum target = board.getPieceOnSquare(toSq);
+        score[0] = target == All ? 0 : pieceMaterialScoreArray[target];
 
         BitBoard occupied = board.getBitboard(All);
         BitBoard toSqBB = board.sqBB[toSq];

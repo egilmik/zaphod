@@ -76,6 +76,10 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(fpDepth, 6, 1, 10, 1)
 	ZAP_TUNABLE_INT(fpBase, 100, 0, 300, 20)
 	ZAP_TUNABLE_INT(fpMultiplier, 100, 20, 250, 10)
+	//SEE pruning
+	ZAP_TUNABLE_INT(seePruneDepth, 8, 1, 12, 1)
+	ZAP_TUNABLE_INT(seeQuietMargin, 50, 0, 200, 10)
+	ZAP_TUNABLE_INT(seeNoisyMargin, 90, 0, 250, 10)
 
 	///////////
 	// Move generator

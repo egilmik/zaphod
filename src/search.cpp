@@ -461,6 +461,18 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
 
             ////////////
+            // SEE pruning
+            ////////////
+            // Skip moves that lose material by static exchange; the allowed
+            // loss grows with depth.
+            if (depth <= seePruneDepth() && !isPromo) {
+                int threshold = isNoisy ? -seeNoisyMargin() * depth : -seeQuietMargin() * depth;
+                if (moveGen.seeOfLastMove(move) < threshold) {
+                    continue;
+                }
+            }
+
+            ////////////
             // History pruning
             ////////////
 
