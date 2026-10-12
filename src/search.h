@@ -23,6 +23,7 @@ struct SearchStack {
     int rawStaticEval = 0;
     BitBoardEnum movedPiece = All;
     Move move = 0;
+    Move excludedMove = 0;
 };
 
 struct SearchLimits {

@@ -69,6 +69,10 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(rfpCorrection, 20, 0, 200, 10)
 	ZAP_TUNABLE_INT(rfpImproving, 35, 0, 200, 20)
 
+	//Singular extension
+	ZAP_TUNABLE_INT(seMinDepth, 7, 4, 12, 1)
+	ZAP_TUNABLE_INT(seBetaMargin, 32, 8, 96, 4)
+
 	///////////
 	// Move generator
 	///////////

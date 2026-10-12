@@ -38,6 +38,7 @@ Score Search::search(Board &board, SearchLimits lim)
         ss[i].rawStaticEval = 0;
 	    ss[i].movedPiece = All;
 	    ss[i].move = 0;
+        ss[i].excludedMove = 0;
     }
 
     history.age();
@@ -181,6 +182,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     
     BitBoard key = board.getHashKey();    
     bool isRoot = ply == 0;
+    // Set while verifying that the TT move is singular: this node is searched
+    // without that move, and must not cut off on or overwrite the TT entry.
+    Move excludedMove = ss[ply].excludedMove;
+    bool isExcluded = excludedMove;
     int alphaOrginal = alpha;
     bool improving = false;
     int bestScore = -MATESCORE;
@@ -215,7 +220,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     auto tte = tt.probe(key);    
     if (tte.type != TType::NO_TYPE) tte.score = scoreFromTT(tte.score, ply);
 
-    if (!pvNode && tte.depth >= depth) {
+    if (!pvNode && !isExcluded && tte.depth >= depth) {
         
         if (tte.type == EXACT) {
             exactHit++;
@@ -297,14 +302,14 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     // Internal iterative reduction
     ////////////
     
-    if(depth > 6 && !inCheck && !ttHit){
+    if(depth > 6 && !inCheck && !ttHit && !isExcluded){
         depth--;
     }
 
     ////////////
     // Razoring
     ////////////
-    if (!isRoot && !ttHit && depth <= 4 && ss[ply].staticEval < (alpha - razoringMargin() *depth) ) {
+    if (!isRoot && !isExcluded && !ttHit && depth <= 4 && ss[ply].staticEval < (alpha - razoringMargin() *depth) ) {
         razoringEntryHit++;
 
         int value = qsearch(board, alpha-1, alpha, 0, ply, false);
@@ -321,7 +326,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     int futilityMargin =(1+ depth) * rfpLinear();
     futilityMargin -= rfpImproving()*improving;
     futilityMargin += std::abs(correction) * rfpCorrection()/100;
-    if (!pvNode && !inCheck && depth <= 6 && (ss[ply].staticEval - futilityMargin >= beta) && ss[ply].staticEval < MATESCORE-MAXPLY) {
+    if (!pvNode && !inCheck && !isExcluded && depth <= 6 && (ss[ply].staticEval - futilityMargin >= beta) && ss[ply].staticEval < MATESCORE-MAXPLY) {
         reverseFutilityPruningHit++;
         return (ss[ply].staticEval+beta)/2;
     }
@@ -335,7 +340,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     ////////////
     // Null move pruning
     ////////////
-    if (!pvNode && !inCheck  && ss[ply].staticEval >= beta && depth >= 3 && !isRoot && !ss[ply - 1].isNullMove) {
+    if (!pvNode && !inCheck && !isExcluded && ss[ply].staticEval >= beta && depth >= 3 && !isRoot && !ss[ply - 1].isNullMove) {
         if(board.getNonPawnMaterial(board.getSideToMove()) > 0 ){
             int R = 3 + (depth >= 6) + improving;
             //R = std::clamp(R, 2, 4);
@@ -350,6 +355,36 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
                 nullMoveHit++;
                 return nullScore;
             }
+        }
+    }
+
+    ////////////
+    // Singular extension
+    ////////////
+    // Search the position without the TT move at reduced depth. If nothing
+    // else gets close to the TT score, the TT move is singular and is
+    // extended. If something else beats beta as well, cut (multi-cut).
+    // Runs before this ply's move generator is set up, as the verification
+    // search reuses it.
+    int singularExtension = 0;
+    if (!isRoot && !isExcluded && depth >= seMinDepth() && ttHit && tte.move
+        && tte.depth >= depth - 3 && tte.type != UPPER
+        && std::abs(tte.score) < MATE_IN_MAX && ply < 2 * currentTargetDepth) {
+        int singularBeta = tte.score - depth * seBetaMargin() / 16;
+        int singularDepth = (depth - 1) / 2;
+
+        ss[ply].excludedMove = tte.move;
+        int singularScore = negamax(board, singularDepth, singularBeta - 1, singularBeta, ply, false);
+        ss[ply].excludedMove = Move{};
+
+        if (singularScore < singularBeta) {
+            singularExtension = 1;
+        }
+        else if (singularBeta >= beta) {
+            return singularBeta;
+        }
+        else if (tte.score >= beta) {
+            singularExtension = -1;
         }
     }
 
@@ -371,7 +406,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     int moveCounter = 0;
     Move move;
     while ((move = moveGen.next())) {
-        
+        if (move == excludedMove) {
+            continue;
+        }
+
         bool isPromo = move.getMoveType() == PROMOTION;
         bool isCapture = board.getPieceOnSquare(move.to()) != All;
         bool isNoisy = isCapture || isPromo;
@@ -456,6 +494,10 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
 
         
         newDepth += extension; 
+
+        if (ttHit && move == tte.move) {
+            newDepth += singularExtension;
+        }
 
         ////////////
         // LMR
@@ -556,6 +598,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
     }
 
     if (moveCounter == 0) {
+        if (isExcluded) {
+            return alpha;
+        }
         return inCheck ? -MATESCORE + ply : 0;
     }
 
@@ -596,6 +641,7 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             || bestMove.getMoveType() == PROMOTION);
 
     if (!inCheck
+        && !isExcluded
         && ss[ply].staticEval != (-MATESCORE - 1)
         && std::abs(bestScore) < MATE_IN_MAX
         && !bestIsNoisy
@@ -614,7 +660,9 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         history.updateContCorrectionScore(contCorrections, piece,toSq, bestScore - ss[ply].staticEval, depth);
     }
 
-    tt.put(key, scoreToTT(bestScore,ply), ss[ply].rawStaticEval, depth, bestMove, bound, pvNode);
+    if (!isExcluded) {
+        tt.put(key, scoreToTT(bestScore,ply), ss[ply].rawStaticEval, depth, bestMove, bound, pvNode);
+    }
     
 
     return bestScore;
