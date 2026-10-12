@@ -475,6 +475,19 @@ int Search::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             ////////////
             // History pruning
             ////////////
+            // A quiet move that has kept failing in this context (butterfly,
+            // piece-to and the last two continuation histories) is skipped at
+            // low depth.
+            if (!isNoisy && !inCheck && depth <= hpDepth()) {
+                BitBoardEnum piece = board.getPieceOnSquare(move.from());
+                int quietHistory = history.butterflyScore(stm, move, threats)
+                    + history.pieceToScore(piece, move, threats)
+                    + history.contScore(conts, piece, move.to(), 0)
+                    + history.contScore(conts, piece, move.to(), 1);
+                if (quietHistory < -hpMargin() * depth) {
+                    continue;
+                }
+            }
 
             ////////////
             // Continuation pruning

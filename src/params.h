@@ -89,6 +89,10 @@ namespace zaphod::params {
 	ZAP_TUNABLE_INT(nmpEvalDivisor, 200, 50, 400, 20)
 	ZAP_TUNABLE_INT(nmpEvalMax, 3, 0, 6, 1)
 
+	//History pruning
+	ZAP_TUNABLE_INT(hpDepth, 4, 1, 8, 1)
+	ZAP_TUNABLE_INT(hpMargin, 4096, 512, 12000, 256)
+
 	///////////
 	// Move generator
 	///////////
